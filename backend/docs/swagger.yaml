@@ -68,18 +68,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
         "404":
           description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
           schema:
             additionalProperties: true
             type: object

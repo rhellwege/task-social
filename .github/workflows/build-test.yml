@@ -1,0 +1,23 @@
+name: Build and Test
+on: [push]
+jobs:
+  build_backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "backend/go.mod"
+          cache-dependency-path: "backend/go.sum"
+      - name: Build Go Code
+        working-directory: ./backend
+        run: go build cmd/main.go
+      - name: Install Tools
+        working-directory: ./backend
+        run: ./scripts/get_tools.sh
+      - name: Lint Go Code
+        working-directory: ./backend
+        run: ./scripts/lint.sh
+      - name: Check Codegen
+        working-directory: ./backend
+        run: ./scripts/check_codegen.sh

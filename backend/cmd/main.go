@@ -11,7 +11,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
 
-	// generated docs `swag init -g cmd/main.go`
 	"github.com/rhellwege/task-social/config"
 	_ "github.com/rhellwege/task-social/docs"
 	"github.com/rhellwege/task-social/internal/api/routes"
