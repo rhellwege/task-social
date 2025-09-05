@@ -4,7 +4,7 @@ SWAGGER_DEPS := $(wildcard internal/api/handlers/*.go) $(wildcard cmd/*)
 sqlc: $(SQLC_DEPS)
 	cd internal/db/ && sqlc generate
 
-swagger: SWAGGER_DEPS
+swagger: $(SWAGGER_DEPS)
 	swag fmt
 	swag init -g cmd/main.go
 
@@ -12,8 +12,8 @@ check:
 	go vet ./...
 	nilaway ./...
 
-format:
+format: $(wildcard ./.../*.go)
 	go fmt ./...
 
 build: sqlc swagger format
-	go build cmd/main.go -o bin/task-social
+	go build -o bin/main cmd/main.go
