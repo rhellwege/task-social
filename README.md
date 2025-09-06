@@ -1,5 +1,5 @@
 # Task Social
-Visit the docs directory for more detailed information
+Backend Docs: [README.md](./backend/README.md)
 ## Getting Started
 ### Backend Development Setup:
 1. Install go: https://www.gotutorial.org/go-tutorial/install-go/
