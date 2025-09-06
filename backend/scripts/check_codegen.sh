@@ -5,8 +5,7 @@ pwd
 echo "Checking sqlc..."
 if [ -n "$(sqlc diff 2>&1)" ]
 then
-    echo "Sqlc needs to be generated before pushing changes."
-    echo "run sqlc generate in internal/db/sql or use the Makefile."
+    echo "::error title=sqlc-gen::Sqlc needs to be generated before pushing changes. Run sqlc generate in internal/db/sql or use the Makefile."
     exit 1
 fi
 echo "Sqlc is up to date."
@@ -19,8 +18,7 @@ swag init -g cmd/main.go
 # Check if new docs differs from docs.bak
 if [ -n "$(diff -r docs docs.bak 2>&1)" ]
 then
-    echo "Docs need to be generated before pushing changes."
-    echo "run swag init -g cmd/main.go in backend/ or use the Makefile."
+    echo "::error title=swagger-gen::Docs need to be generated before pushing changes. Run swag init -g cmd/main.go in backend/ or use the Makefile."
     rm -rf docs.bak
     exit 1
 fi
