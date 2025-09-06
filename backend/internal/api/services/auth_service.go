@@ -21,7 +21,6 @@ type AuthService struct{}
 // compile time check
 var _ AuthServicer = (*AuthService)(nil)
 
-// NewAuthService creates a new instance of AuthService
 func NewAuthService() *AuthService {
 	return &AuthService{}
 }
