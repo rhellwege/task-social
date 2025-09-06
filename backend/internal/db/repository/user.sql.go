@@ -154,6 +154,36 @@ func (q *Queries) GetUserLogin(ctx context.Context, username string) (GetUserLog
 	return i, err
 }
 
+const updateUser = `-- name: UpdateUser :exec
+UPDATE user
+SET
+    email = COALESCE(?1, email),
+    username = COALESCE(?2, username),
+    password = COALESCE(?3, password),
+    profile_picture = COALESCE(?4, profile_picture)
+WHERE
+    id = ?5
+`
+
+type UpdateUserParams struct {
+	Email          *string `json:"email"`
+	Username       *string `json:"username"`
+	Password       *string `json:"password"`
+	ProfilePicture *string `json:"profile_picture"`
+	ID             string  `json:"id"`
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.db.ExecContext(ctx, updateUser,
+		arg.Email,
+		arg.Username,
+		arg.Password,
+		arg.ProfilePicture,
+		arg.ID,
+	)
+	return err
+}
+
 const updateUserEmail = `-- name: UpdateUserEmail :exec
 UPDATE user SET email = ? WHERE id = ?
 `
@@ -179,6 +209,42 @@ type UpdateUserPasswordParams struct {
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
 	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.Password, arg.ID)
+	return err
+}
+
+const updateUserPrivateMessage = `-- name: UpdateUserPrivateMessage :exec
+UPDATE user_private_message
+SET
+    content = COALESCE(?1, content)
+WHERE
+    id = ?2
+`
+
+type UpdateUserPrivateMessageParams struct {
+	Content *string `json:"content"`
+	ID      string  `json:"id"`
+}
+
+func (q *Queries) UpdateUserPrivateMessage(ctx context.Context, arg UpdateUserPrivateMessageParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserPrivateMessage, arg.Content, arg.ID)
+	return err
+}
+
+const updateUserPrivateMessageAttachment = `-- name: UpdateUserPrivateMessageAttachment :exec
+UPDATE user_private_message_attachment
+SET
+    url = COALESCE(?1, url)
+WHERE
+    id = ?2
+`
+
+type UpdateUserPrivateMessageAttachmentParams struct {
+	Url *string `json:"url"`
+	ID  string  `json:"id"`
+}
+
+func (q *Queries) UpdateUserPrivateMessageAttachment(ctx context.Context, arg UpdateUserPrivateMessageAttachmentParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserPrivateMessageAttachment, arg.Url, arg.ID)
 	return err
 }
 

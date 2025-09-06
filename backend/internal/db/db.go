@@ -35,6 +35,15 @@ func New(ctx context.Context, uri string) (*sql.DB, func(), error) {
 		return nil, nil, fmt.Errorf("Error initializing db schema: %v", err)
 	}
 
+	triggersBytes, err := os.ReadFile("internal/db/sql/schemas/triggers.sql")
+	if err != nil {
+		return nil, nil, fmt.Errorf("Error reading triggers file: %v", err)
+	}
+
+	if _, err := db.ExecContext(ctx, string(triggersBytes)); err != nil {
+		return nil, nil, fmt.Errorf("Error initializing db triggers: %v", err)
+	}
+
 	return db, func() {
 		db.Close()
 	}, nil

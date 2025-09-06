@@ -118,12 +118,23 @@ CREATE TABLE IF NOT EXISTS metric_entry (
     user_id TEXT NOT NULL,
     metric_instance_id TEXT NOT NULL,
     value REAL NOT NULL,
-    verified BOOLEAN NOT NULL DEFAULT FALSE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, metric_instance_id),
     FOREIGN KEY (user_id) REFERENCES user(id),
     FOREIGN KEY (metric_instance_id) REFERENCES metric_instance(id)
+);
+
+CREATE TABLE IF NOT EXISTS metric_entry_verification (
+    metric_entry_id TEXT NOT NULL,
+    verifier_user_id TEXT NOT NULL,
+    verified BOOLEAN NOT NULL DEFAULT FALSE,
+    reason TEXT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (metric_entry_id, verifier_user_id),
+    FOREIGN KEY (metric_entry_id) REFERENCES metric_entry(id),
+    FOREIGN KEY (verifier_user_id) REFERENCES user(id)
 );
 
 CREATE TABLE IF NOT EXISTS metric_entry_attachment (

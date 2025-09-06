@@ -8,6 +8,93 @@ import (
 	"time"
 )
 
+type Club struct {
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description"`
+	OwnerUserID string    `json:"owner_user_id"`
+	BannerImage *string   `json:"banner_image"`
+	IsPublic    bool      `json:"is_public"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type ClubMembership struct {
+	UserID      string    `json:"user_id"`
+	ClubID      string    `json:"club_id"`
+	UserPoints  float64   `json:"user_points"`
+	UserStreak  int64     `json:"user_streak"`
+	IsModerator bool      `json:"is_moderator"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type ClubPost struct {
+	ID        string    `json:"id"`
+	UserID    string    `json:"user_id"`
+	ClubID    string    `json:"club_id"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type ClubPostAttachment struct {
+	ID        string    `json:"id"`
+	PostID    string    `json:"post_id"`
+	Url       string    `json:"url"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type ClubTag struct {
+	ClubID string `json:"club_id"`
+	Tag    string `json:"tag"`
+}
+
+type Metric struct {
+	ID                   string    `json:"id"`
+	ClubID               string    `json:"club_id"`
+	Title                string    `json:"title"`
+	Description          string    `json:"description"`
+	Interval             string    `json:"interval"`
+	Unit                 string    `json:"unit"`
+	RequiresVerification bool      `json:"requires_verification"`
+	CreatedAt            time.Time `json:"created_at"`
+	UpdatedAt            time.Time `json:"updated_at"`
+}
+
+type MetricEntry struct {
+	UserID           string    `json:"user_id"`
+	MetricInstanceID string    `json:"metric_instance_id"`
+	Value            float64   `json:"value"`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
+}
+
+type MetricEntryAttachment struct {
+	ID            string    `json:"id"`
+	MetricEntryID string    `json:"metric_entry_id"`
+	Url           string    `json:"url"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
+type MetricEntryVerification struct {
+	MetricEntryID  string    `json:"metric_entry_id"`
+	VerifierUserID string    `json:"verifier_user_id"`
+	Verified       bool      `json:"verified"`
+	Reason         *string   `json:"reason"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+}
+
+type MetricInstance struct {
+	ID        string    `json:"id"`
+	MetricID  string    `json:"metric_id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type User struct {
 	ID             string    `json:"id"`
 	Email          string    `json:"email"`
@@ -23,4 +110,21 @@ type UserFriendship struct {
 	FriendID  string    `json:"friend_id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type UserPrivateMessage struct {
+	ID         string    `json:"id"`
+	SenderID   string    `json:"sender_id"`
+	ReceiverID string    `json:"receiver_id"`
+	Content    string    `json:"content"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
+
+type UserPrivateMessageAttachment struct {
+	ID                   string    `json:"id"`
+	UserPrivateMessageID string    `json:"user_private_message_id"`
+	Url                  string    `json:"url"`
+	CreatedAt            time.Time `json:"created_at"`
+	UpdatedAt            time.Time `json:"updated_at"`
 }

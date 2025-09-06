@@ -18,8 +18,19 @@ type Querier interface {
 	GetFriends(ctx context.Context, id string) ([]GetFriendsRow, error)
 	GetUserDisplay(ctx context.Context, id string) (GetUserDisplayRow, error)
 	GetUserLogin(ctx context.Context, username string) (GetUserLoginRow, error)
+	UpdateClub(ctx context.Context, arg UpdateClubParams) error
+	UpdateClubMembership(ctx context.Context, arg UpdateClubMembershipParams) error
+	UpdateClubPost(ctx context.Context, arg UpdateClubPostParams) error
+	UpdateClubPostAttachment(ctx context.Context, arg UpdateClubPostAttachmentParams) error
+	UpdateMetric(ctx context.Context, arg UpdateMetricParams) error
+	UpdateMetricEntry(ctx context.Context, arg UpdateMetricEntryParams) error
+	UpdateMetricEntryAttachment(ctx context.Context, arg UpdateMetricEntryAttachmentParams) error
+	UpdateMetricEntryVerification(ctx context.Context, arg UpdateMetricEntryVerificationParams) error
+	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 	UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
+	UpdateUserPrivateMessage(ctx context.Context, arg UpdateUserPrivateMessageParams) error
+	UpdateUserPrivateMessageAttachment(ctx context.Context, arg UpdateUserPrivateMessageAttachmentParams) error
 	UpdateUserProfilePicture(ctx context.Context, arg UpdateUserProfilePictureParams) error
 }
 
