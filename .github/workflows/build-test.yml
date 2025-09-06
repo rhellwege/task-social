@@ -2,6 +2,7 @@ name: Build and Test
 on: [push]
 jobs:
   build_backend:
+    name: Build Backend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
