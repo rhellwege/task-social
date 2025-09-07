@@ -36,3 +36,6 @@ go.work.sum
 
 tmp/
 bin/
+
+# testing databases. We might want to not ignore certain db files for testing.
+*.sqlite

@@ -9,18 +9,47 @@ import (
 )
 
 type Querier interface {
+	CreateClub(ctx context.Context, arg CreateClubParams) error
+	CreateClubMembership(ctx context.Context, arg CreateClubMembershipParams) error
+	CreateClubPost(ctx context.Context, arg CreateClubPostParams) error
+	CreateClubPostAttachment(ctx context.Context, arg CreateClubPostAttachmentParams) error
 	CreateFriend(ctx context.Context, arg CreateFriendParams) error
+	CreateMetric(ctx context.Context, arg CreateMetricParams) error
+	CreateMetricEntry(ctx context.Context, arg CreateMetricEntryParams) error
+	CreateMetricEntryAttachment(ctx context.Context, arg CreateMetricEntryAttachmentParams) error
+	CreateMetricEntryVerification(ctx context.Context, arg CreateMetricEntryVerificationParams) error
+	CreateMetricInstance(ctx context.Context, arg CreateMetricInstanceParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) error
+	DeleteClub(ctx context.Context, id string) error
+	DeleteClubMembership(ctx context.Context, arg DeleteClubMembershipParams) error
+	DeleteClubPost(ctx context.Context, id string) error
+	DeleteClubPostAttachment(ctx context.Context, id string) error
 	// assumes user_id < friend_id
 	DeleteFriend(ctx context.Context, arg DeleteFriendParams) error
+	DeleteMetric(ctx context.Context, id string) error
+	DeleteMetricEntry(ctx context.Context, arg DeleteMetricEntryParams) error
+	DeleteMetricEntryAttachment(ctx context.Context, id string) error
+	DeleteMetricEntryVerification(ctx context.Context, arg DeleteMetricEntryVerificationParams) error
+	DeleteMetricInstance(ctx context.Context, id string) error
 	DeleteUser(ctx context.Context, id string) error
+	GetClubLeaderboard(ctx context.Context, clubID string) ([]GetClubLeaderboardRow, error)
 	// assumes user_id < friend_id
+	// TODO: add user friendship created at
 	GetFriends(ctx context.Context, id string) ([]GetFriendsRow, error)
+	GetUserClubs(ctx context.Context, userID string) ([]GetUserClubsRow, error)
 	GetUserDisplay(ctx context.Context, id string) (GetUserDisplayRow, error)
-	GetUserLogin(ctx context.Context, username string) (GetUserLoginRow, error)
-	UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) error
-	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
-	UpdateUserProfilePicture(ctx context.Context, arg UpdateUserProfilePictureParams) error
+	GetUserLoginByEmail(ctx context.Context, email string) (GetUserLoginByEmailRow, error)
+	GetUserLoginByUsername(ctx context.Context, username string) (GetUserLoginByUsernameRow, error)
+	UpdateClub(ctx context.Context, arg UpdateClubParams) error
+	UpdateClubMembership(ctx context.Context, arg UpdateClubMembershipParams) error
+	UpdateClubPost(ctx context.Context, arg UpdateClubPostParams) error
+	UpdateClubPostAttachment(ctx context.Context, arg UpdateClubPostAttachmentParams) error
+	UpdateMetric(ctx context.Context, arg UpdateMetricParams) error
+	UpdateMetricEntry(ctx context.Context, arg UpdateMetricEntryParams) error
+	UpdateMetricEntryAttachment(ctx context.Context, arg UpdateMetricEntryAttachmentParams) error
+	UpdateMetricEntryVerification(ctx context.Context, arg UpdateMetricEntryVerificationParams) error
+	UpdateUser(ctx context.Context, arg UpdateUserParams) error
+	UpdateUserPrivateMessage(ctx context.Context, arg UpdateUserPrivateMessageParams) error
 }
 
 var _ Querier = (*Queries)(nil)
