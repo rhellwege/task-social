@@ -1,10 +1,61 @@
 basePath: /
 definitions:
+  handlers.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  handlers.LoginUserRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
   handlers.RegisterUserRequest:
     properties:
       email:
         type: string
       password:
+        type: string
+      username:
+        type: string
+    type: object
+  handlers.SuccessResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  handlers.SuccessfulLoginResponse:
+    properties:
+      message:
+        type: string
+      token:
+        type: string
+    type: object
+  handlers.UpdateUserRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      profile_picture:
+        type: string
+      username:
+        type: string
+    type: object
+  handlers.VersionResponse:
+    properties:
+      version:
+        type: string
+    type: object
+  repository.GetUserDisplayRow:
+    properties:
+      created_at:
+        type: string
+      profile_picture:
         type: string
       username:
         type: string
@@ -16,7 +67,37 @@ info:
   title: Task Social API
   version: "0.1"
 paths:
-  /register:
+  /api/login:
+    post:
+      consumes:
+      - application/json
+      description: Login a user with (email or username) and password
+      parameters:
+      - description: User login credentials
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessfulLoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Login a user
+      tags:
+      - User
+  /api/register:
     post:
       consumes:
       - application/json
@@ -34,46 +115,102 @@ paths:
         "201":
           description: Created
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/handlers.SuccessfulLoginResponse'
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/handlers.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/handlers.ErrorResponse'
       summary: Register a new user
       tags:
       - User
-  /user/{id}:
+  /api/user:
     get:
       consumes:
       - application/json
       description: Get user information by ID
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/repository.GetUserDisplayRow'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: Get user information
       tags:
       - User
+    put:
+      consumes:
+      - application/json
+      description: Update an existing user's details, all parameters are optional.
+      parameters:
+      - description: User update details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update an existing user
+      tags:
+      - User
+  /api/version:
+    get:
+      description: Current version of the API
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.VersionResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Get the current version of the API
+      tags:
+      - Util
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

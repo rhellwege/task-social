@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rhellwege/task-social/internal/api/services"
+	"github.com/rhellwege/task-social/internal/db/repository"
 )
 
 // GetUser godoc
@@ -14,24 +15,23 @@ import (
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string	true	"User ID"
-//	@Success		200	{object}	map[string]interface{}
-//	@Failure		404	{object}	map[string]interface{}
-//	@Router			/user/{id} [get]
+//	@Security		ApiKeyAuth
+//	@Success		200	{object}	repository.GetUserDisplayRow
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Router			/api/user [get]
 func GetUser(userService services.UserServicer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.Context()
-		id := c.Params("id")
+		id := c.Locals("userID").(string)
 		log.Println(id)
 		user, err := userService.GetUserDisplay(ctx, id)
 		if err != nil {
-			c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"error": err.Error(),
 			})
-			return err
 		}
-		c.JSON(user)
-		return nil
+		return c.JSON(user)
 	}
 }
 
@@ -49,32 +49,124 @@ type RegisterUserRequest struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			user	body		RegisterUserRequest	true	"User registration details"
-//	@Success		201		{object}	map[string]interface{}
-//	@Failure		400		{object}	map[string]interface{}
-//	@Failure		500		{object}	map[string]interface{}
-//	@Router			/register [post]
+//	@Success		201		{object}	SuccessfulLoginResponse
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Router			/api/register [post]
 func RegisterUser(userService services.UserServicer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.Context()
 		var params RegisterUserRequest
 		if err := c.BodyParser(&params); err != nil {
-			c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": err.Error(),
+			return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+				Error: err.Error(),
 			})
-			return err
 		}
-		// id should be token instead.
-		id, err := userService.RegisterUser(ctx, params.Username, params.Password, params.Email)
+
+		tokenString, err := userService.RegisterUser(ctx, params.Username, params.Password, params.Email)
 		if err != nil {
-			c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": err.Error(),
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
 			})
-			return err
 		}
-		c.Status(fiber.StatusCreated).JSON(fiber.Map{
-			"message": "User created successfully",
-			"id":      id,
+		return c.Status(fiber.StatusCreated).JSON(SuccessfulLoginResponse{
+			Message: "User registered and logged in successfully",
+			Token:   tokenString,
 		})
-		return nil
+	}
+}
+
+type LoginUserRequest struct {
+	Email    *string `json:"email,omitempty"`
+	Username *string `json:"username,omitempty"`
+	Password string  `json:"password"`
+}
+
+// LoginUser godoc
+//
+//	@Summary		Login a user
+//	@Description	Login a user with (email or username) and password
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		LoginUserRequest	true	"User login credentials"
+//	@Success		200		{object}	SuccessfulLoginResponse
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Router			/api/login [post]
+func LoginUser(userService services.UserServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		var params LoginUserRequest
+		if err := c.BodyParser(&params); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{Error: err.Error()})
+		}
+
+		tokenString, err := userService.LoginUser(ctx, params.Email, params.Username, params.Password)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(SuccessfulLoginResponse{
+			Message: "User logged in successfully",
+			Token:   tokenString,
+		})
+	}
+}
+
+type UpdateUserRequest struct {
+	Username       *string `json:"username,omitempty"`
+	Email          *string `json:"email,omitempty"`
+	Password       *string `json:"password,omitempty"`
+	ProfilePicture *string `json:"profile_picture,omitempty"`
+}
+
+// UpdateUser godoc
+//
+//	@Summary		Update an existing user
+//	@Description	Update an existing user's details, all parameters are optional.
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Security		ApiKeyAuth
+//	@Param			user	body		UpdateUserRequest	true	"User update details"
+//	@Success		200		{object}	SuccessResponse
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Router			/api/user [put]
+func UpdateUser(userService services.UserServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		id := c.Locals("userID").(string)
+
+		var params UpdateUserRequest
+		if err := c.BodyParser(&params); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		dbParams := repository.UpdateUserParams{
+			ID:             id,
+			Username:       params.Username,
+			Email:          params.Email,
+			Password:       params.Password,
+			ProfilePicture: params.ProfilePicture,
+		}
+
+		err := userService.UpdateUser(ctx, dbParams)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(SuccessResponse{
+			Message: "User updated successfully",
+		})
 	}
 }
