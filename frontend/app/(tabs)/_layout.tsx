@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
 import { Tabs } from 'expo-router';
 
 export default function TabLayout() {
@@ -17,7 +17,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Explore',
-          tabBarIcon: ({ color }) => <FontAwesome size={28} name="home" color={color} />,
+          tabBarIcon: ({ color }) => <SimpleLineIcons name="globe-alt" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
