@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"errors"
-	"log"
 
 	"github.com/rhellwege/task-social/internal/db/repository"
 	"github.com/rhellwege/task-social/internal/util"
@@ -40,7 +39,6 @@ func (s *UserService) RegisterUser(ctx context.Context, username string, passwor
 	if err != nil {
 		return "", err
 	}
-	log.Println("password is valid")
 	hashedPassword, err := s.a.HashPassword(ctx, password)
 	if err != nil {
 		return "", err
@@ -125,9 +123,12 @@ func (s *UserService) GetFriends(ctx context.Context, uuid string) ([]repository
 }
 
 func (s *UserService) UpdateUser(ctx context.Context, params repository.UpdateUserParams) error {
-	// Hash password if it is provided
+	// hash new password if provided
 	if params.Password != nil {
-		//TODO: Validate password strength
+		err := s.a.ValidatePasswordStrength(ctx, *params.Password)
+		if err != nil {
+			return err
+		}
 		hashed, err := s.a.HashPassword(ctx, *params.Password)
 		if err != nil {
 			return err
