@@ -18,11 +18,15 @@ import (
 	"github.com/rhellwege/task-social/internal/db/repository"
 )
 
-// @title			Task Social API
-// @version		0.1
-// @description	API services for the Task Social app
-// @host			localhost:5050
-// @BasePath		/
+// @title						Task Social API
+// @version					0.1
+// @description				API services for the Task Social app
+// @host						localhost:5050
+// @BasePath					/
+//
+// @securityDefinitions.apikey	ApiKeyAuth
+// @in							header
+// @name						Authorization
 func main() {
 	app := fiber.New()
 
@@ -38,6 +42,7 @@ func main() {
 	}()
 
 	dbURL := os.Getenv("DATABASE_URL")
+	log.Printf("Connecting to database at %s..", dbURL)
 
 	conn, conn_closer, err := db.New(ctx, dbURL)
 	if err != nil {

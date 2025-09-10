@@ -73,7 +73,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id string) error {
 }
 
 const getFriends = `-- name: GetFriends :many
-SELECT u.username, u.profile_picture, u.id FROM user u WHERE u.id IN (
+SELECT u.username, u.profile_picture, u.id  FROM user u WHERE u.id IN (
     SELECT friend_id FROM user_friendship f WHERE f.user_id = ?1
     UNION
     SELECT user_id FROM user_friendship f WHERE f.friend_id = ?1
@@ -87,6 +87,7 @@ type GetFriendsRow struct {
 }
 
 // assumes user_id < friend_id
+// TODO: add user friendship created at
 func (q *Queries) GetFriends(ctx context.Context, id string) ([]GetFriendsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getFriends, id)
 	if err != nil {
@@ -97,6 +98,54 @@ func (q *Queries) GetFriends(ctx context.Context, id string) ([]GetFriendsRow, e
 	for rows.Next() {
 		var i GetFriendsRow
 		if err := rows.Scan(&i.Username, &i.ProfilePicture, &i.ID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserClubs = `-- name: GetUserClubs :many
+SELECT
+    c.id, c.name, c.description, c.created_at, c.banner_image, cm.created_at AS joined_at
+FROM club c
+JOIN club_membership cm ON c.id = cm.club_id
+WHERE cm.user_id = ?1
+ORDER BY cm.created_at DESC
+`
+
+type GetUserClubsRow struct {
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	BannerImage *string   `json:"banner_image"`
+	JoinedAt    time.Time `json:"joined_at"`
+}
+
+func (q *Queries) GetUserClubs(ctx context.Context, userID string) ([]GetUserClubsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUserClubs, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUserClubsRow
+	for rows.Next() {
+		var i GetUserClubsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.CreatedAt,
+			&i.BannerImage,
+			&i.JoinedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -129,22 +178,22 @@ func (q *Queries) GetUserDisplay(ctx context.Context, id string) (GetUserDisplay
 	return i, err
 }
 
-const getUserLogin = `-- name: GetUserLogin :one
+const getUserLoginByEmail = `-- name: GetUserLoginByEmail :one
 SELECT id, email, username, password
 FROM user
-WHERE username = ?
+WHERE email = ?
 `
 
-type GetUserLoginRow struct {
+type GetUserLoginByEmailRow struct {
 	ID       string `json:"id"`
 	Email    string `json:"email"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-func (q *Queries) GetUserLogin(ctx context.Context, username string) (GetUserLoginRow, error) {
-	row := q.db.QueryRowContext(ctx, getUserLogin, username)
-	var i GetUserLoginRow
+func (q *Queries) GetUserLoginByEmail(ctx context.Context, email string) (GetUserLoginByEmailRow, error) {
+	row := q.db.QueryRowContext(ctx, getUserLoginByEmail, email)
+	var i GetUserLoginByEmailRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
@@ -154,44 +203,75 @@ func (q *Queries) GetUserLogin(ctx context.Context, username string) (GetUserLog
 	return i, err
 }
 
-const updateUserEmail = `-- name: UpdateUserEmail :exec
-UPDATE user SET email = ? WHERE id = ?
+const getUserLoginByUsername = `-- name: GetUserLoginByUsername :one
+SELECT id, email, username, password
+FROM user
+WHERE username = ?
 `
 
-type UpdateUserEmailParams struct {
-	Email string `json:"email"`
-	ID    string `json:"id"`
-}
-
-func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) error {
-	_, err := q.db.ExecContext(ctx, updateUserEmail, arg.Email, arg.ID)
-	return err
-}
-
-const updateUserPassword = `-- name: UpdateUserPassword :exec
-UPDATE user SET password = ? WHERE id = ?
-`
-
-type UpdateUserPasswordParams struct {
-	Password string `json:"password"`
+type GetUserLoginByUsernameRow struct {
 	ID       string `json:"id"`
+	Email    string `json:"email"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
-func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
-	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.Password, arg.ID)
-	return err
+func (q *Queries) GetUserLoginByUsername(ctx context.Context, username string) (GetUserLoginByUsernameRow, error) {
+	row := q.db.QueryRowContext(ctx, getUserLoginByUsername, username)
+	var i GetUserLoginByUsernameRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Username,
+		&i.Password,
+	)
+	return i, err
 }
 
-const updateUserProfilePicture = `-- name: UpdateUserProfilePicture :exec
-UPDATE user SET profile_picture = ? WHERE id = ?
+const updateUser = `-- name: UpdateUser :exec
+UPDATE user
+SET
+    email = COALESCE(?1, email),
+    username = COALESCE(?2, username),
+    password = COALESCE(?3, password),
+    profile_picture = COALESCE(?4, profile_picture)
+WHERE
+    id = ?5
 `
 
-type UpdateUserProfilePictureParams struct {
+type UpdateUserParams struct {
+	Email          *string `json:"email"`
+	Username       *string `json:"username"`
+	Password       *string `json:"password"`
 	ProfilePicture *string `json:"profile_picture"`
 	ID             string  `json:"id"`
 }
 
-func (q *Queries) UpdateUserProfilePicture(ctx context.Context, arg UpdateUserProfilePictureParams) error {
-	_, err := q.db.ExecContext(ctx, updateUserProfilePicture, arg.ProfilePicture, arg.ID)
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.db.ExecContext(ctx, updateUser,
+		arg.Email,
+		arg.Username,
+		arg.Password,
+		arg.ProfilePicture,
+		arg.ID,
+	)
+	return err
+}
+
+const updateUserPrivateMessage = `-- name: UpdateUserPrivateMessage :exec
+UPDATE user_private_message
+SET
+    content = COALESCE(?1, content)
+WHERE
+    id = ?2
+`
+
+type UpdateUserPrivateMessageParams struct {
+	Content *string `json:"content"`
+	ID      string  `json:"id"`
+}
+
+func (q *Queries) UpdateUserPrivateMessage(ctx context.Context, arg UpdateUserPrivateMessageParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserPrivateMessage, arg.Content, arg.ID)
 	return err
 }

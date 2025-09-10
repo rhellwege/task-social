@@ -20,5 +20,8 @@ Swagger (swaggo) is used to document api endpoints and manual test the api.
 handlers are documented with comments. To generate the swagger page run ```swag init -g cmd/main.go```
 When the server is running, the swagger page can be accessed at http://localhost:5050/swagger/index.html
 
-Docs: https://github.com/swaggo/swag
+### How To Use
+Since almost all routes are protected by jwt authentication, you will need to generate a token to use for testing. To generate a token, you will have to either register a new user or login with an existing user.
+
+The response will contain the token in the "token" field. Copy that token then click the green Authorize button in the top right corner of the swagger page and paste it into the header value input.
 ## Testing
