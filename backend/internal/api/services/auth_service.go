@@ -37,48 +37,48 @@ func (s *AuthService) ValidatePasswordStrength(ctx context.Context, password str
 	if len(password) < config.MinPasswordLength {
 		return fmt.Errorf("password is too short, must be at least %d characters", config.MinPasswordLength)
 	}
-	// 2 special characters:
+	// count special characters
 	count := 0
 	for _, char := range password {
 		if !unicode.IsLetter(char) && !unicode.IsNumber(char) {
 			count++
 		}
 	}
-	if count < 2 {
-		return errors.New("password must contain at least 2 special characters")
+	if count < config.MinPasswordSpecial {
+		return fmt.Errorf("password must contain at least %d special characters", config.MinPasswordSpecial)
 	}
 
-	// 1 uppercase:
+	// count uppercase
 	count = 0
 	for _, char := range password {
 		if unicode.IsUpper(char) {
 			count++
 		}
 	}
-	if count < 1 {
-		return errors.New("password must contain at least 1 uppercase letter")
+	if count < config.MinPasswordUppercase {
+		return fmt.Errorf("password must contain at least %d uppercase letter", config.MinPasswordUppercase)
 	}
 
-	// 1 lowercase:
+	// count lowercase
 	count = 0
 	for _, char := range password {
 		if unicode.IsLower(char) {
 			count++
 		}
 	}
-	if count < 1 {
-		return errors.New("password must contain at least 1 lowercase letter")
+	if count < config.MinPasswordLowercase {
+		return fmt.Errorf("password must contain at least %d lowercase letter", config.MinPasswordLowercase)
 	}
 
-	// 1 number:
+	// count numbers
 	count = 0
 	for _, char := range password {
 		if unicode.IsNumber(char) {
 			count++
 		}
 	}
-	if count < 1 {
-		return errors.New("password must contain at least 1 number")
+	if count < config.MinPasswordNumber {
+		return fmt.Errorf("password must contain at least %d number", config.MinPasswordNumber)
 	}
 
 	return nil
