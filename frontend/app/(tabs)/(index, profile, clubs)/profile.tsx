@@ -1,9 +1,12 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
 
 export default function Tab() {
   return (
     <View style={styles.container}>
-      <Text>Clubs</Text>
+      <Text>Profile</Text>
     </View>
   );
 }
