@@ -18,6 +18,7 @@ const (
 	MinPasswordUppercase    = 1
 	MinPasswordNumber       = 1
 	MinPasswordSpecial      = 2
+	ProfileImageSize        = 256
 )
 
 var (

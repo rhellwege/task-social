@@ -16,20 +16,27 @@ type UserServicer interface {
 	CreateFriend(ctx context.Context, userID string, friendID string) error
 	GetFriends(ctx context.Context, userID string) ([]repository.GetFriendsRow, error)
 	UpdateUser(ctx context.Context, params repository.UpdateUserParams) error
+	UploadProfilePicture(ctx context.Context, userID string, fileBytes []byte) (string, error)
+}
+
+type ImageServicer interface {
+	SaveProfileImage(ctx context.Context, userID string, fileBytes []byte) (string, error)
 }
 
 type UserService struct {
 	q repository.Querier
 	a AuthServicer
+	i ImageServicer
 }
 
 // compile time interface implementation check
 var _ UserServicer = (*UserService)(nil)
 
-func NewUserService(q repository.Querier, a AuthServicer) *UserService {
+func NewUserService(q repository.Querier, a AuthServicer, i ImageServicer) *UserService {
 	return &UserService{
 		q: q,
 		a: a,
+		i: i,
 	}
 }
 
@@ -137,4 +144,22 @@ func (s *UserService) UpdateUser(ctx context.Context, params repository.UpdateUs
 	}
 
 	return s.q.UpdateUser(ctx, params)
+}
+
+func (s *UserService) UploadProfilePicture(ctx context.Context, userID string, fileBytes []byte) (string, error) {
+	url, err := s.i.SaveProfileImage(ctx, userID, fileBytes)
+	if err != nil {
+		return "", err
+	}
+
+	params := repository.UpdateUserParams{
+		ID:             userID,
+		ProfilePicture: &url,
+	}
+
+	if err := s.q.UpdateUser(ctx, params); err != nil {
+		return "", err
+	}
+
+	return url, nil
 }
