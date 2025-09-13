@@ -91,6 +91,7 @@ type MetricEntryVerification struct {
 type MetricInstance struct {
 	ID        string    `json:"id"`
 	MetricID  string    `json:"metric_id"`
+	DueAt     time.Time `json:"due_at"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

@@ -1,7 +1,7 @@
 -- Language: sqlite
 
 CREATE TABLE IF NOT EXISTS user (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS user_friendship (
 );
 
 CREATE TABLE IF NOT EXISTS user_private_message (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     sender_id TEXT NOT NULL,
     receiver_id TEXT NOT NULL,
     content TEXT NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS user_private_message (
 );
 
 CREATE TABLE IF NOT EXISTS user_private_message_attachment (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     user_private_message_id TEXT NOT NULL,
     url TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS user_private_message_attachment (
 );
 
 CREATE TABLE IF NOT EXISTS club (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT,
     owner_user_id TEXT NOT NULL,
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS club_membership (
 );
 
 CREATE TABLE IF NOT EXISTS club_post (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     user_id TEXT NOT NULL,
     club_id TEXT NOT NULL,
     content TEXT NOT NULL,
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS club_post (
 );
 
 CREATE TABLE IF NOT EXISTS club_post_attachment (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     post_id TEXT NOT NULL,
     url TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS club_post_attachment (
 );
 
 CREATE TABLE IF NOT EXISTS metric (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     club_id TEXT NOT NULL,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
@@ -107,8 +107,9 @@ CREATE TABLE IF NOT EXISTS metric (
 );
 
 CREATE TABLE IF NOT EXISTS metric_instance (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     metric_id TEXT NOT NULL,
+    due_at DATETIME NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (metric_id) REFERENCES metric(id)
@@ -138,7 +139,7 @@ CREATE TABLE IF NOT EXISTS metric_entry_verification (
 );
 
 CREATE TABLE IF NOT EXISTS metric_entry_attachment (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     metric_entry_id TEXT NOT NULL,
     url TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

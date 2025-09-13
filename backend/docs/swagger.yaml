@@ -1,5 +1,12 @@
 basePath: /
 definitions:
+  handlers.CreatedResponse:
+    properties:
+      id:
+        type: string
+      message:
+        type: string
+    type: object
   handlers.ErrorResponse:
     properties:
       error:
@@ -51,6 +58,25 @@ definitions:
       version:
         type: string
     type: object
+  repository.Club:
+    properties:
+      banner_image:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_public:
+        type: boolean
+      name:
+        type: string
+      owner_user_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
   repository.GetUserDisplayRow:
     properties:
       created_at:
@@ -60,6 +86,32 @@ definitions:
       username:
         type: string
     type: object
+  repository.UpdateClubParams:
+    properties:
+      banner_image:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_public:
+        type: boolean
+      name:
+        type: string
+      owner_user_id:
+        type: string
+    type: object
+  services.CreateClubRequest:
+    properties:
+      banner_image:
+        type: string
+      description:
+        type: string
+      is_public:
+        type: boolean
+      name:
+        type: string
+    type: object
 host: localhost:5050
 info:
   contact: {}
@@ -67,6 +119,194 @@ info:
   title: Task Social API
   version: "0.1"
 paths:
+  /api/club:
+    post:
+      consumes:
+      - application/json
+      description: Create a new club with the provided details.
+      parameters:
+      - description: User update details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/services.CreateClubRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.CreatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new club
+      tags:
+      - Club
+  /api/club/{club_id}:
+    delete:
+      description: Delete a club with the given ID.
+      parameters:
+      - description: Club ID
+        in: path
+        name: club_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a club
+      tags:
+      - Club
+    put:
+      consumes:
+      - application/json
+      description: Update a club with the given ID.
+      parameters:
+      - description: Club ID
+        in: path
+        name: club_id
+        required: true
+        type: string
+      - description: Club update params
+        in: body
+        name: club
+        required: true
+        schema:
+          $ref: '#/definitions/repository.UpdateClubParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a club
+      tags:
+      - Club
+  /api/club/{club_id}/join:
+    post:
+      description: Join a club with the given ID.
+      parameters:
+      - description: Club ID
+        in: path
+        name: club_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Join a club
+      tags:
+      - Club
+  /api/club/{club_id}/leave:
+    post:
+      description: Leave a club with the given ID.
+      parameters:
+      - description: Club ID
+        in: path
+        name: club_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Leave a club
+      tags:
+      - Club
+  /api/clubs:
+    get:
+      description: Get a list of public clubs.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repository.Club'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get public clubs
+      tags:
+      - Club
   /api/login:
     post:
       consumes:
@@ -176,10 +416,6 @@ paths:
             $ref: '#/definitions/handlers.ErrorResponse'
         "401":
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "404":
-          description: Not Found
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
         "500":

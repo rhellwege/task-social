@@ -135,7 +135,6 @@ type UpdateUserRequest struct {
 //	@Success		200		{object}	SuccessResponse
 //	@Failure		400		{object}	ErrorResponse
 //	@Failure		401		{object}	ErrorResponse
-//	@Failure		404		{object}	ErrorResponse
 //	@Failure		500		{object}	ErrorResponse
 //	@Router			/api/user [put]
 func UpdateUser(userService services.UserServicer) fiber.Handler {

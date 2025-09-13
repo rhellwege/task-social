@@ -10,11 +10,12 @@ import (
 )
 
 const createClub = `-- name: CreateClub :exec
-INSERT INTO club (name, description, owner_user_id, banner_image, is_public)
-VALUES (?1, ?2, ?3, ?4, ?5)
+INSERT INTO club (id, name, description, owner_user_id, banner_image, is_public)
+VALUES (?1, ?2, ?3, ?4, ?5, ?6)
 `
 
 type CreateClubParams struct {
+	ID          string  `json:"id"`
 	Name        string  `json:"name"`
 	Description *string `json:"description"`
 	OwnerUserID string  `json:"owner_user_id"`
@@ -24,6 +25,7 @@ type CreateClubParams struct {
 
 func (q *Queries) CreateClub(ctx context.Context, arg CreateClubParams) error {
 	_, err := q.db.ExecContext(ctx, createClub,
+		arg.ID,
 		arg.Name,
 		arg.Description,
 		arg.OwnerUserID,
@@ -49,33 +51,40 @@ func (q *Queries) CreateClubMembership(ctx context.Context, arg CreateClubMember
 }
 
 const createClubPost = `-- name: CreateClubPost :exec
-INSERT INTO club_post (club_id, user_id, content)
-VALUES (?1, ?2, ?3)
+INSERT INTO club_post (id, club_id, user_id, content)
+VALUES (?1, ?2, ?3, ?4)
 `
 
 type CreateClubPostParams struct {
+	ID      string `json:"id"`
 	ClubID  string `json:"club_id"`
 	UserID  string `json:"user_id"`
 	Content string `json:"content"`
 }
 
 func (q *Queries) CreateClubPost(ctx context.Context, arg CreateClubPostParams) error {
-	_, err := q.db.ExecContext(ctx, createClubPost, arg.ClubID, arg.UserID, arg.Content)
+	_, err := q.db.ExecContext(ctx, createClubPost,
+		arg.ID,
+		arg.ClubID,
+		arg.UserID,
+		arg.Content,
+	)
 	return err
 }
 
 const createClubPostAttachment = `-- name: CreateClubPostAttachment :exec
-INSERT INTO club_post_attachment (post_id, url)
-VALUES (?1, ?2)
+INSERT INTO club_post_attachment (id, post_id, url)
+VALUES (?1, ?2, ?3)
 `
 
 type CreateClubPostAttachmentParams struct {
+	ID     string `json:"id"`
 	PostID string `json:"post_id"`
 	Url    string `json:"url"`
 }
 
 func (q *Queries) CreateClubPostAttachment(ctx context.Context, arg CreateClubPostAttachmentParams) error {
-	_, err := q.db.ExecContext(ctx, createClubPostAttachment, arg.PostID, arg.Url)
+	_, err := q.db.ExecContext(ctx, createClubPostAttachment, arg.ID, arg.PostID, arg.Url)
 	return err
 }
 
@@ -128,6 +137,26 @@ func (q *Queries) DeleteClubPostAttachment(ctx context.Context, id string) error
 	return err
 }
 
+const getClub = `-- name: GetClub :one
+SELECT id, name, description, owner_user_id, banner_image, is_public, created_at, updated_at FROM club WHERE id = ?1
+`
+
+func (q *Queries) GetClub(ctx context.Context, id string) (Club, error) {
+	row := q.db.QueryRowContext(ctx, getClub, id)
+	var i Club
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.OwnerUserID,
+		&i.BannerImage,
+		&i.IsPublic,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getClubLeaderboard = `-- name: GetClubLeaderboard :many
 SELECT
     u.id, u.username, u.profile_picture,
@@ -163,6 +192,82 @@ func (q *Queries) GetClubLeaderboard(ctx context.Context, clubID string) ([]GetC
 			&i.ProfilePicture,
 			&i.UserPoints,
 			&i.UserStreak,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getClubMetrics = `-- name: GetClubMetrics :many
+SELECT id, club_id, title, description, interval, unit, requires_verification, created_at, updated_at FROM metric
+WHERE club_id = ?
+`
+
+func (q *Queries) GetClubMetrics(ctx context.Context, clubID string) ([]Metric, error) {
+	rows, err := q.db.QueryContext(ctx, getClubMetrics, clubID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Metric
+	for rows.Next() {
+		var i Metric
+		if err := rows.Scan(
+			&i.ID,
+			&i.ClubID,
+			&i.Title,
+			&i.Description,
+			&i.Interval,
+			&i.Unit,
+			&i.RequiresVerification,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPublicClubs = `-- name: GetPublicClubs :many
+SELECT id, name, description, owner_user_id, banner_image, is_public, created_at, updated_at FROM club
+WHERE is_public = true
+`
+
+// TODO: Implement pagination with LIMIT and OFFSET
+func (q *Queries) GetPublicClubs(ctx context.Context) ([]Club, error) {
+	rows, err := q.db.QueryContext(ctx, getPublicClubs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Club
+	for rows.Next() {
+		var i Club
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.OwnerUserID,
+			&i.BannerImage,
+			&i.IsPublic,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}

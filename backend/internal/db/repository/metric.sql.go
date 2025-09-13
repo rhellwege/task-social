@@ -7,6 +7,7 @@ package repository
 
 import (
 	"context"
+	"time"
 )
 
 const createMetric = `-- name: CreateMetric :exec
@@ -92,17 +93,18 @@ func (q *Queries) CreateMetricEntryVerification(ctx context.Context, arg CreateM
 }
 
 const createMetricInstance = `-- name: CreateMetricInstance :exec
-INSERT INTO metric_instance (id, metric_id)
-VALUES (?1, ?2)
+INSERT INTO metric_instance (id, metric_id, due_at)
+VALUES (?1, ?2, ?3)
 `
 
 type CreateMetricInstanceParams struct {
-	ID       string `json:"id"`
-	MetricID string `json:"metric_id"`
+	ID       string    `json:"id"`
+	MetricID string    `json:"metric_id"`
+	DueAt    time.Time `json:"due_at"`
 }
 
 func (q *Queries) CreateMetricInstance(ctx context.Context, arg CreateMetricInstanceParams) error {
-	_, err := q.db.ExecContext(ctx, createMetricInstance, arg.ID, arg.MetricID)
+	_, err := q.db.ExecContext(ctx, createMetricInstance, arg.ID, arg.MetricID, arg.DueAt)
 	return err
 }
 

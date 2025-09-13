@@ -1,6 +1,9 @@
 -- name: CreateClub :exec
-INSERT INTO club (name, description, owner_user_id, banner_image, is_public)
-VALUES (@name, @description, @owner_user_id, @banner_image, @is_public);
+INSERT INTO club (id, name, description, owner_user_id, banner_image, is_public)
+VALUES (@id, @name, @description, @owner_user_id, @banner_image, @is_public);
+
+-- name: GetClub :one
+SELECT * FROM club WHERE id = @id;
 
 -- name: UpdateClub :exec
 UPDATE club
@@ -48,8 +51,8 @@ WHERE
     user_id = @user_id AND club_id = @club_id;
 
 -- name: CreateClubPost :exec
-INSERT INTO club_post (club_id, user_id, content)
-VALUES (@club_id, @user_id, @content);
+INSERT INTO club_post (id, club_id, user_id, content)
+VALUES (@id, @club_id, @user_id, @content);
 
 -- name: UpdateClubPost :exec
 UPDATE club_post
@@ -64,8 +67,8 @@ WHERE
     id = @id;
 
 -- name: CreateClubPostAttachment :exec
-INSERT INTO club_post_attachment (post_id, url)
-VALUES (@post_id, @url);
+INSERT INTO club_post_attachment (id, post_id, url)
+VALUES (@id, @post_id, @url);
 
 -- name: UpdateClubPostAttachment :exec
 UPDATE club_post_attachment
@@ -78,3 +81,17 @@ WHERE
 DELETE FROM club_post_attachment
 WHERE
     id = @id;
+
+-- name: GetPublicClubs :many
+-- TODO: Implement pagination with LIMIT and OFFSET
+SELECT * FROM club
+WHERE is_public = true;
+
+-- name: GetClubMetrics :many
+SELECT * FROM metric
+WHERE club_id = ?;
+
+-- name GetActiveMetricInstances
+SELECT * FROM metric_instance AS mi
+JOIN metric ON metric_instance = id
+WHERE due_at < NOW();

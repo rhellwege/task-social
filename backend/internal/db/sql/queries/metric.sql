@@ -19,8 +19,8 @@ WHERE
     id = @id;
 
 -- name: CreateMetricInstance :exec
-INSERT INTO metric_instance (id, metric_id)
-VALUES (@id, @metric_id);
+INSERT INTO metric_instance (id, metric_id, due_at)
+VALUES (@id, @metric_id, @due_at);
 
 -- name: DeleteMetricInstance :exec
 DELETE FROM metric_instance
