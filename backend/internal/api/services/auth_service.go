@@ -13,6 +13,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+//go:generate mockgen -source auth_service.go -destination=mocks/auth_service_mock.go -package=mocks
+
 type AuthServicer interface {
 	// returns nil on success
 	ValidatePasswordStrength(ctx context.Context, password string) error
