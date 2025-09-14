@@ -28,12 +28,20 @@ func New(ctx context.Context, uri string) (*sql.DB, func(), error) {
 		return nil, nil, fmt.Errorf("Error connecting to database: %v", err)
 	}
 
+	log.Println("Loading Database Extensions...")
+	extensionBytes, err := os.ReadFile("internal/db/sql/schemas/extensions.sql")
+	if err != nil {
+		return nil, nil, fmt.Errorf("Error reading extension file: %v", err)
+	}
+	if _, err := db.ExecContext(ctx, string(extensionBytes)); err != nil {
+		return nil, nil, fmt.Errorf("Error loading database extensions: %v", err)
+	}
+
 	log.Println("Loading Database Schema...")
 	schemaBytes, err := os.ReadFile("internal/db/sql/schemas/schema.sql")
 	if err != nil {
 		return nil, nil, fmt.Errorf("Error reading schema file: %v", err)
 	}
-
 	if _, err := db.ExecContext(ctx, string(schemaBytes)); err != nil {
 		return nil, nil, fmt.Errorf("Error initializing db schema: %v", err)
 	}

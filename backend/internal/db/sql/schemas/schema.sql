@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS user_friendship (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, friend_id),
-    FOREIGN KEY (user_id) REFERENCES user(id),
-    FOREIGN KEY (friend_id) REFERENCES user(id),
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (friend_id) REFERENCES user(id) ON DELETE CASCADE,
     CONSTRAINT user_friendship_order CHECK (user_id < friend_id)
 );
 
@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS user_private_message (
     content TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (sender_id) REFERENCES user(id),
-    FOREIGN KEY (recipient_id) REFERENCES user(id)
+    FOREIGN KEY (sender_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (recipient_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS user_private_message_attachment (
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS user_private_message_attachment (
     url TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_private_message_id) REFERENCES user_private_message(id)
+    FOREIGN KEY (user_private_message_id) REFERENCES user_private_message(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS club (
@@ -50,14 +50,14 @@ CREATE TABLE IF NOT EXISTS club (
     is_public BOOLEAN NOT NULL DEFAULT FALSE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (owner_user_id) REFERENCES user(id)
+    FOREIGN KEY (owner_user_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS club_tag (
     club_id TEXT NOT NULL,
     tag TEXT NOT NULL,
     PRIMARY KEY (club_id, tag),
-    FOREIGN KEY (club_id) REFERENCES club(id)
+    FOREIGN KEY (club_id) REFERENCES club(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS club_membership (
@@ -69,8 +69,8 @@ CREATE TABLE IF NOT EXISTS club_membership (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, club_id),
-    FOREIGN KEY (user_id) REFERENCES user(id),
-    FOREIGN KEY (club_id) REFERENCES club(id)
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (club_id) REFERENCES club(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS club_post (
@@ -80,8 +80,8 @@ CREATE TABLE IF NOT EXISTS club_post (
     content TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES user(id),
-    FOREIGN KEY (club_id) REFERENCES club(id)
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (club_id) REFERENCES club(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS club_post_attachment (
@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS club_post_attachment (
     url TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (post_id) REFERENCES club_post(id)
+    FOREIGN KEY (post_id) REFERENCES club_post(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS metric (
@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS metric (
     requires_verification BOOLEAN NOT NULL DEFAULT FALSE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (club_id) REFERENCES club(id)
+    FOREIGN KEY (club_id) REFERENCES club(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS metric_instance (
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS metric_instance (
     due_at DATETIME NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (metric_id) REFERENCES metric(id)
+    FOREIGN KEY (metric_id) REFERENCES metric(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS metric_entry (
@@ -122,27 +122,29 @@ CREATE TABLE IF NOT EXISTS metric_entry (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, metric_instance_id),
-    FOREIGN KEY (user_id) REFERENCES user(id),
-    FOREIGN KEY (metric_instance_id) REFERENCES metric_instance(id)
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (metric_instance_id) REFERENCES metric_instance(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS metric_entry_verification (
-    metric_entry_id TEXT NOT NULL,
+    entry_user_id TEXT NOT NULL,
+    entry_metric_instance_id TEXT NOT NULL,
     verifier_user_id TEXT NOT NULL,
     verified BOOLEAN NOT NULL DEFAULT FALSE,
     reason TEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (metric_entry_id, verifier_user_id),
-    FOREIGN KEY (metric_entry_id) REFERENCES metric_entry(id),
-    FOREIGN KEY (verifier_user_id) REFERENCES user(id)
+    PRIMARY KEY (entry_user_id, entry_metric_instance_id, verifier_user_id),
+    FOREIGN KEY (entry_user_id, entry_metric_instance_id) REFERENCES metric_entry(user_id, metric_instance_id) ON DELETE CASCADE,
+    FOREIGN KEY (verifier_user_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS metric_entry_attachment (
     id TEXT NOT NULL PRIMARY KEY,
-    metric_entry_id TEXT NOT NULL,
+    entry_user_id TEXT NOT NULL,
+    entry_metric_instance_id TEXT NOT NULL,
     url TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (metric_entry_id) REFERENCES metric_entry(id)
+    FOREIGN KEY (entry_user_id, entry_metric_instance_id) REFERENCES metric_entry(user_id, metric_instance_id) ON DELETE CASCADE
 );
