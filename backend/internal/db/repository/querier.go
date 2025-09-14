@@ -44,6 +44,12 @@ type Querier interface {
 	GetUserDisplay(ctx context.Context, id string) (GetUserDisplayRow, error)
 	GetUserLoginByEmail(ctx context.Context, email string) (GetUserLoginByEmailRow, error)
 	GetUserLoginByUsername(ctx context.Context, username string) (GetUserLoginByUsernameRow, error)
+	// returns boolean
+	IsUserMemberOfClub(ctx context.Context, arg IsUserMemberOfClubParams) (int64, error)
+	// returns boolean
+	IsUserModeratorOfClub(ctx context.Context, arg IsUserModeratorOfClubParams) (bool, error)
+	// returns boolean
+	IsUserOwnerOfClub(ctx context.Context, arg IsUserOwnerOfClubParams) (int64, error)
 	UpdateClub(ctx context.Context, arg UpdateClubParams) error
 	UpdateClubMembership(ctx context.Context, arg UpdateClubMembershipParams) error
 	UpdateClubPost(ctx context.Context, arg UpdateClubPostParams) error

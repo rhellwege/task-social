@@ -19,7 +19,8 @@ WHERE
 -- name: GetClubLeaderboard :many
 SELECT
     u.id, u.username, u.profile_picture,
-    cm.user_points, cm.user_streak
+    cm.user_points, cm.user_streak,
+    cm.created_at AS joined_at
 FROM
     club_membership cm
     JOIN user u ON cm.user_id = u.id
@@ -33,8 +34,8 @@ WHERE
     id = @id;
 
 -- name: CreateClubMembership :exec
-INSERT INTO club_membership (user_id, club_id, user_points, user_streak, is_moderator)
-VALUES (@user_id, @club_id, 0, 0, false);
+INSERT INTO club_membership (user_id, club_id, is_moderator)
+VALUES (@user_id, @club_id, @is_moderator);
 
 -- name: UpdateClubMembership :exec
 UPDATE club_membership
@@ -95,3 +96,15 @@ WHERE club_id = ?;
 SELECT * FROM metric_instance AS mi
 JOIN metric ON metric_instance = id
 WHERE due_at < NOW();
+
+-- name: IsUserMemberOfClub :one
+-- returns boolean
+SELECT EXISTS(SELECT 1 FROM club_membership WHERE user_id = ? AND club_id = ?);
+
+-- name: IsUserModeratorOfClub :one
+-- returns boolean
+SELECT is_moderator FROM club_membership WHERE user_id = ? AND club_id = ?;
+
+-- name: IsUserOwnerOfClub :one
+-- returns boolean
+SELECT EXISTS(SELECT 1 FROM club WHERE id = @club_id AND owner_user_id = @user_id);

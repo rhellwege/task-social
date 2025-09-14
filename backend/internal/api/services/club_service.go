@@ -11,10 +11,10 @@ import (
 type ClubServicer interface {
 	CreateClub(ctx context.Context, userID string, params CreateClubRequest) (string, error)
 	GetPublicClubs(ctx context.Context) ([]repository.Club, error)
-	JoinClub(ctx context.Context, userID string, clubID string) error
+	JoinClub(ctx context.Context, userID string, clubID string, isModerator bool) error
 	LeaveClub(ctx context.Context, params repository.DeleteClubMembershipParams) error
-	GetClubLeaderboard(ctx context.Context, clubID string) ([]repository.GetClubLeaderboardRow, error)
-	DeleteClub(ctx context.Context, clubID string, userID string) error
+	GetClubLeaderboard(ctx context.Context, userID string, clubID string) ([]repository.GetClubLeaderboardRow, error)
+	DeleteClub(ctx context.Context, userID string, clubID string) error
 	UpdateClub(ctx context.Context, userID string, params repository.UpdateClubParams) error
 }
 
@@ -51,7 +51,7 @@ func (s *ClubService) CreateClub(ctx context.Context, userID string, params Crea
 		return "", err
 	}
 	// implicitly join club
-	err = s.JoinClub(ctx, userID, clubID)
+	err = s.JoinClub(ctx, userID, clubID, true)
 	if err != nil {
 		return "", err
 	}
@@ -62,10 +62,11 @@ func (s *ClubService) GetPublicClubs(ctx context.Context) ([]repository.Club, er
 	return s.q.GetPublicClubs(ctx)
 }
 
-func (s *ClubService) JoinClub(ctx context.Context, userID string, clubID string) error {
+func (s *ClubService) JoinClub(ctx context.Context, userID string, clubID string, isModerator bool) error {
 	return s.q.CreateClubMembership(ctx, repository.CreateClubMembershipParams{
-		UserID: userID,
-		ClubID: clubID,
+		UserID:      userID,
+		ClubID:      clubID,
+		IsModerator: isModerator,
 	})
 }
 
@@ -73,20 +74,51 @@ func (s *ClubService) LeaveClub(ctx context.Context, params repository.DeleteClu
 	return s.q.DeleteClubMembership(ctx, params)
 }
 
-func (s *ClubService) GetClubLeaderboard(ctx context.Context, clubID string) ([]repository.GetClubLeaderboardRow, error) {
+func (s *ClubService) IsUserMemberOfClub(ctx context.Context, userID string, clubID string) (bool, error) {
+	params := repository.IsUserMemberOfClubParams{
+		UserID: userID,
+		ClubID: clubID,
+	}
+	ret, err := s.q.IsUserMemberOfClub(ctx, params)
+	return (ret != 0), err
+}
+
+func (s *ClubService) IsUserModeratorOfClub(ctx context.Context, userID string, clubID string) (bool, error) {
+	params := repository.IsUserModeratorOfClubParams{
+		UserID: userID,
+		ClubID: clubID,
+	}
+	return s.q.IsUserModeratorOfClub(ctx, params)
+}
+
+func (s *ClubService) IsUserOwnerOfClub(ctx context.Context, userID string, clubID string) (bool, error) {
+	params := repository.IsUserOwnerOfClubParams{
+		UserID: userID,
+		ClubID: clubID,
+	}
+	ret, err := s.q.IsUserOwnerOfClub(ctx, params)
+	return (ret != 0), err
+}
+
+func (s *ClubService) GetClubLeaderboard(ctx context.Context, userID string, clubID string) ([]repository.GetClubLeaderboardRow, error) {
+	isMember, err := s.IsUserMemberOfClub(ctx, userID, clubID)
+	if err != nil {
+		return nil, err
+	}
+	if !isMember {
+		return nil, errors.New("Permission denied: user is not a member of the club")
+	}
 	return s.q.GetClubLeaderboard(ctx, clubID)
 }
 
-func (s *ClubService) DeleteClub(ctx context.Context, clubID string, userID string) error {
-	club, err := s.q.GetClub(ctx, clubID)
+func (s *ClubService) DeleteClub(ctx context.Context, userID string, clubID string) error {
+	isOwner, err := s.IsUserOwnerOfClub(ctx, userID, clubID)
 	if err != nil {
 		return err
 	}
-
-	if club.OwnerUserID != userID {
+	if !isOwner {
 		return errors.New("Permission denied: user is not the owner of the club")
 	}
-
 	return s.q.DeleteClub(ctx, clubID)
 }
 

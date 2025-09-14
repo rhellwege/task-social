@@ -25,6 +25,7 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	app.Group("/api", middleware.ProtectedRoute(authService))
 	app.Get("/api/user", handlers.GetUser(userService))
 	app.Put("/api/user", handlers.UpdateUser(userService))
+	app.Get("/api/user/clubs", handlers.GetUserClubs(userService))
 
 	app.Post("/api/club", handlers.CreateClub(clubService))
 	app.Get("/api/clubs", handlers.GetPublicClubs(clubService))
@@ -32,4 +33,5 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	app.Post("/api/club/:club_id/leave", handlers.LeaveClub(clubService))
 	app.Delete("/api/club/:club_id", handlers.DeleteClub(clubService))
 	app.Put("/api/club/:club_id", handlers.UpdateClub(clubService))
+	app.Get("/api/club/:club_id/leaderboard", handlers.GetClubLeaderboard(clubService))
 }

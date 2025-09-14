@@ -90,7 +90,7 @@ func JoinClub(clubService services.ClubServicer) fiber.Handler {
 		userID := c.Locals("userID").(string)
 		clubID := c.Params("club_id")
 
-		err := clubService.JoinClub(ctx, userID, clubID)
+		err := clubService.JoinClub(ctx, userID, clubID, false)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
 				Error: err.Error(),
@@ -157,7 +157,7 @@ func DeleteClub(clubService services.ClubServicer) fiber.Handler {
 		userID := c.Locals("userID").(string)
 		clubID := c.Params("club_id")
 
-		err := clubService.DeleteClub(ctx, clubID, userID)
+		err := clubService.DeleteClub(ctx, userID, clubID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
 				Error: err.Error(),
@@ -210,5 +210,35 @@ func UpdateClub(clubService services.ClubServicer) fiber.Handler {
 		return c.Status(fiber.StatusOK).JSON(SuccessResponse{
 			Message: "Successfully updated club",
 		})
+	}
+}
+
+// GetClubLeaderboard godoc
+//
+//	@Summary		Get a club's leaderboard
+//	@Description	Get a club's leaderboard with the given ID.
+//	@Tags			Club
+//	@Accept			json
+//	@Produce		json
+//	@Security		ApiKeyAuth
+//	@Param			club_id	path		string	true	"Club ID"
+//	@Success		200		{array}		repository.GetClubLeaderboardRow
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Router			/api/club/{club_id}/leaderboard [get]
+func GetClubLeaderboard(clubService services.ClubServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		userID := c.Locals("userID").(string)
+		clubID := c.Params("club_id")
+
+		rows, err := clubService.GetClubLeaderboard(ctx, userID, clubID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(rows)
 	}
 }

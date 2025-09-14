@@ -81,6 +81,40 @@ definitions:
       updated_at:
         type: string
     type: object
+  repository.GetClubLeaderboardRow:
+    properties:
+      id:
+        type: string
+      joined_at:
+        type: string
+      profile_picture:
+        type: string
+      user_points:
+        type: number
+      user_streak:
+        type: integer
+      username:
+        type: string
+    type: object
+  repository.GetUserClubsRow:
+    properties:
+      banner_image:
+        type: string
+      club_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      joined_at:
+        type: string
+      name:
+        type: string
+      user_points:
+        type: number
+      user_streak:
+        type: integer
+    type: object
   repository.GetUserDisplayRow:
     properties:
       created_at:
@@ -257,6 +291,39 @@ paths:
       summary: Join a club
       tags:
       - Club
+  /api/club/{club_id}/leaderboard:
+    get:
+      consumes:
+      - application/json
+      description: Get a club's leaderboard with the given ID.
+      parameters:
+      - description: Club ID
+        in: path
+        name: club_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repository.GetClubLeaderboardRow'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a club's leaderboard
+      tags:
+      - Club
   /api/club/{club_id}/leave:
     post:
       description: Leave a club with the given ID.
@@ -429,6 +496,31 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update an existing user
+      tags:
+      - User
+  /api/user/clubs:
+    get:
+      description: Get a list of a user's joined clubs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repository.GetUserClubsRow'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a list of a user's joined clubs
       tags:
       - User
   /api/version:

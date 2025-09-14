@@ -7,6 +7,7 @@ package repository
 
 import (
 	"context"
+	"time"
 )
 
 const createClub = `-- name: CreateClub :exec
@@ -36,17 +37,18 @@ func (q *Queries) CreateClub(ctx context.Context, arg CreateClubParams) error {
 }
 
 const createClubMembership = `-- name: CreateClubMembership :exec
-INSERT INTO club_membership (user_id, club_id, user_points, user_streak, is_moderator)
-VALUES (?1, ?2, 0, 0, false)
+INSERT INTO club_membership (user_id, club_id, is_moderator)
+VALUES (?1, ?2, ?3)
 `
 
 type CreateClubMembershipParams struct {
-	UserID string `json:"user_id"`
-	ClubID string `json:"club_id"`
+	UserID      string `json:"user_id"`
+	ClubID      string `json:"club_id"`
+	IsModerator bool   `json:"is_moderator"`
 }
 
 func (q *Queries) CreateClubMembership(ctx context.Context, arg CreateClubMembershipParams) error {
-	_, err := q.db.ExecContext(ctx, createClubMembership, arg.UserID, arg.ClubID)
+	_, err := q.db.ExecContext(ctx, createClubMembership, arg.UserID, arg.ClubID, arg.IsModerator)
 	return err
 }
 
@@ -160,7 +162,8 @@ func (q *Queries) GetClub(ctx context.Context, id string) (Club, error) {
 const getClubLeaderboard = `-- name: GetClubLeaderboard :many
 SELECT
     u.id, u.username, u.profile_picture,
-    cm.user_points, cm.user_streak
+    cm.user_points, cm.user_streak,
+    cm.created_at AS joined_at
 FROM
     club_membership cm
     JOIN user u ON cm.user_id = u.id
@@ -170,11 +173,12 @@ ORDER BY cm.user_points DESC, cm.user_streak DESC
 `
 
 type GetClubLeaderboardRow struct {
-	ID             string  `json:"id"`
-	Username       string  `json:"username"`
-	ProfilePicture *string `json:"profile_picture"`
-	UserPoints     float64 `json:"user_points"`
-	UserStreak     int64   `json:"user_streak"`
+	ID             string    `json:"id"`
+	Username       string    `json:"username"`
+	ProfilePicture *string   `json:"profile_picture"`
+	UserPoints     float64   `json:"user_points"`
+	UserStreak     int64     `json:"user_streak"`
+	JoinedAt       time.Time `json:"joined_at"`
 }
 
 func (q *Queries) GetClubLeaderboard(ctx context.Context, clubID string) ([]GetClubLeaderboardRow, error) {
@@ -192,6 +196,7 @@ func (q *Queries) GetClubLeaderboard(ctx context.Context, clubID string) ([]GetC
 			&i.ProfilePicture,
 			&i.UserPoints,
 			&i.UserStreak,
+			&i.JoinedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -280,6 +285,57 @@ func (q *Queries) GetPublicClubs(ctx context.Context) ([]Club, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const isUserMemberOfClub = `-- name: IsUserMemberOfClub :one
+SELECT EXISTS(SELECT 1 FROM club_membership WHERE user_id = ? AND club_id = ?)
+`
+
+type IsUserMemberOfClubParams struct {
+	UserID string `json:"user_id"`
+	ClubID string `json:"club_id"`
+}
+
+// returns boolean
+func (q *Queries) IsUserMemberOfClub(ctx context.Context, arg IsUserMemberOfClubParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, isUserMemberOfClub, arg.UserID, arg.ClubID)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const isUserModeratorOfClub = `-- name: IsUserModeratorOfClub :one
+SELECT is_moderator FROM club_membership WHERE user_id = ? AND club_id = ?
+`
+
+type IsUserModeratorOfClubParams struct {
+	UserID string `json:"user_id"`
+	ClubID string `json:"club_id"`
+}
+
+// returns boolean
+func (q *Queries) IsUserModeratorOfClub(ctx context.Context, arg IsUserModeratorOfClubParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isUserModeratorOfClub, arg.UserID, arg.ClubID)
+	var is_moderator bool
+	err := row.Scan(&is_moderator)
+	return is_moderator, err
+}
+
+const isUserOwnerOfClub = `-- name: IsUserOwnerOfClub :one
+SELECT EXISTS(SELECT 1 FROM club WHERE id = ?1 AND owner_user_id = ?2)
+`
+
+type IsUserOwnerOfClubParams struct {
+	ClubID string `json:"club_id"`
+	UserID string `json:"user_id"`
+}
+
+// returns boolean
+func (q *Queries) IsUserOwnerOfClub(ctx context.Context, arg IsUserOwnerOfClubParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, isUserOwnerOfClub, arg.ClubID, arg.UserID)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
 }
 
 const updateClub = `-- name: UpdateClub :exec
