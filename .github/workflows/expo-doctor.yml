@@ -5,16 +5,13 @@ name: Expo Doctor (expo)
 
 on:
   push:
-    branches:
-      - main
-      - master
     paths:
-      - "package.json"
-      - "pnpm-lock.yaml"
+      - "frontend/package.json"
+      - "frontend/pnpm-lock.yaml"
   pull_request:
     paths:
-      - "package.json"
-      - "pnpm-lock.yaml"
+      - "frontend/package.json"
+      - "frontend/pnpm-lock.yaml"
 
 jobs:
   doctor:
@@ -32,3 +29,4 @@ jobs:
 
       - name: 🚑 Run Doctor Checks
         run: npx expo-doctor@latest
+        working-directory: frontend
