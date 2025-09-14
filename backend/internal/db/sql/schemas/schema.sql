@@ -24,12 +24,12 @@ CREATE TABLE IF NOT EXISTS user_friendship (
 CREATE TABLE IF NOT EXISTS user_private_message (
     id TEXT NOT NULL PRIMARY KEY,
     sender_id TEXT NOT NULL,
-    receiver_id TEXT NOT NULL,
+    recipient_id TEXT NOT NULL,
     content TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sender_id) REFERENCES user(id),
-    FOREIGN KEY (receiver_id) REFERENCES user(id)
+    FOREIGN KEY (recipient_id) REFERENCES user(id)
 );
 
 CREATE TABLE IF NOT EXISTS user_private_message_attachment (

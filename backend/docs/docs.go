@@ -613,6 +613,12 @@ const docTemplate = `{
         "handlers.VersionResponse": {
             "type": "object",
             "properties": {
+                "build_date": {
+                    "type": "string"
+                },
+                "commit_hash": {
+                    "type": "string"
+                },
                 "version": {
                     "type": "string"
                 }
