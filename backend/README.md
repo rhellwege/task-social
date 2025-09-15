@@ -26,3 +26,4 @@ Since almost all routes are protected by jwt authentication, you will need to ge
 The response will contain the token in the "token" field. Copy that token then click the green Authorize button in the top right corner of the swagger page and paste it into the header value input.
 ## Testing
 Inside each service, there is a go:generate comment that generates mocks inside a mocks package. The unit tests will import those mocks and use them to test the service layer.
+All integration tests live inside the tests directory
