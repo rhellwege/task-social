@@ -343,17 +343,15 @@ UPDATE club
 SET
     name = COALESCE(?1, name),
     description = COALESCE(?2, description),
-    owner_user_id = COALESCE(?3, owner_user_id),
-    banner_image = COALESCE(?4, banner_image),
-    is_public = COALESCE(?5, is_public)
+    banner_image = COALESCE(?3, banner_image),
+    is_public = COALESCE(?4, is_public)
 WHERE
-    id = ?6
+    id = ?5
 `
 
 type UpdateClubParams struct {
 	Name        *string `json:"name"`
 	Description *string `json:"description"`
-	OwnerUserID *string `json:"owner_user_id"`
 	BannerImage *string `json:"banner_image"`
 	IsPublic    *bool   `json:"is_public"`
 	ID          string  `json:"id"`
@@ -363,7 +361,6 @@ func (q *Queries) UpdateClub(ctx context.Context, arg UpdateClubParams) error {
 	_, err := q.db.ExecContext(ctx, updateClub,
 		arg.Name,
 		arg.Description,
-		arg.OwnerUserID,
 		arg.BannerImage,
 		arg.IsPublic,
 		arg.ID,

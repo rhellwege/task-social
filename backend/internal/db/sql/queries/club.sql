@@ -10,7 +10,6 @@ UPDATE club
 SET
     name = COALESCE(sqlc.narg(name), name),
     description = COALESCE(sqlc.narg(description), description),
-    owner_user_id = COALESCE(sqlc.narg(owner_user_id), owner_user_id),
     banner_image = COALESCE(sqlc.narg(banner_image), banner_image),
     is_public = COALESCE(sqlc.narg(is_public), is_public)
 WHERE

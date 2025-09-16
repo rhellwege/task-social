@@ -104,7 +104,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/repository.UpdateClubParams"
+                            "$ref": "#/definitions/handlers.UpdateClubRequest"
                         }
                     }
                 ],
@@ -685,6 +685,23 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.UpdateClubRequest": {
+            "type": "object",
+            "properties": {
+                "banner_image": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.UpdateUserRequest": {
             "type": "object",
             "properties": {
@@ -807,29 +824,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "repository.UpdateClubParams": {
-            "type": "object",
-            "properties": {
-                "banner_image": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "is_public": {
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner_user_id": {
                     "type": "string"
                 }
             }

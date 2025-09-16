@@ -170,6 +170,13 @@ func DeleteClub(clubService services.ClubServicer) fiber.Handler {
 	}
 }
 
+type UpdateClubRequest struct {
+	Name        *string `json:"name,omitempty"`
+	Description *string `json:"description,omitempty"`
+	BannerImage *string `json:"banner_image,omitempty"`
+	IsPublic    *bool   `json:"is_public,omitempty"`
+}
+
 // UpdateClub godoc
 //
 //	@Summary		Update a club
@@ -178,8 +185,8 @@ func DeleteClub(clubService services.ClubServicer) fiber.Handler {
 //	@Accept			json
 //	@Produce		json
 //	@Security		ApiKeyAuth
-//	@Param			club_id	path		string						true	"Club ID"
-//	@Param			club	body		repository.UpdateClubParams	true	"Club update params"
+//	@Param			club_id	path		string				true	"Club ID"
+//	@Param			club	body		UpdateClubRequest	true	"Club update params"
 //	@Success		200		{object}	SuccessResponse
 //	@Failure		400		{object}	ErrorResponse
 //	@Failure		401		{object}	ErrorResponse
@@ -191,16 +198,22 @@ func UpdateClub(clubService services.ClubServicer) fiber.Handler {
 		userID := c.Locals("userID").(string)
 		clubID := c.Params("club_id")
 
-		var params repository.UpdateClubParams
+		var params UpdateClubRequest
 		if err := c.BodyParser(&params); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
 				Error: err.Error(),
 			})
 		}
 
-		params.ID = clubID
+		dbParams := repository.UpdateClubParams{
+			Name:        params.Name,
+			Description: params.Description,
+			BannerImage: params.BannerImage,
+			IsPublic:    params.IsPublic,
+			ID:          clubID,
+		}
 
-		err := clubService.UpdateClub(ctx, userID, params)
+		err := clubService.UpdateClub(ctx, userID, dbParams)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
 				Error: err.Error(),

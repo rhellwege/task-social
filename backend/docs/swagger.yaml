@@ -42,6 +42,17 @@ definitions:
       token:
         type: string
     type: object
+  handlers.UpdateClubRequest:
+    properties:
+      banner_image:
+        type: string
+      description:
+        type: string
+      is_public:
+        type: boolean
+      name:
+        type: string
+    type: object
   handlers.UpdateUserRequest:
     properties:
       email:
@@ -122,21 +133,6 @@ definitions:
       profile_picture:
         type: string
       username:
-        type: string
-    type: object
-  repository.UpdateClubParams:
-    properties:
-      banner_image:
-        type: string
-      description:
-        type: string
-      id:
-        type: string
-      is_public:
-        type: boolean
-      name:
-        type: string
-      owner_user_id:
         type: string
     type: object
   services.CreateClubRequest:
@@ -237,7 +233,7 @@ paths:
         name: club
         required: true
         schema:
-          $ref: '#/definitions/repository.UpdateClubParams'
+          $ref: '#/definitions/handlers.UpdateClubRequest'
       produces:
       - application/json
       responses:
