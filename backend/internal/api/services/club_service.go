@@ -10,6 +10,7 @@ import (
 
 type ClubServicer interface {
 	CreateClub(ctx context.Context, userID string, params CreateClubRequest) (string, error)
+	GetClub(ctx context.Context, userID string, clubID string) (repository.Club, error)
 	GetPublicClubs(ctx context.Context) ([]repository.Club, error)
 	JoinClub(ctx context.Context, userID string, clubID string, isModerator bool) error
 	LeaveClub(ctx context.Context, params repository.DeleteClubMembershipParams) error
@@ -56,6 +57,24 @@ func (s *ClubService) CreateClub(ctx context.Context, userID string, params Crea
 		return "", err
 	}
 	return clubID, nil
+}
+
+func (s *ClubService) GetClub(ctx context.Context, userID string, clubID string) (repository.Club, error) {
+	club, err := s.q.GetClub(ctx, clubID)
+	if err != nil {
+		return repository.Club{}, err
+	}
+
+	member, err := s.IsUserMemberOfClub(ctx, userID, clubID)
+	if err != nil {
+		return repository.Club{}, err
+	}
+
+	if !member && !club.IsPublic {
+		return repository.Club{}, errors.New("Permission denied: user is not a member of this private club")
+	}
+
+	return club, nil
 }
 
 func (s *ClubService) GetPublicClubs(ctx context.Context) ([]repository.Club, error) {

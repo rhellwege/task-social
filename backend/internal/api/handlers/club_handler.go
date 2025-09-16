@@ -32,6 +32,12 @@ func CreateClub(clubService services.ClubServicer) fiber.Handler {
 			})
 		}
 
+		if params.Name == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+				Error: "Club name is required",
+			})
+		}
+
 		clubID, err := clubService.CreateClub(ctx, userID, params)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
@@ -205,6 +211,12 @@ func UpdateClub(clubService services.ClubServicer) fiber.Handler {
 			})
 		}
 
+		if params.Name != nil && *params.Name == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+				Error: "Club name cannot be empty",
+			})
+		}
+
 		dbParams := repository.UpdateClubParams{
 			Name:        params.Name,
 			Description: params.Description,
@@ -253,5 +265,33 @@ func GetClubLeaderboard(clubService services.ClubServicer) fiber.Handler {
 		}
 
 		return c.Status(fiber.StatusOK).JSON(rows)
+	}
+}
+
+// GetClub godoc
+//
+//	@Summary		Get club info
+//	@Description	Get club info
+//	@Tags			Club
+//	@Security		ApiKeyAuth
+//	@Produce		json
+//	@Success		200	{object}	repository.Club
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/{club_id} [get]
+func GetClub(clubService services.ClubServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		userID := c.Locals("userID").(string)
+		clubID := c.Params("club_id")
+
+		club, err := clubService.GetClub(ctx, userID, clubID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(club)
 	}
 }

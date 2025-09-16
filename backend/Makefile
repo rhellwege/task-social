@@ -43,7 +43,7 @@ build: swagger
 run: build
 	$(BIN_DIR)/main
 
-test: check
+test: build check
 	go test -v ./...
 
 clean:

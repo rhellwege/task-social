@@ -5,13 +5,16 @@ package db
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"errors"
 	"fmt"
 	"log"
-	"os"
 
 	_ "modernc.org/sqlite"
 )
+
+//go:embed sql/schemas/*.sql
+var schemas embed.FS
 
 func New(ctx context.Context, uri string) (*sql.DB, func(), error) {
 	log.Println("Initializing Database")
@@ -29,7 +32,7 @@ func New(ctx context.Context, uri string) (*sql.DB, func(), error) {
 	}
 
 	log.Println("Loading Database Extensions...")
-	extensionBytes, err := os.ReadFile("internal/db/sql/schemas/extensions.sql")
+	extensionBytes, err := schemas.ReadFile("sql/schemas/extensions.sql")
 	if err != nil {
 		return nil, nil, fmt.Errorf("Error reading extension file: %v", err)
 	}
@@ -38,7 +41,7 @@ func New(ctx context.Context, uri string) (*sql.DB, func(), error) {
 	}
 
 	log.Println("Loading Database Schema...")
-	schemaBytes, err := os.ReadFile("internal/db/sql/schemas/schema.sql")
+	schemaBytes, err := schemas.ReadFile("sql/schemas/schema.sql")
 	if err != nil {
 		return nil, nil, fmt.Errorf("Error reading schema file: %v", err)
 	}
@@ -47,7 +50,7 @@ func New(ctx context.Context, uri string) (*sql.DB, func(), error) {
 	}
 
 	log.Println("Loading Database Triggers...")
-	triggersBytes, err := os.ReadFile("internal/db/sql/schemas/triggers.sql")
+	triggersBytes, err := schemas.ReadFile("sql/schemas/triggers.sql")
 	if err != nil {
 		return nil, nil, fmt.Errorf("Error reading triggers file: %v", err)
 	}

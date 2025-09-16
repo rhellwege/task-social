@@ -33,6 +33,7 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	api.Get("/clubs", handlers.GetPublicClubs(clubService))
 	api.Post("/club/:club_id/join", handlers.JoinClub(clubService))
 	api.Post("/club/:club_id/leave", handlers.LeaveClub(clubService))
+	api.Get("/club/:club_id", handlers.GetClub(clubService))
 	api.Delete("/club/:club_id", handlers.DeleteClub(clubService))
 	api.Put("/club/:club_id", handlers.UpdateClub(clubService))
 	api.Get("/club/:club_id/leaderboard", handlers.GetClubLeaderboard(clubService))

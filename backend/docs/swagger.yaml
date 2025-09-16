@@ -153,6 +153,29 @@ info:
   title: Task Social API
   version: "0.1"
 paths:
+  /api/{club_id}:
+    get:
+      description: Get club info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repository.Club'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get club info
+      tags:
+      - Club
   /api/club:
     post:
       consumes:
