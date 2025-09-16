@@ -102,7 +102,7 @@ func LoginUser(userService services.UserServicer) fiber.Handler {
 			return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{Error: err.Error()})
 		}
 
-		tokenString, err := userService.LoginUser(ctx, params.Email, params.Username, params.Password)
+		tokenString, err := userService.LoginUser(ctx, params.Username, params.Email, params.Password)
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{
 				Error: err.Error(),
