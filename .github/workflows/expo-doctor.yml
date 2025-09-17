@@ -8,12 +8,12 @@ on:
     # branches:
     #   - main
     paths:
-      - "package.json"
-      - "pnpm-lock.yaml"
+      - "frontend/package.json"
+      - "frontend/pnpm-lock.yaml"
   pull_request:
     paths:
-      - "package.json"
-      - "pnpm-lock.yaml"
+      - "frontend/package.json"
+      - "frontend/pnpm-lock.yaml"
 
 jobs:
   doctor:
