@@ -4,10 +4,6 @@
 name: Lint TS (eslint, prettier)
 
 on: [push]
-  # push:
-    # branches: [main]
-  # pull_request:
-    # branches: [main]
 
 jobs:
   lint:
