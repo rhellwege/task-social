@@ -3,7 +3,7 @@
 
 name: Lint TS (eslint, prettier)
 
-on:
+# on:
   # push:
   #   # branches: [main]
   # pull_request:
