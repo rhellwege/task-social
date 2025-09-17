@@ -3,21 +3,17 @@
 
 name: Expo Doctor (expo)
 
-# on:
-#   push:
-#     # branches:
-#     #   - main
-#     paths:
-#       - "package.json"
-#       - "pnpm-lock.yaml"
-#   pull_request:
-#     paths:
-#       - "package.json"
-#       - "pnpm-lock.yaml"
 on:
-  paths:
-    - "package.json"
-    - "pnpm-lock.yaml"
+  push:
+    # branches:
+    #   - main
+    paths:
+      - "package.json"
+      - "pnpm-lock.yaml"
+  pull_request:
+    paths:
+      - "package.json"
+      - "pnpm-lock.yaml"
 
 jobs:
   doctor:

@@ -3,11 +3,11 @@
 
 name: Type Check (tsc)
 
-# on:
-#   push:
-    # branches: [main]
+on: [push, pull_request]
+  # push:
+  #   branches: [main]
   # pull_request:
-    # branches: [main]
+  #   branches: [main]
 
 jobs:
   type-check:
