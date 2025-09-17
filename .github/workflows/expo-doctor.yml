@@ -9,7 +9,7 @@ on:
     #   - main
     paths:
       - frontend/package.json
-      - frontend/pnpm-lock.yaml
+      - frontend/package-lock.json
 
 jobs:
   doctor:
