@@ -3,11 +3,7 @@
 
 name: Expo Doctor (expo)
 
-on:
-  push:
-    paths:
-      - package.json
-      - package-lock.json
+on: [push]
 
 jobs:
   doctor:
