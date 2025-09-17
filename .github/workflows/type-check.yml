@@ -3,7 +3,7 @@
 
 name: Type Check (tsc)
 
-on: [push, pull_request]
+on: [push]
   # push:
   #   branches: [main]
   # pull_request:
