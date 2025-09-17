@@ -3,11 +3,11 @@
 
 name: Lint TS (eslint, prettier)
 
-# on:
+on: [push, pull_request]
   # push:
-  #   # branches: [main]
+    # branches: [main]
   # pull_request:
-  #   # branches: [main]
+    # branches: [main]
 
 jobs:
   lint:
