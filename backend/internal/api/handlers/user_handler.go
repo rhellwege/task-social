@@ -10,6 +10,7 @@ import (
 
 // GetUser godoc
 //
+//	@ID				GetUser
 //	@Summary		Get user information
 //	@Description	Get user information by ID
 //	@Tags			User
@@ -43,6 +44,7 @@ type RegisterUserRequest struct {
 
 // RegisterUser godoc
 //
+//	@ID				RegisterUser
 //	@Summary		Register a new user
 //	@Description	Register a new user with email, username, and password
 //	@Tags			User
@@ -84,6 +86,7 @@ type LoginUserRequest struct {
 
 // LoginUser godoc
 //
+//	@ID				LoginUser
 //	@Summary		Login a user
 //	@Description	Login a user with (email or username) and password
 //	@Tags			User
@@ -125,6 +128,7 @@ type UpdateUserRequest struct {
 
 // UpdateUser godoc
 //
+//	@ID				UpdateUser
 //	@Summary		Update an existing user
 //	@Description	Update an existing user's details, all parameters are optional.
 //	@Tags			User
@@ -172,6 +176,7 @@ func UpdateUser(userService services.UserServicer) fiber.Handler {
 
 // GetUserClubs godoc
 //
+//	@ID				GetUserClubs
 //	@Summary		Get a list of a user's joined clubs
 //	@Description	Get a list of a user's joined clubs
 //	@Tags			User

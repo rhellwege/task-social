@@ -156,6 +156,7 @@ paths:
   /api/{club_id}:
     get:
       description: Get club info
+      operationId: GetClub
       produces:
       - application/json
       responses:
@@ -181,6 +182,7 @@ paths:
       consumes:
       - application/json
       description: Create a new club with the provided details.
+      operationId: CreateClub
       parameters:
       - description: User update details
         in: body
@@ -215,6 +217,7 @@ paths:
   /api/club/{club_id}:
     delete:
       description: Delete a club with the given ID.
+      operationId: DeleteClub
       parameters:
       - description: Club ID
         in: path
@@ -245,6 +248,7 @@ paths:
       consumes:
       - application/json
       description: Update a club with the given ID.
+      operationId: UpdateClub
       parameters:
       - description: Club ID
         in: path
@@ -284,6 +288,7 @@ paths:
   /api/club/{club_id}/join:
     post:
       description: Join a club with the given ID.
+      operationId: JoinClub
       parameters:
       - description: Club ID
         in: path
@@ -315,6 +320,7 @@ paths:
       consumes:
       - application/json
       description: Get a club's leaderboard with the given ID.
+      operationId: GetClubLeaderboard
       parameters:
       - description: Club ID
         in: path
@@ -346,6 +352,7 @@ paths:
   /api/club/{club_id}/leave:
     post:
       description: Leave a club with the given ID.
+      operationId: LeaveClub
       parameters:
       - description: Club ID
         in: path
@@ -375,6 +382,7 @@ paths:
   /api/clubs:
     get:
       description: Get a list of public clubs.
+      operationId: GetPublicClubs
       produces:
       - application/json
       responses:
@@ -402,6 +410,7 @@ paths:
       consumes:
       - application/json
       description: Login a user with (email or username) and password
+      operationId: LoginUser
       parameters:
       - description: User login credentials
         in: body
@@ -432,6 +441,7 @@ paths:
       consumes:
       - application/json
       description: Register a new user with email, username, and password
+      operationId: RegisterUser
       parameters:
       - description: User registration details
         in: body
@@ -462,6 +472,7 @@ paths:
       consumes:
       - application/json
       description: Get user information by ID
+      operationId: GetUser
       produces:
       - application/json
       responses:
@@ -486,6 +497,7 @@ paths:
       consumes:
       - application/json
       description: Update an existing user's details, all parameters are optional.
+      operationId: UpdateUser
       parameters:
       - description: User update details
         in: body
@@ -520,6 +532,7 @@ paths:
   /api/user/clubs:
     get:
       description: Get a list of a user's joined clubs
+      operationId: GetUserClubs
       produces:
       - application/json
       responses:
@@ -545,6 +558,7 @@ paths:
   /api/version:
     get:
       description: Current version of the API
+      operationId: Version
       produces:
       - application/json
       responses:

@@ -8,6 +8,7 @@ import (
 
 // CreateClub godoc
 //
+//	@ID				CreateClub
 //	@Summary		Create a new club
 //	@Description	Create a new club with the provided details.
 //	@Tags			Club
@@ -54,6 +55,7 @@ func CreateClub(clubService services.ClubServicer) fiber.Handler {
 
 // GetPublicClubs godoc
 //
+//	@ID				GetPublicClubs
 //	@Summary		Get public clubs
 //	@Description	Get a list of public clubs.
 //	@Tags			Club
@@ -80,6 +82,7 @@ func GetPublicClubs(clubService services.ClubServicer) fiber.Handler {
 
 // JoinClub godoc
 //
+//	@ID				JoinClub
 //	@Summary		Join a club
 //	@Description	Join a club with the given ID.
 //	@Tags			Club
@@ -111,6 +114,7 @@ func JoinClub(clubService services.ClubServicer) fiber.Handler {
 
 // LeaveClub godoc
 //
+//	@ID				LeaveClub
 //	@Summary		Leave a club
 //	@Description	Leave a club with the given ID.
 //	@Tags			Club
@@ -147,6 +151,7 @@ func LeaveClub(clubService services.ClubServicer) fiber.Handler {
 
 // DeleteClub godoc
 //
+//	@ID				DeleteClub
 //	@Summary		Delete a club
 //	@Description	Delete a club with the given ID.
 //	@Tags			Club
@@ -185,6 +190,7 @@ type UpdateClubRequest struct {
 
 // UpdateClub godoc
 //
+//	@ID				UpdateClub
 //	@Summary		Update a club
 //	@Description	Update a club with the given ID.
 //	@Tags			Club
@@ -240,6 +246,7 @@ func UpdateClub(clubService services.ClubServicer) fiber.Handler {
 
 // GetClubLeaderboard godoc
 //
+//	@ID				GetClubLeaderboard
 //	@Summary		Get a club's leaderboard
 //	@Description	Get a club's leaderboard with the given ID.
 //	@Tags			Club
@@ -270,6 +277,7 @@ func GetClubLeaderboard(clubService services.ClubServicer) fiber.Handler {
 
 // GetClub godoc
 //
+//	@ID				GetClub
 //	@Summary		Get club info
 //	@Description	Get club info
 //	@Tags			Club

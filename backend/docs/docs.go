@@ -33,6 +33,7 @@ const docTemplate = `{
                     "Club"
                 ],
                 "summary": "Create a new club",
+                "operationId": "CreateClub",
                 "parameters": [
                     {
                         "description": "User update details",
@@ -90,6 +91,7 @@ const docTemplate = `{
                     "Club"
                 ],
                 "summary": "Update a club",
+                "operationId": "UpdateClub",
                 "parameters": [
                     {
                         "type": "string",
@@ -149,6 +151,7 @@ const docTemplate = `{
                     "Club"
                 ],
                 "summary": "Delete a club",
+                "operationId": "DeleteClub",
                 "parameters": [
                     {
                         "type": "string",
@@ -195,6 +198,7 @@ const docTemplate = `{
                     "Club"
                 ],
                 "summary": "Join a club",
+                "operationId": "JoinClub",
                 "parameters": [
                     {
                         "type": "string",
@@ -244,6 +248,7 @@ const docTemplate = `{
                     "Club"
                 ],
                 "summary": "Get a club's leaderboard",
+                "operationId": "GetClubLeaderboard",
                 "parameters": [
                     {
                         "type": "string",
@@ -293,6 +298,7 @@ const docTemplate = `{
                     "Club"
                 ],
                 "summary": "Leave a club",
+                "operationId": "LeaveClub",
                 "parameters": [
                     {
                         "type": "string",
@@ -339,6 +345,7 @@ const docTemplate = `{
                     "Club"
                 ],
                 "summary": "Get public clubs",
+                "operationId": "GetPublicClubs",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -377,6 +384,7 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "Login a user",
+                "operationId": "LoginUser",
                 "parameters": [
                     {
                         "description": "User login credentials",
@@ -423,6 +431,7 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "Register a new user",
+                "operationId": "RegisterUser",
                 "parameters": [
                     {
                         "description": "User registration details",
@@ -474,6 +483,7 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "Get user information",
+                "operationId": "GetUser",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -512,6 +522,7 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "Update an existing user",
+                "operationId": "UpdateUser",
                 "parameters": [
                     {
                         "description": "User update details",
@@ -566,6 +577,7 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "Get a list of a user's joined clubs",
+                "operationId": "GetUserClubs",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -601,6 +613,7 @@ const docTemplate = `{
                     "Util"
                 ],
                 "summary": "Get the current version of the API",
+                "operationId": "Version",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -632,6 +645,7 @@ const docTemplate = `{
                     "Club"
                 ],
                 "summary": "Get club info",
+                "operationId": "GetClub",
                 "responses": {
                     "200": {
                         "description": "OK",

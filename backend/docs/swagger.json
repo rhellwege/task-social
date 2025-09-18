@@ -27,6 +27,7 @@
                     "Club"
                 ],
                 "summary": "Create a new club",
+                "operationId": "CreateClub",
                 "parameters": [
                     {
                         "description": "User update details",
@@ -84,6 +85,7 @@
                     "Club"
                 ],
                 "summary": "Update a club",
+                "operationId": "UpdateClub",
                 "parameters": [
                     {
                         "type": "string",
@@ -143,6 +145,7 @@
                     "Club"
                 ],
                 "summary": "Delete a club",
+                "operationId": "DeleteClub",
                 "parameters": [
                     {
                         "type": "string",
@@ -189,6 +192,7 @@
                     "Club"
                 ],
                 "summary": "Join a club",
+                "operationId": "JoinClub",
                 "parameters": [
                     {
                         "type": "string",
@@ -238,6 +242,7 @@
                     "Club"
                 ],
                 "summary": "Get a club's leaderboard",
+                "operationId": "GetClubLeaderboard",
                 "parameters": [
                     {
                         "type": "string",
@@ -287,6 +292,7 @@
                     "Club"
                 ],
                 "summary": "Leave a club",
+                "operationId": "LeaveClub",
                 "parameters": [
                     {
                         "type": "string",
@@ -333,6 +339,7 @@
                     "Club"
                 ],
                 "summary": "Get public clubs",
+                "operationId": "GetPublicClubs",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -371,6 +378,7 @@
                     "User"
                 ],
                 "summary": "Login a user",
+                "operationId": "LoginUser",
                 "parameters": [
                     {
                         "description": "User login credentials",
@@ -417,6 +425,7 @@
                     "User"
                 ],
                 "summary": "Register a new user",
+                "operationId": "RegisterUser",
                 "parameters": [
                     {
                         "description": "User registration details",
@@ -468,6 +477,7 @@
                     "User"
                 ],
                 "summary": "Get user information",
+                "operationId": "GetUser",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -506,6 +516,7 @@
                     "User"
                 ],
                 "summary": "Update an existing user",
+                "operationId": "UpdateUser",
                 "parameters": [
                     {
                         "description": "User update details",
@@ -560,6 +571,7 @@
                     "User"
                 ],
                 "summary": "Get a list of a user's joined clubs",
+                "operationId": "GetUserClubs",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -595,6 +607,7 @@
                     "Util"
                 ],
                 "summary": "Get the current version of the API",
+                "operationId": "Version",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -626,6 +639,7 @@
                     "Club"
                 ],
                 "summary": "Get club info",
+                "operationId": "GetClub",
                 "responses": {
                     "200": {
                         "description": "OK",

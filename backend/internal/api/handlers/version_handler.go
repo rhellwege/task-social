@@ -13,6 +13,7 @@ type VersionResponse struct {
 
 // Version godoc
 //
+//	@ID				Version
 //	@Summary		Get the current version of the API
 //	@Description	Current version of the API
 //	@Tags			Util
