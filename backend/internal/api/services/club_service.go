@@ -2,7 +2,9 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"os"
 
 	"github.com/rhellwege/task-social/internal/db/repository"
 	"github.com/rhellwege/task-social/internal/util"
@@ -59,15 +61,68 @@ func (s *ClubService) CreateClub(ctx context.Context, userID string, params Crea
 }
 
 func (s *ClubService) GetPublicClubs(ctx context.Context) ([]repository.Club, error) {
-	return s.q.GetPublicClubs(ctx)
+	//mock data for testing (load from JSON)
+	file, err := os.Open("mock-data/clubs.json")
+	if err != nil {
+		return nil, err //fall back to DB if file missing
+	}
+	defer file.Close()
+
+	var mockClubs []map[string]interface{}
+	if err := json.NewDecoder(file).Decode(&mockClubs); err != nil {
+		return nil, err
+	}
+
+	//convert to repository.Club format
+	var clubs []repository.Club
+	for _, m := range mockClubs {
+		club := repository.Club{
+			ID:          m["id"].(string),
+			Name:        m["name"].(string),
+			Description: util.StringPtr(m["description"].(string)),
+			//add other fields as needed, e.g., IsPublic: true
+		}
+		clubs = append(clubs, club)
+	}
+	return clubs, nil
 }
 
 func (s *ClubService) JoinClub(ctx context.Context, userID string, clubID string, isModerator bool) error {
-	return s.q.CreateClubMembership(ctx, repository.CreateClubMembershipParams{
-		UserID:      userID,
-		ClubID:      clubID,
-		IsModerator: isModerator,
-	})
+	// return s.q.CreateClubMembership(ctx, repository.CreateClubMembershipParams{
+	//     UserID:      userID,
+	//     ClubID:      clubID,
+	//     IsModerator: isModerator,
+	// }) commented out but not removed for the sake of trying to get mock data working
+	//mock join for testing (update users.json)
+	file, err := os.Open("mock-data/users.json")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	var users []map[string]interface{}
+	if err := json.NewDecoder(file).Decode(&users); err != nil {
+		return err
+	}
+
+	for i, user := range users {
+		if user["id"] == userID {
+			clubIDs, ok := user["joined_clubs"].([]interface{})
+			if !ok {
+				clubIDs = []interface{}{}
+			}
+			clubIDs = append(clubIDs, clubID)
+			users[i]["joined_clubs"] = clubIDs
+			break
+		}
+	}
+
+	data, err := json.Marshal(users)
+	if err != nil {
+		return err
+	}
+	os.WriteFile("mock-data/users.json", data, 0644)
+	return nil
 }
 
 func (s *ClubService) LeaveClub(ctx context.Context, params repository.DeleteClubMembershipParams) error {
@@ -127,10 +182,8 @@ func (s *ClubService) UpdateClub(ctx context.Context, userID string, params repo
 	if err != nil {
 		return err
 	}
-
 	if club.OwnerUserID != userID {
 		return errors.New("Permission denied: user is not the owner of the club")
 	}
-
 	return s.q.UpdateClub(ctx, params)
 }

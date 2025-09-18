@@ -39,3 +39,6 @@ bin/
 
 # testing databases. We might want to not ignore certain db files for testing.
 *.sqlite
+
+# temporary token generation script for JWT
+gen_token.go
