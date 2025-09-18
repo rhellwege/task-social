@@ -13,6 +13,7 @@ type UserServicer interface {
 	// either username or email is required
 	LoginUser(ctx context.Context, username *string, email *string, password string) (string, error)
 	GetUserDisplay(ctx context.Context, userID string) (repository.GetUserDisplayRow, error)
+	GetUserClubs(ctx context.Context, userID string) ([]repository.GetUserClubsRow, error)
 	CreateFriend(ctx context.Context, userID string, friendID string) error
 	GetFriends(ctx context.Context, userID string) ([]repository.GetFriendsRow, error)
 	UpdateUser(ctx context.Context, params repository.UpdateUserParams) error
@@ -137,4 +138,8 @@ func (s *UserService) UpdateUser(ctx context.Context, params repository.UpdateUs
 	}
 
 	return s.q.UpdateUser(ctx, params)
+}
+
+func (s *UserService) GetUserClubs(ctx context.Context, userID string) ([]repository.GetUserClubsRow, error) {
+	return s.q.GetUserClubs(ctx, userID)
 }

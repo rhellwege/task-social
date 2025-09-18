@@ -12,16 +12,29 @@ import (
 func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	authService := services.NewAuthService()
 	userService := services.NewUserService(querier, authService)
+	clubService := services.NewClubService(querier)
 
 	app.Use(logger.New(logger.Config{
-		// For more options, see the Config section
-		Format: "${time} [${ip}]:${port} ${locals:requestid} ${status} - ${method} ${path} ${error}​\n",
+		Format: "${time} [${ip}]:${port} ${status} - ${method} ${path} ${error}​\n",
 	}))
+
+	// Public routes
 	app.Get("/api/version", handlers.Version())
 	app.Post("/api/register", handlers.RegisterUser(userService))
 	app.Post("/api/login", handlers.LoginUser(userService))
-	// Authenticated / Authorized routes:
-	app.Group("/api", middleware.ProtectedRoute(authService))
-	app.Get("/api/user", handlers.GetUser(userService))
-	app.Put("/api/user", handlers.UpdateUser(userService))
+
+	// Protected routes
+	api := app.Group("/api", middleware.ProtectedRoute(authService))
+	api.Get("/user", handlers.GetUser(userService))
+	api.Put("/user", handlers.UpdateUser(userService))
+	api.Get("/user/clubs", handlers.GetUserClubs(userService))
+
+	api.Post("/club", handlers.CreateClub(clubService))
+	api.Get("/clubs", handlers.GetPublicClubs(clubService))
+	api.Post("/club/:club_id/join", handlers.JoinClub(clubService))
+	api.Post("/club/:club_id/leave", handlers.LeaveClub(clubService))
+	api.Get("/club/:club_id", handlers.GetClub(clubService))
+	api.Delete("/club/:club_id", handlers.DeleteClub(clubService))
+	api.Put("/club/:club_id", handlers.UpdateClub(clubService))
+	api.Get("/club/:club_id/leaderboard", handlers.GetClubLeaderboard(clubService))
 }

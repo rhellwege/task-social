@@ -32,14 +32,24 @@ type Querier interface {
 	DeleteMetricEntryVerification(ctx context.Context, arg DeleteMetricEntryVerificationParams) error
 	DeleteMetricInstance(ctx context.Context, id string) error
 	DeleteUser(ctx context.Context, id string) error
+	GetClub(ctx context.Context, id string) (Club, error)
 	GetClubLeaderboard(ctx context.Context, clubID string) ([]GetClubLeaderboardRow, error)
+	GetClubMetrics(ctx context.Context, clubID string) ([]Metric, error)
 	// assumes user_id < friend_id
 	// TODO: add user friendship created at
 	GetFriends(ctx context.Context, id string) ([]GetFriendsRow, error)
+	// TODO: Implement pagination with LIMIT and OFFSET
+	GetPublicClubs(ctx context.Context) ([]Club, error)
 	GetUserClubs(ctx context.Context, userID string) ([]GetUserClubsRow, error)
 	GetUserDisplay(ctx context.Context, id string) (GetUserDisplayRow, error)
 	GetUserLoginByEmail(ctx context.Context, email string) (GetUserLoginByEmailRow, error)
 	GetUserLoginByUsername(ctx context.Context, username string) (GetUserLoginByUsernameRow, error)
+	// returns boolean
+	IsUserMemberOfClub(ctx context.Context, arg IsUserMemberOfClubParams) (int64, error)
+	// returns boolean
+	IsUserModeratorOfClub(ctx context.Context, arg IsUserModeratorOfClubParams) (bool, error)
+	// returns boolean
+	IsUserOwnerOfClub(ctx context.Context, arg IsUserOwnerOfClubParams) (int64, error)
 	UpdateClub(ctx context.Context, arg UpdateClubParams) error
 	UpdateClubMembership(ctx context.Context, arg UpdateClubMembershipParams) error
 	UpdateClubPost(ctx context.Context, arg UpdateClubPostParams) error

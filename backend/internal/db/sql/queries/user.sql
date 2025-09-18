@@ -57,7 +57,10 @@ WHERE
 
 -- name: GetUserClubs :many
 SELECT
-    c.id, c.name, c.description, c.created_at, c.banner_image, cm.created_at AS joined_at
+    c.id AS club_id, c.name,
+    c.description, c.created_at,
+    c.banner_image, cm.user_points,
+    cm.user_streak, cm.created_at AS joined_at
 FROM club c
 JOIN club_membership cm ON c.id = cm.club_id
 WHERE cm.user_id = @user_id

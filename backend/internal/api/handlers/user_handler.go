@@ -10,6 +10,7 @@ import (
 
 // GetUser godoc
 //
+//	@ID				GetUser
 //	@Summary		Get user information
 //	@Description	Get user information by ID
 //	@Tags			User
@@ -43,6 +44,7 @@ type RegisterUserRequest struct {
 
 // RegisterUser godoc
 //
+//	@ID				RegisterUser
 //	@Summary		Register a new user
 //	@Description	Register a new user with email, username, and password
 //	@Tags			User
@@ -84,6 +86,7 @@ type LoginUserRequest struct {
 
 // LoginUser godoc
 //
+//	@ID				LoginUser
 //	@Summary		Login a user
 //	@Description	Login a user with (email or username) and password
 //	@Tags			User
@@ -102,7 +105,7 @@ func LoginUser(userService services.UserServicer) fiber.Handler {
 			return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{Error: err.Error()})
 		}
 
-		tokenString, err := userService.LoginUser(ctx, params.Email, params.Username, params.Password)
+		tokenString, err := userService.LoginUser(ctx, params.Username, params.Email, params.Password)
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{
 				Error: err.Error(),
@@ -125,6 +128,7 @@ type UpdateUserRequest struct {
 
 // UpdateUser godoc
 //
+//	@ID				UpdateUser
 //	@Summary		Update an existing user
 //	@Description	Update an existing user's details, all parameters are optional.
 //	@Tags			User
@@ -135,7 +139,6 @@ type UpdateUserRequest struct {
 //	@Success		200		{object}	SuccessResponse
 //	@Failure		400		{object}	ErrorResponse
 //	@Failure		401		{object}	ErrorResponse
-//	@Failure		404		{object}	ErrorResponse
 //	@Failure		500		{object}	ErrorResponse
 //	@Router			/api/user [put]
 func UpdateUser(userService services.UserServicer) fiber.Handler {
@@ -168,5 +171,33 @@ func UpdateUser(userService services.UserServicer) fiber.Handler {
 		return c.Status(fiber.StatusOK).JSON(SuccessResponse{
 			Message: "User updated successfully",
 		})
+	}
+}
+
+// GetUserClubs godoc
+//
+//	@ID				GetUserClubs
+//	@Summary		Get a list of a user's joined clubs
+//	@Description	Get a list of a user's joined clubs
+//	@Tags			User
+//	@Security		ApiKeyAuth
+//	@Produce		json
+//	@Success		200	{array}		repository.GetUserClubsRow
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/user/clubs [get]
+func GetUserClubs(userService services.UserServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		id := c.Locals("userID").(string)
+
+		clubs, err := userService.GetUserClubs(ctx, id)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(clubs)
 	}
 }
