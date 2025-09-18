@@ -19,6 +19,8 @@ const (
 	MinPasswordNumber       = 1
 	MinPasswordSpecial      = 2
 	ProfileImageSize        = 256
+	BannerImageWidth        = 1024
+	BannerImageHeight       = 256
 )
 
 var (
