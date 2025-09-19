@@ -191,7 +191,7 @@ func UpdateUser(userService services.UserServicer) fiber.Handler {
 func UploadProfilePicture(userService services.UserServicer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.Context()
-		userID := c.Locals("userID").(string) // assumes auth middleware sets this
+		userID := c.Locals("userID").(string)
 
 		// Get uploaded file
 		file, err := c.FormFile("image")

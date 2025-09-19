@@ -17,17 +17,19 @@ type ClubServicer interface {
 	GetClubLeaderboard(ctx context.Context, userID string, clubID string) ([]repository.GetClubLeaderboardRow, error)
 	DeleteClub(ctx context.Context, userID string, clubID string) error
 	UpdateClub(ctx context.Context, userID string, params repository.UpdateClubParams) error
+	UploadClubBanner(ctx context.Context, clubID string, fileBytes []byte) (string, error)
+}
+
+type ClubService struct {
+	q repository.Querier
+	i ImageServicer
 }
 
 // compile time assertion that ClubService implements ClubServicer
 var _ ClubServicer = (*ClubService)(nil)
 
-type ClubService struct {
-	q repository.Querier
-}
-
-func NewClubService(q repository.Querier) *ClubService {
-	return &ClubService{q: q}
+func NewClubService(q repository.Querier, i ImageServicer) *ClubService {
+	return &ClubService{q: q, i: i}
 }
 
 type CreateClubRequest struct {
@@ -152,4 +154,20 @@ func (s *ClubService) UpdateClub(ctx context.Context, userID string, params repo
 	}
 
 	return s.q.UpdateClub(ctx, params)
+}
+
+func (s *ClubService) UploadClubBanner(ctx context.Context, clubID string, fileBytes []byte) (string, error) {
+	url, err := s.i.SaveBannerImage(ctx, fileBytes)
+	if err != nil {
+		return "", err
+	}
+
+	params := repository.UpdateClubParams{
+		ID:          clubID,
+		BannerImage: &url,
+	}
+	if err := s.q.UpdateClub(ctx, params); err != nil {
+		return "", err
+	}
+	return url, nil
 }

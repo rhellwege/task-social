@@ -13,7 +13,7 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	authService := services.NewAuthService()
 	imageService := services.NewImageService("./assets")
 	userService := services.NewUserService(querier, authService, imageService)
-	clubService := services.NewClubService(querier)
+	clubService := services.NewClubService(querier, imageService)
 
 	// Logger middleware
 	app.Use(logger.New(logger.Config{
@@ -33,7 +33,6 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	api.Put("/user", handlers.UpdateUser(userService))
 	api.Get("/user/clubs", handlers.GetUserClubs(userService))
 
-	// Upload profile picture (auth required + middleware)
 	api.Post("/user/profile-picture",
 		middleware.ImageUploadMiddleware("./assets"),
 		handlers.UploadProfilePicture(userService),
@@ -48,6 +47,11 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	api.Delete("/club/:club_id", handlers.DeleteClub(clubService))
 	api.Put("/club/:club_id", handlers.UpdateClub(clubService))
 	api.Get("/club/:club_id/leaderboard", handlers.GetClubLeaderboard(clubService))
+
+	api.Post("/club/:clubID/banner",
+		middleware.ImageUploadMiddleware("./assets"),
+		handlers.UploadClubBanner(clubService),
+	)
 
 	// Serve uploaded assets
 	app.Static("/assets", "./assets")

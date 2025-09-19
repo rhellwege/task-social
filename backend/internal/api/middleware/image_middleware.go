@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// ImageUploadMiddleware handles profile picture uploads
+// Handles image uploads
 func ImageUploadMiddleware(uploadDir string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		fileHeader, err := c.FormFile("image")

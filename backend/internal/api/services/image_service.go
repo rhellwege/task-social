@@ -12,37 +12,44 @@ import (
 	"path/filepath"
 
 	"github.com/rhellwege/task-social/config"
-	"golang.org/x/image/draw" // for resizing
+	"golang.org/x/image/draw"
 )
 
+type ImageServicer interface {
+	SaveImage(ctx context.Context, fileBytes []byte, width, height int, subDir string) (string, error)
+	SaveProfileImage(ctx context.Context, fileBytes []byte) (string, error)
+	SaveBannerImage(ctx context.Context, fileBytes []byte) (string, error)
+}
+
 type ImageService struct {
-	assetsDir string
+	baseAssetsDir string
 }
 
 var _ ImageServicer = (*ImageService)(nil)
 
-func NewImageService(assetsDir string) *ImageService {
-	// ensure the assets folder exists
-	os.MkdirAll(assetsDir, os.ModePerm)
-	return &ImageService{assetsDir: assetsDir}
+func NewImageService(baseAssetsDir string) *ImageService {
+	os.MkdirAll(baseAssetsDir, os.ModePerm)
+	return &ImageService{baseAssetsDir: baseAssetsDir}
 }
 
-func (s *ImageService) SaveProfileImage(ctx context.Context, userID string, fileBytes []byte) (string, error) {
-	// decode image
+func (s *ImageService) SaveImage(ctx context.Context, fileBytes []byte, width, height int, subDir string) (string, error) {
 	img, _, err := image.Decode(bytes.NewReader(fileBytes))
 	if err != nil {
 		return "", errors.New("invalid image format")
 	}
 
-	// resize/crop image size
-	img = resizeImage(img, config.ProfileImageSize, config.ProfileImageSize)
+	img = resizeImage(img, width, height)
 
-	// generate SHA1 hash for filename
+	dirPath := filepath.Join(s.baseAssetsDir, subDir)
+	if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
+		return "", err
+	}
+
 	hash := sha1.Sum(fileBytes)
 	filename := hex.EncodeToString(hash[:]) + ".jpg"
-	filepath := filepath.Join(s.assetsDir, filename)
+	filePath := filepath.Join(dirPath, filename)
 
-	outFile, err := os.Create(filepath)
+	outFile, err := os.Create(filePath)
 	if err != nil {
 		return "", err
 	}
@@ -52,35 +59,15 @@ func (s *ImageService) SaveProfileImage(ctx context.Context, userID string, file
 		return "", err
 	}
 
-	return "/assets/" + filename, nil
+	return "/" + subDir + "/" + filename, nil
 }
 
-func (s *ImageService) SaveBannerImage(ctx context.Context, userID string, fileBytes []byte) (string, error) {
-	// decode image
-	img, _, err := image.Decode(bytes.NewReader(fileBytes))
-	if err != nil {
-		return "", errors.New("invalid image format")
-	}
+func (s *ImageService) SaveProfileImage(ctx context.Context, fileBytes []byte) (string, error) {
+	return s.SaveImage(ctx, fileBytes, config.ProfileImageSize, config.ProfileImageSize, config.ProfileImageSubDir)
+}
 
-	// resize/crop image size
-	img = resizeImage(img, config.BannerImageWidth, config.BannerImageHeight)
-
-	// generate SHA1 hash for filename
-	hash := sha1.Sum(fileBytes)
-	filename := hex.EncodeToString(hash[:]) + ".jpg"
-	filepath := filepath.Join(s.assetsDir, filename)
-
-	outFile, err := os.Create(filepath)
-	if err != nil {
-		return "", err
-	}
-	defer outFile.Close()
-
-	if err := jpeg.Encode(outFile, img, &jpeg.Options{Quality: 90}); err != nil {
-		return "", err
-	}
-
-	return "/assets/" + filename, nil
+func (s *ImageService) SaveBannerImage(ctx context.Context, fileBytes []byte) (string, error) {
+	return s.SaveImage(ctx, fileBytes, config.BannerImageWidth, config.BannerImageHeight, config.BannerImageSubDir)
 }
 
 func resizeImage(img image.Image, width, height int) image.Image {

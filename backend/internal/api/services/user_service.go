@@ -10,7 +10,6 @@ import (
 
 type UserServicer interface {
 	RegisterUser(ctx context.Context, username string, email string, password string) (string, error)
-	// either username or email is required
 	LoginUser(ctx context.Context, username *string, email *string, password string) (string, error)
 	GetUserDisplay(ctx context.Context, userID string) (repository.GetUserDisplayRow, error)
 	GetUserClubs(ctx context.Context, userID string) ([]repository.GetUserClubsRow, error)
@@ -18,10 +17,6 @@ type UserServicer interface {
 	GetFriends(ctx context.Context, userID string) ([]repository.GetFriendsRow, error)
 	UpdateUser(ctx context.Context, params repository.UpdateUserParams) error
 	UploadProfilePicture(ctx context.Context, userID string, fileBytes []byte) (string, error)
-}
-
-type ImageServicer interface {
-	SaveProfileImage(ctx context.Context, userID string, fileBytes []byte) (string, error)
 }
 
 type UserService struct {
@@ -34,11 +29,7 @@ type UserService struct {
 var _ UserServicer = (*UserService)(nil)
 
 func NewUserService(q repository.Querier, a AuthServicer, i ImageServicer) *UserService {
-	return &UserService{
-		q: q,
-		a: a,
-		i: i,
-	}
+	return &UserService{q: q, a: a, i: i}
 }
 
 func (s *UserService) RegisterUser(ctx context.Context, username string, password string, email string) (string, error) {
@@ -148,7 +139,7 @@ func (s *UserService) UpdateUser(ctx context.Context, params repository.UpdateUs
 }
 
 func (s *UserService) UploadProfilePicture(ctx context.Context, userID string, fileBytes []byte) (string, error) {
-	url, err := s.i.SaveProfileImage(ctx, userID, fileBytes)
+	url, err := s.i.SaveProfileImage(ctx, fileBytes)
 	if err != nil {
 		return "", err
 	}
@@ -157,11 +148,9 @@ func (s *UserService) UploadProfilePicture(ctx context.Context, userID string, f
 		ID:             userID,
 		ProfilePicture: &url,
 	}
-
 	if err := s.q.UpdateUser(ctx, params); err != nil {
 		return "", err
 	}
-
 	return url, nil
 }
 
