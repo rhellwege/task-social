@@ -282,6 +282,7 @@ func GetClubLeaderboard(clubService services.ClubServicer) fiber.Handler {
 //	@Description	Get club info
 //	@Tags			Club
 //	@Security		ApiKeyAuth
+//	@Param			club_id	path	string	true	"Club ID"
 //	@Produce		json
 //	@Success		200	{object}	repository.Club
 //	@Failure		401	{object}	ErrorResponse

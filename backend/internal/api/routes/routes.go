@@ -15,7 +15,7 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	clubService := services.NewClubService(querier)
 
 	app.Use(logger.New(logger.Config{
-		Format: "${time} [${ip}]:${port} ${status} - ${method} ${path} ${error}​\n",
+		Format: "${time} [${ip}]:${port} ${status} - ${method} ${path} ${latency} \n\t${body} \n\t${resBody}​\n\n",
 	}))
 
 	// Public routes

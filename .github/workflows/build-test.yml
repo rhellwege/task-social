@@ -25,3 +25,21 @@ jobs:
       - name: Test Backend
         working-directory: ./backend
         run: go test ./... -v
+
+      - name: Collect Backend Unit Test Coverage
+        working-directory: ./backend
+        run: ./scripts/unit_test_coverage.sh
+      - name: Upload Unit Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-coverage-report
+          path: backend/coverage/unit* # Specify the path to your generated HTML report
+
+      - name: Collect Backend Integration Test Coverage
+        working-directory: ./backend
+        run: ./scripts/total_test_coverage.sh
+      - name: Upload Integration Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-coverage-report
+          path: backend/coverage/integration* # Specify the path to your generated HTML report
