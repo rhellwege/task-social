@@ -3,7 +3,9 @@ package services
 import (
 	"context"
 	"errors"
+	"path/filepath"
 
+	"github.com/rhellwege/task-social/config"
 	"github.com/rhellwege/task-social/internal/db/repository"
 	"github.com/rhellwege/task-social/internal/util"
 )
@@ -157,11 +159,25 @@ func (s *ClubService) UpdateClub(ctx context.Context, userID string, params repo
 }
 
 func (s *ClubService) UploadClubBanner(ctx context.Context, clubID string, fileBytes []byte) (string, error) {
-	url, err := s.i.SaveBannerImage(ctx, fileBytes)
+	// 1. Get existing banner
+	club, err := s.q.GetClub(ctx, clubID)
 	if err != nil {
 		return "", err
 	}
 
+	// 2. Delete old banner if exists
+	if club.BannerImage != nil && *club.BannerImage != "" {
+		filename := filepath.Base(*club.BannerImage)
+		s.i.DeleteImage("banner", filename)
+	}
+
+	// 3. Save new banner
+	url, err := s.i.SaveImage(ctx, fileBytes, config.BannerImageWidth, config.BannerImageHeight, "banner")
+	if err != nil {
+		return "", err
+	}
+
+	// 4. Update DB
 	params := repository.UpdateClubParams{
 		ID:          clubID,
 		BannerImage: &url,
@@ -169,5 +185,6 @@ func (s *ClubService) UploadClubBanner(ctx context.Context, clubID string, fileB
 	if err := s.q.UpdateClub(ctx, params); err != nil {
 		return "", err
 	}
+
 	return url, nil
 }

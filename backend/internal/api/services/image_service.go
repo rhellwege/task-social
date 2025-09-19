@@ -19,6 +19,7 @@ type ImageServicer interface {
 	SaveImage(ctx context.Context, fileBytes []byte, width, height int, subDir string) (string, error)
 	SaveProfileImage(ctx context.Context, fileBytes []byte) (string, error)
 	SaveBannerImage(ctx context.Context, fileBytes []byte) (string, error)
+	DeleteImage(subDir, filename string) error
 }
 
 type ImageService struct {
@@ -74,4 +75,12 @@ func resizeImage(img image.Image, width, height int) image.Image {
 	dst := image.NewRGBA(image.Rect(0, 0, width, height))
 	draw.CatmullRom.Scale(dst, dst.Bounds(), img, img.Bounds(), draw.Over, nil)
 	return dst
+}
+
+func (s *ImageService) DeleteImage(subDir, filename string) error {
+	path := filepath.Join(s.baseAssetsDir, subDir, filename)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return nil // file already gone
+	}
+	return os.Remove(path)
 }

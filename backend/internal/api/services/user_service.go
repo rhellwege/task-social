@@ -3,7 +3,9 @@ package services
 import (
 	"context"
 	"errors"
+	"path/filepath"
 
+	"github.com/rhellwege/task-social/config"
 	"github.com/rhellwege/task-social/internal/db/repository"
 	"github.com/rhellwege/task-social/internal/util"
 )
@@ -138,12 +140,30 @@ func (s *UserService) UpdateUser(ctx context.Context, params repository.UpdateUs
 	return s.q.UpdateUser(ctx, params)
 }
 
+func (s *UserService) GetUserClubs(ctx context.Context, userID string) ([]repository.GetUserClubsRow, error) {
+	return s.q.GetUserClubs(ctx, userID)
+}
+
 func (s *UserService) UploadProfilePicture(ctx context.Context, userID string, fileBytes []byte) (string, error) {
-	url, err := s.i.SaveProfileImage(ctx, fileBytes)
+	// 1. Get existing image URL
+	user, err := s.GetUserDisplay(ctx, userID)
 	if err != nil {
 		return "", err
 	}
 
+	// 2. Delete old image if exists
+	if user.ProfilePicture != nil && *user.ProfilePicture != "" {
+		filename := filepath.Base(*user.ProfilePicture)
+		s.i.DeleteImage("profile", filename)
+	}
+
+	// 3. Save new image
+	url, err := s.i.SaveImage(ctx, fileBytes, config.ProfileImageSize, config.ProfileImageSize, "profile")
+	if err != nil {
+		return "", err
+	}
+
+	// 4. Update DB
 	params := repository.UpdateUserParams{
 		ID:             userID,
 		ProfilePicture: &url,
@@ -151,9 +171,6 @@ func (s *UserService) UploadProfilePicture(ctx context.Context, userID string, f
 	if err := s.q.UpdateUser(ctx, params); err != nil {
 		return "", err
 	}
-	return url, nil
-}
 
-func (s *UserService) GetUserClubs(ctx context.Context, userID string) ([]repository.GetUserClubsRow, error) {
-	return s.q.GetUserClubs(ctx, userID)
+	return url, nil
 }
