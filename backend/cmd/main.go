@@ -43,7 +43,17 @@ func main() {
 	}()
 
 	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		log.Println("WARNING: DATABASE_URL environment variable not set, using default")
+		dbURL = config.DefaultDBURL
+	}
 	log.Printf("Connecting to database at %s..", dbURL)
+
+	config.JWTSecret = []byte(os.Getenv("JWT_SECRET_KEY"))
+	if len(config.JWTSecret) == 0 {
+		log.Println("WARNING: JWT_SECRET_KEY environment variable not set, using default")
+		config.JWTSecret = config.DefaultJWTSecret
+	}
 
 	conn, conn_closer, err := db.New(ctx, dbURL)
 	if err != nil {

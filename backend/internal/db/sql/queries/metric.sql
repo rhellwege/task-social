@@ -19,8 +19,8 @@ WHERE
     id = @id;
 
 -- name: CreateMetricInstance :exec
-INSERT INTO metric_instance (id, metric_id)
-VALUES (@id, @metric_id);
+INSERT INTO metric_instance (id, metric_id, due_at)
+VALUES (@id, @metric_id, @due_at);
 
 -- name: DeleteMetricInstance :exec
 DELETE FROM metric_instance
@@ -28,8 +28,8 @@ WHERE
     id = @id;
 
 -- name: CreateMetricEntry :exec
-INSERT INTO metric_entry (user_id, user_id, metric_instance_id, value)
-VALUES (@user_id, @user_id, @metric_instance_id, @value);
+INSERT INTO metric_entry (user_id, metric_instance_id, value)
+VALUES (@user_id, @metric_instance_id, @value);
 
 -- name: UpdateMetricEntry :exec
 UPDATE metric_entry
@@ -44,8 +44,8 @@ WHERE
     user_id = @user_id AND metric_instance_id = @metric_instance_id;
 
 -- name: CreateMetricEntryVerification :exec
-INSERT INTO metric_entry_verification (metric_entry_id, verifier_user_id, verified, reason)
-VALUES (@metric_entry_id, @verifier_user_id, @verified, @reason);
+INSERT INTO metric_entry_verification (entry_user_id, entry_metric_instance_id, verifier_user_id, verified, reason)
+VALUES (@entry_user_id, @entry_metric_instance_id, @verifier_user_id, @verified, @reason);
 
 -- name: UpdateMetricEntryVerification :exec
 UPDATE metric_entry_verification
@@ -53,16 +53,16 @@ SET
     verified = COALESCE(sqlc.narg(verified), verified),
     reason = COALESCE(sqlc.narg(reason), reason)
 WHERE
-    metric_entry_id = @metric_entry_id AND verifier_user_id = @verifier_user_id;
+    entry_user_id = @entry_user_id AND entry_metric_instance_id = @entry_metric_instance_id AND verifier_user_id = @verifier_user_id;
 
 -- name: DeleteMetricEntryVerification :exec
 DELETE FROM metric_entry_verification
 WHERE
-    metric_entry_id = @metric_entry_id AND verifier_user_id = @verifier_user_id;
+    entry_user_id = @entry_user_id AND entry_metric_instance_id = @entry_metric_instance_id AND verifier_user_id = @verifier_user_id;
 
 -- name: CreateMetricEntryAttachment :exec
-INSERT INTO metric_entry_attachment (id, metric_entry_id, url)
-VALUES (@id, @metric_entry_id, @url);
+INSERT INTO metric_entry_attachment (id, entry_user_id, entry_metric_instance_id, url)
+VALUES (@id, @entry_user_id, @entry_metric_instance_id, @url);
 
 -- name: UpdateMetricEntryAttachment :exec
 UPDATE metric_entry_attachment

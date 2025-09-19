@@ -1,7 +1,7 @@
 -- Language: sqlite
 
 CREATE TABLE IF NOT EXISTS user (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
@@ -16,33 +16,33 @@ CREATE TABLE IF NOT EXISTS user_friendship (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, friend_id),
-    FOREIGN KEY (user_id) REFERENCES user(id),
-    FOREIGN KEY (friend_id) REFERENCES user(id),
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (friend_id) REFERENCES user(id) ON DELETE CASCADE,
     CONSTRAINT user_friendship_order CHECK (user_id < friend_id)
 );
 
 CREATE TABLE IF NOT EXISTS user_private_message (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     sender_id TEXT NOT NULL,
-    receiver_id TEXT NOT NULL,
+    recipient_id TEXT NOT NULL,
     content TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (sender_id) REFERENCES user(id),
-    FOREIGN KEY (receiver_id) REFERENCES user(id)
+    FOREIGN KEY (sender_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (recipient_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS user_private_message_attachment (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     user_private_message_id TEXT NOT NULL,
     url TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_private_message_id) REFERENCES user_private_message(id)
+    FOREIGN KEY (user_private_message_id) REFERENCES user_private_message(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS club (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT,
     owner_user_id TEXT NOT NULL,
@@ -50,14 +50,14 @@ CREATE TABLE IF NOT EXISTS club (
     is_public BOOLEAN NOT NULL DEFAULT FALSE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (owner_user_id) REFERENCES user(id)
+    FOREIGN KEY (owner_user_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS club_tag (
     club_id TEXT NOT NULL,
     tag TEXT NOT NULL,
     PRIMARY KEY (club_id, tag),
-    FOREIGN KEY (club_id) REFERENCES club(id)
+    FOREIGN KEY (club_id) REFERENCES club(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS club_membership (
@@ -69,32 +69,32 @@ CREATE TABLE IF NOT EXISTS club_membership (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, club_id),
-    FOREIGN KEY (user_id) REFERENCES user(id),
-    FOREIGN KEY (club_id) REFERENCES club(id)
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (club_id) REFERENCES club(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS club_post (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     user_id TEXT NOT NULL,
     club_id TEXT NOT NULL,
     content TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES user(id),
-    FOREIGN KEY (club_id) REFERENCES club(id)
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (club_id) REFERENCES club(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS club_post_attachment (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     post_id TEXT NOT NULL,
     url TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (post_id) REFERENCES club_post(id)
+    FOREIGN KEY (post_id) REFERENCES club_post(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS metric (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     club_id TEXT NOT NULL,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
@@ -103,15 +103,16 @@ CREATE TABLE IF NOT EXISTS metric (
     requires_verification BOOLEAN NOT NULL DEFAULT FALSE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (club_id) REFERENCES club(id)
+    FOREIGN KEY (club_id) REFERENCES club(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS metric_instance (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     metric_id TEXT NOT NULL,
+    due_at DATETIME NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (metric_id) REFERENCES metric(id)
+    FOREIGN KEY (metric_id) REFERENCES metric(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS metric_entry (
@@ -121,27 +122,29 @@ CREATE TABLE IF NOT EXISTS metric_entry (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, metric_instance_id),
-    FOREIGN KEY (user_id) REFERENCES user(id),
-    FOREIGN KEY (metric_instance_id) REFERENCES metric_instance(id)
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (metric_instance_id) REFERENCES metric_instance(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS metric_entry_verification (
-    metric_entry_id TEXT NOT NULL,
+    entry_user_id TEXT NOT NULL,
+    entry_metric_instance_id TEXT NOT NULL,
     verifier_user_id TEXT NOT NULL,
     verified BOOLEAN NOT NULL DEFAULT FALSE,
     reason TEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (metric_entry_id, verifier_user_id),
-    FOREIGN KEY (metric_entry_id) REFERENCES metric_entry(id),
-    FOREIGN KEY (verifier_user_id) REFERENCES user(id)
+    PRIMARY KEY (entry_user_id, entry_metric_instance_id, verifier_user_id),
+    FOREIGN KEY (entry_user_id, entry_metric_instance_id) REFERENCES metric_entry(user_id, metric_instance_id) ON DELETE CASCADE,
+    FOREIGN KEY (verifier_user_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS metric_entry_attachment (
-    id TEXT PRIMARY KEY,
-    metric_entry_id TEXT NOT NULL,
+    id TEXT NOT NULL PRIMARY KEY,
+    entry_user_id TEXT NOT NULL,
+    entry_metric_instance_id TEXT NOT NULL,
     url TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (metric_entry_id) REFERENCES metric_entry(id)
+    FOREIGN KEY (entry_user_id, entry_metric_instance_id) REFERENCES metric_entry(user_id, metric_instance_id) ON DELETE CASCADE
 );

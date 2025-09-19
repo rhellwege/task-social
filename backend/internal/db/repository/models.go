@@ -72,25 +72,28 @@ type MetricEntry struct {
 }
 
 type MetricEntryAttachment struct {
-	ID            string    `json:"id"`
-	MetricEntryID string    `json:"metric_entry_id"`
-	Url           string    `json:"url"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID                    string    `json:"id"`
+	EntryUserID           string    `json:"entry_user_id"`
+	EntryMetricInstanceID string    `json:"entry_metric_instance_id"`
+	Url                   string    `json:"url"`
+	CreatedAt             time.Time `json:"created_at"`
+	UpdatedAt             time.Time `json:"updated_at"`
 }
 
 type MetricEntryVerification struct {
-	MetricEntryID  string    `json:"metric_entry_id"`
-	VerifierUserID string    `json:"verifier_user_id"`
-	Verified       bool      `json:"verified"`
-	Reason         *string   `json:"reason"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	EntryUserID           string    `json:"entry_user_id"`
+	EntryMetricInstanceID string    `json:"entry_metric_instance_id"`
+	VerifierUserID        string    `json:"verifier_user_id"`
+	Verified              bool      `json:"verified"`
+	Reason                *string   `json:"reason"`
+	CreatedAt             time.Time `json:"created_at"`
+	UpdatedAt             time.Time `json:"updated_at"`
 }
 
 type MetricInstance struct {
 	ID        string    `json:"id"`
 	MetricID  string    `json:"metric_id"`
+	DueAt     time.Time `json:"due_at"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -113,12 +116,12 @@ type UserFriendship struct {
 }
 
 type UserPrivateMessage struct {
-	ID         string    `json:"id"`
-	SenderID   string    `json:"sender_id"`
-	ReceiverID string    `json:"receiver_id"`
-	Content    string    `json:"content"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	ID          string    `json:"id"`
+	SenderID    string    `json:"sender_id"`
+	RecipientID string    `json:"recipient_id"`
+	Content     string    `json:"content"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type UserPrivateMessageAttachment struct {

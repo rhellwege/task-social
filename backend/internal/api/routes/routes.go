@@ -13,6 +13,7 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	authService := services.NewAuthService()
 	imageService := services.NewImageService("./assets")
 	userService := services.NewUserService(querier, authService, imageService)
+	clubService := services.NewClubService(querier)
 
 	// Logger middleware
 	app.Use(logger.New(logger.Config{
@@ -27,14 +28,26 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	// Protected routes
 	api := app.Group("/api", middleware.ProtectedRoute(authService))
 
+	// User routes
 	api.Get("/user", handlers.GetUser(userService))
 	api.Put("/user", handlers.UpdateUser(userService))
+	api.Get("/user/clubs", handlers.GetUserClubs(userService))
 
 	// Upload profile picture (auth required + middleware)
 	api.Post("/user/profile-picture",
 		middleware.ImageUploadMiddleware("./assets"),
 		handlers.UploadProfilePicture(userService),
 	)
+
+	// Club routes
+	api.Post("/club", handlers.CreateClub(clubService))
+	api.Get("/clubs", handlers.GetPublicClubs(clubService))
+	api.Post("/club/:club_id/join", handlers.JoinClub(clubService))
+	api.Post("/club/:club_id/leave", handlers.LeaveClub(clubService))
+	api.Get("/club/:club_id", handlers.GetClub(clubService))
+	api.Delete("/club/:club_id", handlers.DeleteClub(clubService))
+	api.Put("/club/:club_id", handlers.UpdateClub(clubService))
+	api.Get("/club/:club_id/leaderboard", handlers.GetClubLeaderboard(clubService))
 
 	// Serve uploaded assets
 	app.Static("/assets", "./assets")

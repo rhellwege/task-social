@@ -1,8 +1,8 @@
 name: Build and Test
 on: [push]
 jobs:
-  build_backend:
-    name: Build Backend
+  build_test_backend:
+    name: Build Backend And Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -22,3 +22,6 @@ jobs:
       - name: Check Codegen
         working-directory: ./backend
         run: ./scripts/check_codegen.sh
+      - name: Test Backend
+        working-directory: ./backend
+        run: go test ./... -v

@@ -113,7 +113,10 @@ func (q *Queries) GetFriends(ctx context.Context, id string) ([]GetFriendsRow, e
 
 const getUserClubs = `-- name: GetUserClubs :many
 SELECT
-    c.id, c.name, c.description, c.created_at, c.banner_image, cm.created_at AS joined_at
+    c.id AS club_id, c.name,
+    c.description, c.created_at,
+    c.banner_image, cm.user_points,
+    cm.user_streak, cm.created_at AS joined_at
 FROM club c
 JOIN club_membership cm ON c.id = cm.club_id
 WHERE cm.user_id = ?1
@@ -121,11 +124,13 @@ ORDER BY cm.created_at DESC
 `
 
 type GetUserClubsRow struct {
-	ID          string    `json:"id"`
+	ClubID      string    `json:"club_id"`
 	Name        string    `json:"name"`
 	Description *string   `json:"description"`
 	CreatedAt   time.Time `json:"created_at"`
 	BannerImage *string   `json:"banner_image"`
+	UserPoints  float64   `json:"user_points"`
+	UserStreak  int64     `json:"user_streak"`
 	JoinedAt    time.Time `json:"joined_at"`
 }
 
@@ -139,11 +144,13 @@ func (q *Queries) GetUserClubs(ctx context.Context, userID string) ([]GetUserClu
 	for rows.Next() {
 		var i GetUserClubsRow
 		if err := rows.Scan(
-			&i.ID,
+			&i.ClubID,
 			&i.Name,
 			&i.Description,
 			&i.CreatedAt,
 			&i.BannerImage,
+			&i.UserPoints,
+			&i.UserStreak,
 			&i.JoinedAt,
 		); err != nil {
 			return nil, err
