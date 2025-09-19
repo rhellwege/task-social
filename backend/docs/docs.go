@@ -646,6 +646,15 @@ const docTemplate = `{
                 ],
                 "summary": "Get club info",
                 "operationId": "GetClub",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Club ID",
+                        "name": "club_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
