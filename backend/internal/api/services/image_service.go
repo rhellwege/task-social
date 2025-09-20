@@ -6,10 +6,12 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"image"
 	"image/jpeg"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/rhellwege/task-social/config"
 	"golang.org/x/image/draw"
@@ -47,7 +49,8 @@ func (s *ImageService) SaveImage(ctx context.Context, fileBytes []byte, width, h
 	}
 
 	hash := sha1.Sum(fileBytes)
-	filename := hex.EncodeToString(hash[:]) + ".jpg"
+	timestamp := time.Now().UnixNano()
+	filename := fmt.Sprintf("%s_%d.jpg", hex.EncodeToString(hash[:]), timestamp)
 	filePath := filepath.Join(dirPath, filename)
 
 	outFile, err := os.Create(filePath)
