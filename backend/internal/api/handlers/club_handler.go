@@ -306,6 +306,7 @@ func GetClub(clubService services.ClubServicer) fiber.Handler {
 
 // UploadClubBanner godoc
 //
+//	@ID				UploadClubBanner
 //	@Summary		Upload a club banner
 //	@Description	Upload a new banner image for the specified club
 //	@Tags			Club
