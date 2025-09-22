@@ -3,35 +3,35 @@ package services
 import (
 	"context"
 	"errors"
+	"path/filepath"
 
+	"github.com/rhellwege/task-social/config"
 	"github.com/rhellwege/task-social/internal/db/repository"
 	"github.com/rhellwege/task-social/internal/util"
 )
 
 type UserServicer interface {
 	RegisterUser(ctx context.Context, username string, email string, password string) (string, error)
-	// either username or email is required
 	LoginUser(ctx context.Context, username *string, email *string, password string) (string, error)
 	GetUserDisplay(ctx context.Context, userID string) (repository.GetUserDisplayRow, error)
 	GetUserClubs(ctx context.Context, userID string) ([]repository.GetUserClubsRow, error)
 	CreateFriend(ctx context.Context, userID string, friendID string) error
 	GetFriends(ctx context.Context, userID string) ([]repository.GetFriendsRow, error)
 	UpdateUser(ctx context.Context, params repository.UpdateUserParams) error
+	UploadProfilePicture(ctx context.Context, userID string, fileBytes []byte) (string, error)
 }
 
 type UserService struct {
 	q repository.Querier
 	a AuthServicer
+	i ImageServicer
 }
 
 // compile time interface implementation check
 var _ UserServicer = (*UserService)(nil)
 
-func NewUserService(q repository.Querier, a AuthServicer) *UserService {
-	return &UserService{
-		q: q,
-		a: a,
-	}
+func NewUserService(q repository.Querier, a AuthServicer, i ImageServicer) *UserService {
+	return &UserService{q: q, a: a, i: i}
 }
 
 func (s *UserService) RegisterUser(ctx context.Context, username string, password string, email string) (string, error) {
@@ -142,4 +142,35 @@ func (s *UserService) UpdateUser(ctx context.Context, params repository.UpdateUs
 
 func (s *UserService) GetUserClubs(ctx context.Context, userID string) ([]repository.GetUserClubsRow, error) {
 	return s.q.GetUserClubs(ctx, userID)
+}
+
+func (s *UserService) UploadProfilePicture(ctx context.Context, userID string, fileBytes []byte) (string, error) {
+	// 1. Get existing image URL
+	user, err := s.GetUserDisplay(ctx, userID)
+	if err != nil {
+		return "", err
+	}
+
+	// 2. Delete old image if exists
+	if user.ProfilePicture != nil && *user.ProfilePicture != "" {
+		filename := filepath.Base(*user.ProfilePicture)
+		s.i.DeleteImage("profile", filename)
+	}
+
+	// 3. Save new image
+	url, err := s.i.SaveImage(ctx, fileBytes, config.ProfileImageSize, config.ProfileImageSize, "profile")
+	if err != nil {
+		return "", err
+	}
+
+	// 4. Update DB
+	params := repository.UpdateUserParams{
+		ID:             userID,
+		ProfilePicture: &url,
+	}
+	if err := s.q.UpdateUser(ctx, params); err != nil {
+		return "", err
+	}
+
+	return url, nil
 }

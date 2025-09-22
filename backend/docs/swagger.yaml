@@ -64,6 +64,20 @@ definitions:
       username:
         type: string
     type: object
+  handlers.UploadClubBannerResponse:
+    properties:
+      message:
+        type: string
+      url:
+        type: string
+    type: object
+  handlers.UploadProfilePictureResponse:
+    properties:
+      message:
+        type: string
+      url:
+        type: string
+    type: object
   handlers.VersionResponse:
     properties:
       build_date:
@@ -379,6 +393,47 @@ paths:
       summary: Leave a club
       tags:
       - Club
+  /api/club/{clubID}/banner:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a new banner image for the specified club
+      operationId: UploadClubBanner
+      parameters:
+      - description: Club banner file
+        in: formData
+        name: image
+        required: true
+        type: file
+      - description: Club ID
+        in: path
+        name: clubID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.UploadClubBannerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload a club banner
+      tags:
+      - Club
   /api/clubs:
     get:
       description: Get a list of public clubs.
@@ -553,6 +608,42 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get a list of a user's joined clubs
+      tags:
+      - User
+  /api/user/profile-picture:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a new profile picture for the authenticated user
+      operationId: UploadProfilePicture
+      parameters:
+      - description: Profile picture file
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.UploadProfilePictureResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload a profile picture
       tags:
       - User
   /api/version:
