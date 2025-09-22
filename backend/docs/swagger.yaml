@@ -398,6 +398,7 @@ paths:
       consumes:
       - multipart/form-data
       description: Upload a new banner image for the specified club
+      operationId: UploadClubBanner
       parameters:
       - description: Club banner file
         in: formData
@@ -614,6 +615,7 @@ paths:
       consumes:
       - multipart/form-data
       description: Upload a new profile picture for the authenticated user
+      operationId: UploadProfilePicture
       parameters:
       - description: Profile picture file
         in: formData

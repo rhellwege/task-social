@@ -85,6 +85,7 @@
                     "Club"
                 ],
                 "summary": "Upload a club banner",
+                "operationId": "UploadClubBanner",
                 "parameters": [
                     {
                         "type": "file",
@@ -677,6 +678,7 @@
                     "User"
                 ],
                 "summary": "Upload a profile picture",
+                "operationId": "UploadProfilePicture",
                 "parameters": [
                     {
                         "type": "file",

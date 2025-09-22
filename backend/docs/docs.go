@@ -91,6 +91,7 @@ const docTemplate = `{
                     "Club"
                 ],
                 "summary": "Upload a club banner",
+                "operationId": "UploadClubBanner",
                 "parameters": [
                     {
                         "type": "file",
@@ -683,6 +684,7 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "Upload a profile picture",
+                "operationId": "UploadProfilePicture",
                 "parameters": [
                     {
                         "type": "file",
