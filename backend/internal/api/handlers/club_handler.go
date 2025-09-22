@@ -304,3 +304,60 @@ func GetClub(clubService services.ClubServicer) fiber.Handler {
 		return c.Status(fiber.StatusOK).JSON(club)
 	}
 }
+
+// UploadClubBanner godoc
+//
+//	@ID				UploadClubBanner
+//	@Summary		Upload a club banner
+//	@Description	Upload a new banner image for the specified club
+//	@Tags			Club
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			image	formData	file	true	"Club banner file"
+//	@Param			clubID	path		string	true	"Club ID"
+//	@Security		ApiKeyAuth
+//	@Success		200	{object}	UploadClubBannerResponse
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/club/{clubID}/banner [post]
+func UploadClubBanner(clubService services.ClubServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		clubID := c.Params("clubID")
+
+		file, err := c.FormFile("image")
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+				Error: "No file uploaded",
+			})
+		}
+
+		f, err := file.Open()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: "Failed to read uploaded file",
+			})
+		}
+		defer f.Close()
+
+		fileBytes := c.Locals("uploadedImageBytes").([]byte)
+
+		url, err := clubService.UploadClubBanner(ctx, clubID, fileBytes)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.JSON(UploadClubBannerResponse{
+			Message: "Club banner uploaded successfully",
+			URL:     url,
+		})
+	}
+}
+
+type UploadClubBannerResponse struct {
+	Message string `json:"message"`
+	URL     string `json:"url"`
+}

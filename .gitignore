@@ -38,3 +38,5 @@ tmp/
 bin/
 
 coverage/
+# image assets files
+assets/

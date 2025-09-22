@@ -3,7 +3,9 @@ package services
 import (
 	"context"
 	"errors"
+	"path/filepath"
 
+	"github.com/rhellwege/task-social/config"
 	"github.com/rhellwege/task-social/internal/db/repository"
 	"github.com/rhellwege/task-social/internal/util"
 )
@@ -17,17 +19,19 @@ type ClubServicer interface {
 	GetClubLeaderboard(ctx context.Context, userID string, clubID string) ([]repository.GetClubLeaderboardRow, error)
 	DeleteClub(ctx context.Context, userID string, clubID string) error
 	UpdateClub(ctx context.Context, userID string, params repository.UpdateClubParams) error
+	UploadClubBanner(ctx context.Context, clubID string, fileBytes []byte) (string, error)
+}
+
+type ClubService struct {
+	q repository.Querier
+	i ImageServicer
 }
 
 // compile time assertion that ClubService implements ClubServicer
 var _ ClubServicer = (*ClubService)(nil)
 
-type ClubService struct {
-	q repository.Querier
-}
-
-func NewClubService(q repository.Querier) *ClubService {
-	return &ClubService{q: q}
+func NewClubService(q repository.Querier, i ImageServicer) *ClubService {
+	return &ClubService{q: q, i: i}
 }
 
 type CreateClubRequest struct {
@@ -152,4 +156,35 @@ func (s *ClubService) UpdateClub(ctx context.Context, userID string, params repo
 	}
 
 	return s.q.UpdateClub(ctx, params)
+}
+
+func (s *ClubService) UploadClubBanner(ctx context.Context, clubID string, fileBytes []byte) (string, error) {
+	// 1. Get existing banner
+	club, err := s.q.GetClub(ctx, clubID)
+	if err != nil {
+		return "", err
+	}
+
+	// 2. Delete old banner if exists
+	if club.BannerImage != nil && *club.BannerImage != "" {
+		filename := filepath.Base(*club.BannerImage)
+		s.i.DeleteImage("banner", filename)
+	}
+
+	// 3. Save new banner
+	url, err := s.i.SaveImage(ctx, fileBytes, config.BannerImageWidth, config.BannerImageHeight, "banner")
+	if err != nil {
+		return "", err
+	}
+
+	// 4. Update DB
+	params := repository.UpdateClubParams{
+		ID:          clubID,
+		BannerImage: &url,
+	}
+	if err := s.q.UpdateClub(ctx, params); err != nil {
+		return "", err
+	}
+
+	return url, nil
 }

@@ -201,3 +201,63 @@ func GetUserClubs(userService services.UserServicer) fiber.Handler {
 		return c.Status(fiber.StatusOK).JSON(clubs)
 	}
 }
+
+// UploadProfilePicture godoc
+//
+//	@ID				UploadProfilePicture
+//	@Summary		Upload a profile picture
+//	@Description	Upload a new profile picture for the authenticated user
+//	@Tags			User
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			image	formData	file	true	"Profile picture file"
+//	@Security		ApiKeyAuth
+//	@Success		200	{object}	UploadProfilePictureResponse
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/user/profile-picture [post]
+func UploadProfilePicture(userService services.UserServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		userID := c.Locals("userID").(string)
+
+		// Get uploaded file
+		file, err := c.FormFile("image")
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+				Error: "No file uploaded",
+			})
+		}
+
+		f, err := file.Open()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: "Failed to read uploaded file",
+			})
+		}
+		defer f.Close()
+
+		// Read file bytes
+		fileBytes := c.Locals("uploadedImageBytes").([]byte)
+
+		// Call UserService to save image and update DB
+		url, err := userService.UploadProfilePicture(ctx, userID, fileBytes)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.JSON(UploadProfilePictureResponse{
+			Message: "Profile picture uploaded successfully",
+			URL:     url,
+		})
+	}
+}
+
+// Response type for profile picture upload
+type UploadProfilePictureResponse struct {
+	Message string `json:"message"`
+	URL     string `json:"url"`
+}
