@@ -1,0 +1,18 @@
+# 🔗 Links:
+# Source file: https://github.com/obytes/react-native-template-obytes/blob/master/.github/actions/setup-node-pnpm-install/action.yml
+
+name: "Setup Node + NPM + Install Dependencies"
+description: "Setup Node + NPM + Install Dependencies"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 18
+        cache: "npm"
+        cache-dependency-path: "frontend/package-lock.json"
+
+    - name: 📦 Install Project Dependencies
+      run: npm ci
+      working-directory: frontend
+      shell: bash
