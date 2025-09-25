@@ -12,6 +12,7 @@ import (
 	"github.com/rhellwege/task-social/config"
 	"github.com/rhellwege/task-social/internal/api/handlers"
 	"github.com/rhellwege/task-social/internal/api/routes"
+	"github.com/rhellwege/task-social/internal/api/services"
 	"github.com/rhellwege/task-social/internal/db"
 	"github.com/rhellwege/task-social/internal/db/repository"
 )
@@ -104,4 +105,37 @@ func LoginUser(app *fiber.App, username *string, email *string, password string)
 	respBody, _ := io.ReadAll(resp.Body)
 	json.Unmarshal(respBody, &loginBody)
 	return loginBody.Token, nil
+}
+
+func CreateTestClub(app *fiber.App, token, name string, description *string, isPublic bool) (*handlers.CreatedResponse, error) {
+	reqBody := services.CreateClubRequest{
+		Name:        name,
+		Description: description,
+		IsPublic:    isPublic,
+	}
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, err
+	}
+	req, err := NewProtectedRequest("POST", "/api/club", token, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := app.Test(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("failed to create club: %s", resp.Status)
+	}
+
+	var createdResp handlers.CreatedResponse
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	json.Unmarshal(respBody, &createdResp)
+	return &createdResp, nil
 }
