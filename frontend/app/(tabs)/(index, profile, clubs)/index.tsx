@@ -2,56 +2,33 @@ import { View, Text, TextInput, StyleSheet, ScrollView, Button } from 'react-nat
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { RouteParams } from 'expo-router'; // Adjust import based on your setup
 
-// Define the Club type based on the API response
-interface Club {
-  id: string;
-  name: string;
-  description: string;
-  owner_user_id: string;
-  banner_image: string | null;
-  is_public: boolean;
-  created_at: string;
-  updated_at: string;
-}
+// Define navigation param type
+type RootStackParamList = {
+  '(tabs)/clubs': { joinedClub: string };
+  // Add other routes if needed
+};
+
+const mockClubs = [
+  { id: "1", name: "Chess Club", description: "A club for chess enthusiasts." },
+  { id: "2", name: "Coding Club", description: "For coding challenges." },
+];
 
 export default function Tab() {
   const colorScheme = useColorScheme();
-  const [clubs, setClubs] = useState<Club[]>([]);
-  const [loading, setLoading] = useState(true);
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0dXNlciIsImV4cCI6MTc1ODI0NDY1OH0.8d9OYNNEDHYeEJW_DTExarVrGBTdKFv8lJz41c9cehA'; // Your generated token
+  const [clubs, setClubs] = useState(mockClubs);
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  useEffect(() => {
-    fetch('http://127.0.0.1:5050/api/clubs', {
-      headers: { 'Authorization': `Bearer ${token}` },
-    })
-      .then(res => {
-        console.log("Response status:", res.status);
-        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-        return res.json();
-      })
-      .then((data: Club[]) => {
-        console.log("Fetched clubs:", data);
-        setClubs(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Fetch error:', err);
-        setLoading(false);
-      });
-  }, []);
-
-  const handleJoin = async (clubId: string) => {
-    const response = await fetch(`http://127.0.0.1:5050/api/club/${clubId}/join`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` },
-    });
-    if (response.ok) alert('Joined!');
-    else alert('Failed to join: ' + await response.text());
+  const handleJoin = (clubId: string) => {
+    const joinedClub = clubs.find(club => club.id === clubId);
+    if (joinedClub) {
+      navigation.navigate('(tabs)/clubs', { joinedClub: JSON.stringify(joinedClub) });
+      alert(`Joined ${clubId}!`);
+    }
   };
-
-  if (loading) return <Text>Loading...</Text>;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

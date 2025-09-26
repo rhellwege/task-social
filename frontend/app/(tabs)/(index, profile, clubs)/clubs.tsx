@@ -4,6 +4,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { Link } from 'expo-router';
 import { useState, useEffect } from 'react';
+import { useLocalSearchParams } from 'expo-router';
 
 interface Club {
   id: string;
@@ -19,32 +20,14 @@ interface Club {
 export default function Tab() {
   const colorScheme = useColorScheme();
   const [joinedClubs, setJoinedClubs] = useState<Club[]>([]);
-  const [loading, setLoading] = useState(true);
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0dXNlciIsImV4cCI6MTc1ODI0NDY1OH0.8d9OYNNEDHYeEJW_DTExarVrGBTdKFv8lJz41c9cehA';
+  const { joinedClub } = useLocalSearchParams(); // Returns string | string[] | undefined
 
   useEffect(() => {
-    console.log("Fetching joined clubs..."); // Debug
-    fetch('http://127.0.0.1:5050/api/user/clubs', {
-      headers: { 'Authorization': `Bearer ${token}` },
-    })
-      .then(res => {
-        console.log("Response status:", res.status); // Debug
-        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-        return res.json();
-      })
-      .then((data: Club[] | null) => {
-        console.log("Fetched joined clubs:", data); // Debug
-        setJoinedClubs(data || []); // Default to empty array if null
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Fetch error:', err); // Debug
-        setJoinedClubs([]); // Empty array
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) return <Text>Loading...</Text>;
+    if (joinedClub) {
+      const clubData = typeof joinedClub === 'string' ? JSON.parse(joinedClub) : joinedClub;
+      setJoinedClubs(prev => [...prev, clubData as Club]);
+    }
+  }, [joinedClub]);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

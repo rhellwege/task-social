@@ -20,19 +20,16 @@ export default function ClubDetail() {
   const colorScheme = useColorScheme();
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0dXNlciIsImV4cCI6MTc1ODI0NDY1OH0.8d9OYNNEDHYeEJW_DTExarVrGBTdKFv8lJz41c9cehA';
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:5050/api/club/${id}/leaderboard`, {
-      headers: { 'Authorization': `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then((data: LeaderboardEntry[]) => setLeaderboard(data));
-    fetch(`http://127.0.0.1:5050/api/club/${id}/chat`, {
-      headers: { 'Authorization': `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then((data: ChatMessage[]) => setChatMessages(data));
+    setLeaderboard([
+      { user: "User1", score: 100 },
+      { user: "User2", score: 80 },
+    ]);
+    setChatMessages([
+      { user: "User1", text: "Hello!" },
+      { user: "User2", text: "Hi there!" },
+    ]);
   }, [id]);
 
   return (
