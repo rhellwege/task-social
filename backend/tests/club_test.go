@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/rhellwege/task-social/internal/api/handlers"
 	"github.com/rhellwege/task-social/internal/api/services"
 	"github.com/rhellwege/task-social/internal/db/repository"
@@ -101,11 +100,11 @@ func TestGetPublicClubs(t *testing.T) {
 	assert.NotEmpty(t, token)
 
 	// Create some clubs
-	_, err = createClub(app, token, "Public Club 1", StringToPtr(""), true)
+	_, err = CreateTestClub(app, token, "Public Club 1", StringToPtr(""), true)
 	assert.NoError(t, err)
-	_, err = createClub(app, token, "Public Club 2", StringToPtr(""), true)
+	_, err = CreateTestClub(app, token, "Public Club 2", StringToPtr(""), true)
 	assert.NoError(t, err)
-	_, err = createClub(app, token, "Private Club 1", StringToPtr(""), false)
+	_, err = CreateTestClub(app, token, "Private Club 1", StringToPtr(""), false)
 	assert.NoError(t, err)
 
 	req, err := NewProtectedRequest("GET", "/api/clubs", token, nil)
@@ -143,7 +142,7 @@ func TestJoinAndLeaveClub(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create a club using user A
-	club, err := createClub(app, tokenA, "Test Club", StringToPtr(""), true)
+	club, err := CreateTestClub(app, tokenA, "Test Club", StringToPtr(""), true)
 	assert.NoError(t, err)
 
 	// Join the club using user B
@@ -195,7 +194,7 @@ func TestDeleteClub(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create a club
-	club, err := createClub(app, token, "Test Club", StringToPtr(""), true)
+	club, err := CreateTestClub(app, token, "Test Club", StringToPtr(""), true)
 	assert.NoError(t, err)
 
 	// Delete the club
@@ -243,12 +242,12 @@ func TestUserNotMemberFail(t *testing.T) {
 	assert.NoError(t, err)
 
 	// create a public club using user a
-	publicClubResp, err := createClub(app, tokenA, "Test Club", StringToPtr(""), true)
+	publicClubResp, err := CreateTestClub(app, tokenA, "Test Club", StringToPtr(""), true)
 	assert.NoError(t, err)
 	publicClubID := publicClubResp.ID
 
 	// create a private club using user a
-	privateClubResp, err := createClub(app, tokenA, "Test Club", StringToPtr(""), false)
+	privateClubResp, err := CreateTestClub(app, tokenA, "Test Club", StringToPtr(""), false)
 	assert.NoError(t, err)
 	privateClubID := privateClubResp.ID
 
@@ -285,7 +284,7 @@ func TestClubVisibility(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create a club
-	publicClub, err := createClub(app, token, "Test Club", StringToPtr(""), true)
+	publicClub, err := CreateTestClub(app, token, "Test Club", StringToPtr(""), true)
 	assert.NoError(t, err)
 
 	// Get public clubs
@@ -303,7 +302,7 @@ func TestClubVisibility(t *testing.T) {
 	assert.Equal(t, publicClub.ID, publicClubs[0].ID)
 
 	// create a private club
-	privateClub, err := createClub(app, token, "Private Club", StringToPtr(""), false)
+	privateClub, err := CreateTestClub(app, token, "Private Club", StringToPtr(""), false)
 	assert.NoError(t, err)
 
 	// Get private clubs
@@ -332,7 +331,7 @@ func TestUpdateClub(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create a club
-	club, err := createClub(app, token, "Test Club", StringToPtr(""), true)
+	club, err := CreateTestClub(app, token, "Test Club", StringToPtr(""), true)
 	assert.NoError(t, err)
 
 	// Update the club
@@ -371,7 +370,7 @@ func TestGetClubLeaderboard(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create a club
-	club, err := createClub(app, token, "Test Club", StringToPtr(""), true)
+	club, err := CreateTestClub(app, token, "Test Club", StringToPtr(""), true)
 	assert.NoError(t, err)
 
 	// Get the club leaderboard
@@ -391,37 +390,4 @@ func TestGetClubLeaderboard(t *testing.T) {
 	assert.Equal(t, username, leaderboardEntry.Username)
 	assert.Equal(t, 0.0, leaderboardEntry.UserPoints)
 	assert.Equal(t, int64(0), leaderboardEntry.UserStreak)
-}
-
-func createClub(app *fiber.App, token, name string, description *string, isPublic bool) (*handlers.CreatedResponse, error) {
-	reqBody := services.CreateClubRequest{
-		Name:        name,
-		Description: description,
-		IsPublic:    isPublic,
-	}
-	jsonBody, err := json.Marshal(reqBody)
-	if err != nil {
-		return nil, err
-	}
-	req, err := NewProtectedRequest("POST", "/api/club", token, bytes.NewBuffer(jsonBody))
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := app.Test(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("failed to create club: %s", resp.Status)
-	}
-
-	var createdResp handlers.CreatedResponse
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	json.Unmarshal(respBody, &createdResp)
-	return &createdResp, nil
 }

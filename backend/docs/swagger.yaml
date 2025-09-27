@@ -171,6 +171,12 @@ paths:
     get:
       description: Get club info
       operationId: GetClub
+      parameters:
+      - description: Club ID
+        in: path
+        name: club_id
+        required: true
+        type: string
       produces:
       - application/json
       responses:

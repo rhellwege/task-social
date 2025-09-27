@@ -27,7 +27,7 @@ import (
 // @securityDefinitions.apikey	ApiKeyAuth
 // @in							header
 // @name						Authorization
-// @schemes http
+// @schemes					http
 func main() {
 	app := fiber.New()
 
