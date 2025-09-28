@@ -212,7 +212,7 @@ func (q *Queries) GetClubLeaderboard(ctx context.Context, clubID string) ([]GetC
 }
 
 const getClubMetrics = `-- name: GetClubMetrics :many
-SELECT id, club_id, title, description, interval, unit, requires_verification, created_at, updated_at FROM metric
+SELECT id, club_id, title, description, interval, start_at, unit, unit_is_integer, requires_verification, created_at, updated_at FROM metric
 WHERE club_id = ?
 `
 
@@ -231,7 +231,9 @@ func (q *Queries) GetClubMetrics(ctx context.Context, clubID string) ([]Metric, 
 			&i.Title,
 			&i.Description,
 			&i.Interval,
+			&i.StartAt,
 			&i.Unit,
+			&i.UnitIsInteger,
 			&i.RequiresVerification,
 			&i.CreatedAt,
 			&i.UpdatedAt,
