@@ -6,9 +6,7 @@ import (
 )
 
 type VersionResponse struct {
-	Version    string `json:"version"`
-	CommitHash string `json:"commit_hash"`
-	BuildDate  string `json:"build_date"`
+	Version string `json:"version"`
 }
 
 // Version godoc
@@ -22,10 +20,6 @@ type VersionResponse struct {
 //	@Router			/api/version [get]
 func Version() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(VersionResponse{
-			Version:    config.Version,
-			CommitHash: config.CommitHash,
-			BuildDate:  config.BuildDate,
-		})
+		return c.Status(fiber.StatusOK).JSON(VersionResponse{Version: config.Version})
 	}
 }

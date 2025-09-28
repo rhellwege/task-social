@@ -7,7 +7,6 @@ package repository
 
 import (
 	"context"
-	"time"
 )
 
 const createMetric = `-- name: CreateMetric :exec
@@ -39,8 +38,8 @@ func (q *Queries) CreateMetric(ctx context.Context, arg CreateMetricParams) erro
 }
 
 const createMetricEntry = `-- name: CreateMetricEntry :exec
-INSERT INTO metric_entry (user_id, metric_instance_id, value)
-VALUES (?1, ?2, ?3)
+INSERT INTO metric_entry (user_id, user_id, metric_instance_id, value)
+VALUES (?1, ?1, ?2, ?3)
 `
 
 type CreateMetricEntryParams struct {
@@ -55,44 +54,36 @@ func (q *Queries) CreateMetricEntry(ctx context.Context, arg CreateMetricEntryPa
 }
 
 const createMetricEntryAttachment = `-- name: CreateMetricEntryAttachment :exec
-INSERT INTO metric_entry_attachment (id, entry_user_id, entry_metric_instance_id, url)
-VALUES (?1, ?2, ?3, ?4)
+INSERT INTO metric_entry_attachment (id, metric_entry_id, url)
+VALUES (?1, ?2, ?3)
 `
 
 type CreateMetricEntryAttachmentParams struct {
-	ID                    string `json:"id"`
-	EntryUserID           string `json:"entry_user_id"`
-	EntryMetricInstanceID string `json:"entry_metric_instance_id"`
-	Url                   string `json:"url"`
+	ID            string `json:"id"`
+	MetricEntryID string `json:"metric_entry_id"`
+	Url           string `json:"url"`
 }
 
 func (q *Queries) CreateMetricEntryAttachment(ctx context.Context, arg CreateMetricEntryAttachmentParams) error {
-	_, err := q.db.ExecContext(ctx, createMetricEntryAttachment,
-		arg.ID,
-		arg.EntryUserID,
-		arg.EntryMetricInstanceID,
-		arg.Url,
-	)
+	_, err := q.db.ExecContext(ctx, createMetricEntryAttachment, arg.ID, arg.MetricEntryID, arg.Url)
 	return err
 }
 
 const createMetricEntryVerification = `-- name: CreateMetricEntryVerification :exec
-INSERT INTO metric_entry_verification (entry_user_id, entry_metric_instance_id, verifier_user_id, verified, reason)
-VALUES (?1, ?2, ?3, ?4, ?5)
+INSERT INTO metric_entry_verification (metric_entry_id, verifier_user_id, verified, reason)
+VALUES (?1, ?2, ?3, ?4)
 `
 
 type CreateMetricEntryVerificationParams struct {
-	EntryUserID           string  `json:"entry_user_id"`
-	EntryMetricInstanceID string  `json:"entry_metric_instance_id"`
-	VerifierUserID        string  `json:"verifier_user_id"`
-	Verified              bool    `json:"verified"`
-	Reason                *string `json:"reason"`
+	MetricEntryID  string  `json:"metric_entry_id"`
+	VerifierUserID string  `json:"verifier_user_id"`
+	Verified       bool    `json:"verified"`
+	Reason         *string `json:"reason"`
 }
 
 func (q *Queries) CreateMetricEntryVerification(ctx context.Context, arg CreateMetricEntryVerificationParams) error {
 	_, err := q.db.ExecContext(ctx, createMetricEntryVerification,
-		arg.EntryUserID,
-		arg.EntryMetricInstanceID,
+		arg.MetricEntryID,
 		arg.VerifierUserID,
 		arg.Verified,
 		arg.Reason,
@@ -101,18 +92,17 @@ func (q *Queries) CreateMetricEntryVerification(ctx context.Context, arg CreateM
 }
 
 const createMetricInstance = `-- name: CreateMetricInstance :exec
-INSERT INTO metric_instance (id, metric_id, due_at)
-VALUES (?1, ?2, ?3)
+INSERT INTO metric_instance (id, metric_id)
+VALUES (?1, ?2)
 `
 
 type CreateMetricInstanceParams struct {
-	ID       string    `json:"id"`
-	MetricID string    `json:"metric_id"`
-	DueAt    time.Time `json:"due_at"`
+	ID       string `json:"id"`
+	MetricID string `json:"metric_id"`
 }
 
 func (q *Queries) CreateMetricInstance(ctx context.Context, arg CreateMetricInstanceParams) error {
-	_, err := q.db.ExecContext(ctx, createMetricInstance, arg.ID, arg.MetricID, arg.DueAt)
+	_, err := q.db.ExecContext(ctx, createMetricInstance, arg.ID, arg.MetricID)
 	return err
 }
 
@@ -157,17 +147,16 @@ func (q *Queries) DeleteMetricEntryAttachment(ctx context.Context, id string) er
 const deleteMetricEntryVerification = `-- name: DeleteMetricEntryVerification :exec
 DELETE FROM metric_entry_verification
 WHERE
-    entry_user_id = ?1 AND entry_metric_instance_id = ?2 AND verifier_user_id = ?3
+    metric_entry_id = ?1 AND verifier_user_id = ?2
 `
 
 type DeleteMetricEntryVerificationParams struct {
-	EntryUserID           string `json:"entry_user_id"`
-	EntryMetricInstanceID string `json:"entry_metric_instance_id"`
-	VerifierUserID        string `json:"verifier_user_id"`
+	MetricEntryID  string `json:"metric_entry_id"`
+	VerifierUserID string `json:"verifier_user_id"`
 }
 
 func (q *Queries) DeleteMetricEntryVerification(ctx context.Context, arg DeleteMetricEntryVerificationParams) error {
-	_, err := q.db.ExecContext(ctx, deleteMetricEntryVerification, arg.EntryUserID, arg.EntryMetricInstanceID, arg.VerifierUserID)
+	_, err := q.db.ExecContext(ctx, deleteMetricEntryVerification, arg.MetricEntryID, arg.VerifierUserID)
 	return err
 }
 
@@ -258,23 +247,21 @@ SET
     verified = COALESCE(?1, verified),
     reason = COALESCE(?2, reason)
 WHERE
-    entry_user_id = ?3 AND entry_metric_instance_id = ?4 AND verifier_user_id = ?5
+    metric_entry_id = ?3 AND verifier_user_id = ?4
 `
 
 type UpdateMetricEntryVerificationParams struct {
-	Verified              *bool   `json:"verified"`
-	Reason                *string `json:"reason"`
-	EntryUserID           string  `json:"entry_user_id"`
-	EntryMetricInstanceID string  `json:"entry_metric_instance_id"`
-	VerifierUserID        string  `json:"verifier_user_id"`
+	Verified       *bool   `json:"verified"`
+	Reason         *string `json:"reason"`
+	MetricEntryID  string  `json:"metric_entry_id"`
+	VerifierUserID string  `json:"verifier_user_id"`
 }
 
 func (q *Queries) UpdateMetricEntryVerification(ctx context.Context, arg UpdateMetricEntryVerificationParams) error {
 	_, err := q.db.ExecContext(ctx, updateMetricEntryVerification,
 		arg.Verified,
 		arg.Reason,
-		arg.EntryUserID,
-		arg.EntryMetricInstanceID,
+		arg.MetricEntryID,
 		arg.VerifierUserID,
 	)
 	return err

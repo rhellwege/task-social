@@ -135,6 +135,7 @@ type UpdateUserRequest struct {
 //	@Success		200		{object}	SuccessResponse
 //	@Failure		400		{object}	ErrorResponse
 //	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
 //	@Failure		500		{object}	ErrorResponse
 //	@Router			/api/user [put]
 func UpdateUser(userService services.UserServicer) fiber.Handler {
@@ -167,32 +168,5 @@ func UpdateUser(userService services.UserServicer) fiber.Handler {
 		return c.Status(fiber.StatusOK).JSON(SuccessResponse{
 			Message: "User updated successfully",
 		})
-	}
-}
-
-// GetUserClubs godoc
-//
-//	@Summary		Get a list of a user's joined clubs
-//	@Description	Get a list of a user's joined clubs
-//	@Tags			User
-//	@Security		ApiKeyAuth
-//	@Produce		json
-//	@Success		200	{array}		repository.GetUserClubsRow
-//	@Failure		401	{object}	ErrorResponse
-//	@Failure		500	{object}	ErrorResponse
-//	@Router			/api/user/clubs [get]
-func GetUserClubs(userService services.UserServicer) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		ctx := c.Context()
-		id := c.Locals("userID").(string)
-
-		clubs, err := userService.GetUserClubs(ctx, id)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
-				Error: err.Error(),
-			})
-		}
-
-		return c.Status(fiber.StatusOK).JSON(clubs)
 	}
 }
