@@ -20,6 +20,7 @@ type ClubServicer interface {
 	DeleteClub(ctx context.Context, userID string, clubID string) error
 	UpdateClub(ctx context.Context, userID string, params repository.UpdateClubParams) error
 	UploadClubBanner(ctx context.Context, clubID string, fileBytes []byte) (string, error)
+	GetClubMetrics(ctx context.Context, userID string, clubID string) ([]repository.Metric, error)
 }
 
 type ClubService struct {
@@ -111,7 +112,8 @@ func (s *ClubService) IsUserModeratorOfClub(ctx context.Context, userID string, 
 		UserID: userID,
 		ClubID: clubID,
 	}
-	return s.q.IsUserModeratorOfClub(ctx, params)
+	ret, err := s.q.IsUserModeratorOfClub(ctx, params)
+	return (ret != 0), err
 }
 
 func (s *ClubService) IsUserOwnerOfClub(ctx context.Context, userID string, clubID string) (bool, error) {
@@ -187,4 +189,15 @@ func (s *ClubService) UploadClubBanner(ctx context.Context, clubID string, fileB
 	}
 
 	return url, nil
+}
+
+func (s *ClubService) GetClubMetrics(ctx context.Context, userID string, clubID string) ([]repository.Metric, error) {
+	isMember, err := s.IsUserMemberOfClub(ctx, userID, clubID)
+	if err != nil {
+		return nil, err
+	}
+	if !isMember {
+		return nil, errors.New("Permission denied: user is not a member of the club")
+	}
+	return s.q.GetClubMetrics(ctx, clubID)
 }

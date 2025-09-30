@@ -19,6 +19,8 @@ type UserServicer interface {
 	GetFriends(ctx context.Context, userID string) ([]repository.GetFriendsRow, error)
 	UpdateUser(ctx context.Context, params repository.UpdateUserParams) error
 	UploadProfilePicture(ctx context.Context, userID string, fileBytes []byte) (string, error)
+	GetUserMetrics(ctx context.Context, userID string) ([]repository.Metric, error)
+	GetUserMetricEntries(ctx context.Context, userID string) ([]repository.MetricEntry, error)
 }
 
 type UserService struct {
@@ -173,4 +175,12 @@ func (s *UserService) UploadProfilePicture(ctx context.Context, userID string, f
 	}
 
 	return url, nil
+}
+
+func (s *UserService) GetUserMetrics(ctx context.Context, userID string) ([]repository.Metric, error) {
+	return s.q.GetUserMetrics(ctx, userID)
+}
+
+func (s *UserService) GetUserMetricEntries(ctx context.Context, userID string) ([]repository.MetricEntry, error) {
+	return s.q.GetUserMetricEntries(ctx, userID)
 }
