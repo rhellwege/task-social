@@ -1,0 +1,24 @@
+# 🔗 Links:
+# Source file: https://github.com/obytes/react-native-template-obytes/blob/master/.github/workflows/expo-doctor.yml
+
+name: Expo Doctor (expo)
+
+on: [push]
+
+jobs:
+  doctor:
+    name: Expo Doctor (expo)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📦 Checkout project repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node + NPM + install deps
+        uses: ./.github/actions/setup-node-npm-install
+
+      - name: 🚑 Run Doctor Checks
+        run: npx expo-doctor@latest
+        working-directory: frontend
