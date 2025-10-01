@@ -91,18 +91,14 @@ WHERE is_public = true;
 SELECT * FROM metric
 WHERE club_id = ?;
 
--- name GetActiveMetricInstances
-SELECT * FROM metric_instance AS mi
-JOIN metric ON metric_instance = id
-WHERE due_at < NOW();
-
 -- name: IsUserMemberOfClub :one
 -- returns boolean
 SELECT EXISTS(SELECT 1 FROM club_membership WHERE user_id = ? AND club_id = ?);
 
 -- name: IsUserModeratorOfClub :one
+-- checks if user is moderator or owner of club
 -- returns boolean
-SELECT is_moderator FROM club_membership WHERE user_id = ? AND club_id = ?;
+SELECT EXISTS(SELECT 1 FROM club_membership WHERE user_id = ? AND club_id = ? AND (is_moderator = true OR is_owner = true));
 
 -- name: IsUserOwnerOfClub :one
 -- returns boolean

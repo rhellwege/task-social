@@ -38,16 +38,24 @@ type Querier interface {
 	// assumes user_id < friend_id
 	// TODO: add user friendship created at
 	GetFriends(ctx context.Context, id string) ([]GetFriendsRow, error)
+	// get all entries for all instances of a given metric
+	GetHistoricalMetricEntries(ctx context.Context, metricID string) ([]MetricEntry, error)
+	GetLatestMetricInstance(ctx context.Context, metricID string) (MetricInstance, error)
+	GetMetric(ctx context.Context, id string) (Metric, error)
+	GetMetricEntries(ctx context.Context, metricInstanceID string) ([]MetricEntry, error)
 	// TODO: Implement pagination with LIMIT and OFFSET
 	GetPublicClubs(ctx context.Context) ([]Club, error)
 	GetUserClubs(ctx context.Context, userID string) ([]GetUserClubsRow, error)
 	GetUserDisplay(ctx context.Context, id string) (GetUserDisplayRow, error)
 	GetUserLoginByEmail(ctx context.Context, email string) (GetUserLoginByEmailRow, error)
 	GetUserLoginByUsername(ctx context.Context, username string) (GetUserLoginByUsernameRow, error)
+	GetUserMetricEntries(ctx context.Context, userID string) ([]MetricEntry, error)
+	GetUserMetrics(ctx context.Context, userID string) ([]Metric, error)
 	// returns boolean
 	IsUserMemberOfClub(ctx context.Context, arg IsUserMemberOfClubParams) (int64, error)
+	// checks if user is moderator or owner of club
 	// returns boolean
-	IsUserModeratorOfClub(ctx context.Context, arg IsUserModeratorOfClubParams) (bool, error)
+	IsUserModeratorOfClub(ctx context.Context, arg IsUserModeratorOfClubParams) (int64, error)
 	// returns boolean
 	IsUserOwnerOfClub(ctx context.Context, arg IsUserOwnerOfClubParams) (int64, error)
 	UpdateClub(ctx context.Context, arg UpdateClubParams) error

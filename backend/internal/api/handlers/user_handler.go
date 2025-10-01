@@ -261,3 +261,59 @@ type UploadProfilePictureResponse struct {
 	Message string `json:"message"`
 	URL     string `json:"url"`
 }
+
+// GetUserMetrics godoc
+//
+//	@ID				GetUserMetrics
+//	@Summary		Get user metrics
+//	@Description	Get all metrics for a user from all joined clubs.
+//	@Tags			User
+//	@Security		ApiKeyAuth
+//	@Produce		json
+//	@Success		200	{array}		repository.Metric
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/user/metrics [get]
+func GetUserMetrics(userService services.UserServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		userID := c.Locals("userID").(string)
+
+		metrics, err := userService.GetUserMetrics(ctx, userID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.JSON(metrics)
+	}
+}
+
+// GetUserMetricEntries godoc
+//
+//	@ID				GetUserMetricEntries
+//	@Summary		Get user metric entries
+//	@Description	Get all metric entries turned in by a user.
+//	@Tags			User
+//	@Security		ApiKeyAuth
+//	@Produce		json
+//	@Success		200	{array}		repository.MetricEntry
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/user/metric-entries [get]
+func GetUserMetricEntries(userService services.UserServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		userID := c.Locals("userID").(string)
+
+		metrics, err := userService.GetUserMetricEntries(ctx, userID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.JSON(metrics)
+	}
+}

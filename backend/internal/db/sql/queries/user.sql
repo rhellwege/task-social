@@ -65,3 +65,14 @@ FROM club c
 JOIN club_membership cm ON c.id = cm.club_id
 WHERE cm.user_id = @user_id
 ORDER BY cm.created_at DESC;
+
+-- name: GetUserMetrics :many
+SELECT m.* FROM metric m
+JOIN club_membership cm ON m.club_id = cm.club_id
+WHERE cm.user_id = ?;
+
+-- name: GetUserMetricEntries :many
+SELECT me.* FROM metric_entry me
+JOIN metric m ON me.metric_id = m.id
+JOIN club_membership cm ON m.club_id = cm.club_id
+WHERE cm.user_id = ?;

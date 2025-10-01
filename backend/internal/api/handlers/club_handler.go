@@ -314,17 +314,17 @@ func GetClub(clubService services.ClubServicer) fiber.Handler {
 //	@Accept			multipart/form-data
 //	@Produce		json
 //	@Param			image	formData	file	true	"Club banner file"
-//	@Param			clubID	path		string	true	"Club ID"
+//	@Param			club_id	path		string	true	"Club ID"
 //	@Security		ApiKeyAuth
 //	@Success		200	{object}	UploadClubBannerResponse
 //	@Failure		400	{object}	ErrorResponse
 //	@Failure		401	{object}	ErrorResponse
 //	@Failure		500	{object}	ErrorResponse
-//	@Router			/api/club/{clubID}/banner [post]
+//	@Router			/api/club/{club_id}/banner [post]
 func UploadClubBanner(clubService services.ClubServicer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.Context()
-		clubID := c.Params("clubID")
+		clubID := c.Params("club_id")
 
 		file, err := c.FormFile("image")
 		if err != nil {
@@ -360,4 +360,35 @@ func UploadClubBanner(clubService services.ClubServicer) fiber.Handler {
 type UploadClubBannerResponse struct {
 	Message string `json:"message"`
 	URL     string `json:"url"`
+}
+
+// GetClubMetrics godoc
+//
+//	@ID				GetClubMetrics
+//	@Summary		Get club metrics
+//	@Description	Get metrics for the specified club
+//	@Tags			Club
+//	@Produce		json
+//	@Param			club_id	path	string	true	"Club ID"
+//	@Security		ApiKeyAuth
+//	@Success		200	{array}		repository.Metric
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/club/{club_id}/metrics [get]
+func GetClubMetrics(clubService services.ClubServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		userID := c.Locals("userID").(string)
+		clubID := c.Params("clubID")
+
+		metrics, err := clubService.GetClubMetrics(ctx, userID, clubID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.JSON(metrics)
+	}
 }

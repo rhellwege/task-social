@@ -11,28 +11,32 @@ import (
 )
 
 const createMetric = `-- name: CreateMetric :exec
-INSERT INTO metric (id, club_id, title, description, interval, unit, requires_verification)
-VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+INSERT INTO metric (id, club_id, title, description, interval, start_at, unit, unit_is_integer, requires_verification)
+VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
 `
 
 type CreateMetricParams struct {
-	MetricID             string `json:"metric_id"`
-	ClubID               string `json:"club_id"`
-	Title                string `json:"title"`
-	Description          string `json:"description"`
-	Interval             string `json:"interval"`
-	Unit                 string `json:"unit"`
-	RequiresVerification bool   `json:"requires_verification"`
+	ID                   string    `json:"id"`
+	ClubID               string    `json:"club_id"`
+	Title                string    `json:"title"`
+	Description          string    `json:"description"`
+	Interval             string    `json:"interval"`
+	StartAt              time.Time `json:"start_at"`
+	Unit                 string    `json:"unit"`
+	UnitIsInteger        bool      `json:"unit_is_integer"`
+	RequiresVerification bool      `json:"requires_verification"`
 }
 
 func (q *Queries) CreateMetric(ctx context.Context, arg CreateMetricParams) error {
 	_, err := q.db.ExecContext(ctx, createMetric,
-		arg.MetricID,
+		arg.ID,
 		arg.ClubID,
 		arg.Title,
 		arg.Description,
 		arg.Interval,
+		arg.StartAt,
 		arg.Unit,
+		arg.UnitIsInteger,
 		arg.RequiresVerification,
 	)
 	return err
@@ -182,25 +186,138 @@ func (q *Queries) DeleteMetricInstance(ctx context.Context, id string) error {
 	return err
 }
 
+const getHistoricalMetricEntries = `-- name: GetHistoricalMetricEntries :many
+SELECT metric_entry.user_id, metric_entry.metric_instance_id, metric_entry.value, metric_entry.created_at, metric_entry.updated_at FROM metric_entry
+JOIN metric_instance ON metric_instance.id = metric_entry.metric_instance_id
+WHERE metric_instance.metric_id = ?1
+`
+
+// get all entries for all instances of a given metric
+func (q *Queries) GetHistoricalMetricEntries(ctx context.Context, metricID string) ([]MetricEntry, error) {
+	rows, err := q.db.QueryContext(ctx, getHistoricalMetricEntries, metricID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MetricEntry
+	for rows.Next() {
+		var i MetricEntry
+		if err := rows.Scan(
+			&i.UserID,
+			&i.MetricInstanceID,
+			&i.Value,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getLatestMetricInstance = `-- name: GetLatestMetricInstance :one
+SELECT id, metric_id, due_at, created_at, updated_at FROM metric_instance WHERE metric_id = ? ORDER BY created_at DESC LIMIT 1
+`
+
+func (q *Queries) GetLatestMetricInstance(ctx context.Context, metricID string) (MetricInstance, error) {
+	row := q.db.QueryRowContext(ctx, getLatestMetricInstance, metricID)
+	var i MetricInstance
+	err := row.Scan(
+		&i.ID,
+		&i.MetricID,
+		&i.DueAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getMetric = `-- name: GetMetric :one
+SELECT id, club_id, title, description, interval, start_at, unit, unit_is_integer, requires_verification, created_at, updated_at FROM metric WHERE id = ?
+`
+
+func (q *Queries) GetMetric(ctx context.Context, id string) (Metric, error) {
+	row := q.db.QueryRowContext(ctx, getMetric, id)
+	var i Metric
+	err := row.Scan(
+		&i.ID,
+		&i.ClubID,
+		&i.Title,
+		&i.Description,
+		&i.Interval,
+		&i.StartAt,
+		&i.Unit,
+		&i.UnitIsInteger,
+		&i.RequiresVerification,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getMetricEntries = `-- name: GetMetricEntries :many
+SELECT user_id, metric_instance_id, value, created_at, updated_at FROM metric_entry WHERE metric_instance_id = ?1
+`
+
+func (q *Queries) GetMetricEntries(ctx context.Context, metricInstanceID string) ([]MetricEntry, error) {
+	rows, err := q.db.QueryContext(ctx, getMetricEntries, metricInstanceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MetricEntry
+	for rows.Next() {
+		var i MetricEntry
+		if err := rows.Scan(
+			&i.UserID,
+			&i.MetricInstanceID,
+			&i.Value,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateMetric = `-- name: UpdateMetric :exec
 UPDATE metric
 SET
     title = COALESCE(?1, title),
     description = COALESCE(?2, description),
     interval = COALESCE(?3, interval),
-    unit = COALESCE(?4, unit),
-    requires_verification = COALESCE(?5, requires_verification)
+    start_at = COALESCE(?4, start_at),
+    unit = COALESCE(?5, unit),
+    unit_is_integer = COALESCE(?6, unit_is_integer),
+    requires_verification = COALESCE(?7, requires_verification)
 WHERE
-    id = ?6
+    id = ?8
 `
 
 type UpdateMetricParams struct {
-	Title                *string `json:"title"`
-	Description          *string `json:"description"`
-	Interval             *string `json:"interval"`
-	Unit                 *string `json:"unit"`
-	RequiresVerification *bool   `json:"requires_verification"`
-	ID                   string  `json:"id"`
+	Title                *string    `json:"title"`
+	Description          *string    `json:"description"`
+	Interval             *string    `json:"interval"`
+	StartAt              *time.Time `json:"start_at"`
+	Unit                 *string    `json:"unit"`
+	UnitIsInteger        *bool      `json:"unit_is_integer"`
+	RequiresVerification *bool      `json:"requires_verification"`
+	ID                   string     `json:"id"`
 }
 
 func (q *Queries) UpdateMetric(ctx context.Context, arg UpdateMetricParams) error {
@@ -208,7 +325,9 @@ func (q *Queries) UpdateMetric(ctx context.Context, arg UpdateMetricParams) erro
 		arg.Title,
 		arg.Description,
 		arg.Interval,
+		arg.StartAt,
 		arg.Unit,
+		arg.UnitIsInteger,
 		arg.RequiresVerification,
 		arg.ID,
 	)

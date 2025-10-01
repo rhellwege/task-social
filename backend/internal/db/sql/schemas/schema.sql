@@ -98,8 +98,10 @@ CREATE TABLE IF NOT EXISTS metric (
     club_id TEXT NOT NULL,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
-    interval TEXT NOT NULL, -- interval in days (cannot be more that once per day)
-    unit TEXT NOT NULL,
+    interval TEXT NOT NULL, -- interval in ISO 8601 format
+    start_at DATETIME NOT NULL, -- determines the offset from the start of the interval
+    unit TEXT NOT NULL, -- custom, can be miles, pages read etc
+    unit_is_integer BOOLEAN NOT NULL DEFAULT FALSE, -- determines if the unit is an integer
     requires_verification BOOLEAN NOT NULL DEFAULT FALSE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -118,7 +120,7 @@ CREATE TABLE IF NOT EXISTS metric_instance (
 CREATE TABLE IF NOT EXISTS metric_entry (
     user_id TEXT NOT NULL,
     metric_instance_id TEXT NOT NULL,
-    value REAL NOT NULL,
+    value REAL NOT NULL, -- interpreted as int or real
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, metric_instance_id),

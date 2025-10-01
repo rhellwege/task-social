@@ -57,7 +57,9 @@ type Metric struct {
 	Title                string    `json:"title"`
 	Description          string    `json:"description"`
 	Interval             string    `json:"interval"`
+	StartAt              time.Time `json:"start_at"`
 	Unit                 string    `json:"unit"`
+	UnitIsInteger        bool      `json:"unit_is_integer"`
 	RequiresVerification bool      `json:"requires_verification"`
 	CreatedAt            time.Time `json:"created_at"`
 	UpdatedAt            time.Time `json:"updated_at"`
