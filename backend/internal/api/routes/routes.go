@@ -15,6 +15,7 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	userService := services.NewUserService(querier, authService, imageService)
 	clubService := services.NewClubService(querier, imageService)
 	metricService := services.NewMetricService(querier, clubService)
+	wsService := services.NewWebSocketService()
 
 	// Logger middleware
 	app.Use(logger.New(logger.Config{
@@ -71,4 +72,8 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 
 	// Serve uploaded assets
 	app.Static("/assets", "./assets")
+
+	// WebSocket route
+	ws := app.Group("/ws", middleware.WebSocketUpgrade, middleware.ProtectedRoute(authService))
+	ws.Get("/", handlers.WebSocketHandler(wsService))
 }
