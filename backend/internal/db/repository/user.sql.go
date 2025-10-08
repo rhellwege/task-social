@@ -235,6 +235,83 @@ func (q *Queries) GetUserLoginByUsername(ctx context.Context, username string) (
 	return i, err
 }
 
+const getUserMetricEntries = `-- name: GetUserMetricEntries :many
+SELECT me.user_id, me.metric_instance_id, me.value, me.created_at, me.updated_at FROM metric_entry me
+JOIN metric m ON me.metric_id = m.id
+JOIN club_membership cm ON m.club_id = cm.club_id
+WHERE cm.user_id = ?
+`
+
+func (q *Queries) GetUserMetricEntries(ctx context.Context, userID string) ([]MetricEntry, error) {
+	rows, err := q.db.QueryContext(ctx, getUserMetricEntries, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MetricEntry
+	for rows.Next() {
+		var i MetricEntry
+		if err := rows.Scan(
+			&i.UserID,
+			&i.MetricInstanceID,
+			&i.Value,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserMetrics = `-- name: GetUserMetrics :many
+SELECT m.id, m.club_id, m.title, m.description, m.interval, m.start_at, m.unit, m.unit_is_integer, m.requires_verification, m.created_at, m.updated_at FROM metric m
+JOIN club_membership cm ON m.club_id = cm.club_id
+WHERE cm.user_id = ?
+`
+
+func (q *Queries) GetUserMetrics(ctx context.Context, userID string) ([]Metric, error) {
+	rows, err := q.db.QueryContext(ctx, getUserMetrics, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Metric
+	for rows.Next() {
+		var i Metric
+		if err := rows.Scan(
+			&i.ID,
+			&i.ClubID,
+			&i.Title,
+			&i.Description,
+			&i.Interval,
+			&i.StartAt,
+			&i.Unit,
+			&i.UnitIsInteger,
+			&i.RequiresVerification,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateUser = `-- name: UpdateUser :exec
 UPDATE user
 SET

@@ -212,7 +212,7 @@ func (q *Queries) GetClubLeaderboard(ctx context.Context, clubID string) ([]GetC
 }
 
 const getClubMetrics = `-- name: GetClubMetrics :many
-SELECT id, club_id, title, description, interval, unit, requires_verification, created_at, updated_at FROM metric
+SELECT id, club_id, title, description, interval, start_at, unit, unit_is_integer, requires_verification, created_at, updated_at FROM metric
 WHERE club_id = ?
 `
 
@@ -231,7 +231,9 @@ func (q *Queries) GetClubMetrics(ctx context.Context, clubID string) ([]Metric, 
 			&i.Title,
 			&i.Description,
 			&i.Interval,
+			&i.StartAt,
 			&i.Unit,
+			&i.UnitIsInteger,
 			&i.RequiresVerification,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -305,7 +307,7 @@ func (q *Queries) IsUserMemberOfClub(ctx context.Context, arg IsUserMemberOfClub
 }
 
 const isUserModeratorOfClub = `-- name: IsUserModeratorOfClub :one
-SELECT is_moderator FROM club_membership WHERE user_id = ? AND club_id = ?
+SELECT EXISTS(SELECT 1 FROM club_membership WHERE user_id = ? AND club_id = ? AND (is_moderator = true OR is_owner = true))
 `
 
 type IsUserModeratorOfClubParams struct {
@@ -313,12 +315,13 @@ type IsUserModeratorOfClubParams struct {
 	ClubID string `json:"club_id"`
 }
 
+// checks if user is moderator or owner of club
 // returns boolean
-func (q *Queries) IsUserModeratorOfClub(ctx context.Context, arg IsUserModeratorOfClubParams) (bool, error) {
+func (q *Queries) IsUserModeratorOfClub(ctx context.Context, arg IsUserModeratorOfClubParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, isUserModeratorOfClub, arg.UserID, arg.ClubID)
-	var is_moderator bool
-	err := row.Scan(&is_moderator)
-	return is_moderator, err
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
 }
 
 const isUserOwnerOfClub = `-- name: IsUserOwnerOfClub :one
