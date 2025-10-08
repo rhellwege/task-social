@@ -11,6 +11,7 @@ import (
 
 func WebSocketHandler(wsService *services.WebSocketService) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
 		return websocket.New(func(conn *websocket.Conn) {
 			userID, ok := conn.Locals("userID").(string)
 			if !ok {
@@ -21,16 +22,18 @@ func WebSocketHandler(wsService *services.WebSocketService) fiber.Handler {
 
 			jwtToken, ok := conn.Locals("jwt").(*jwt.Token)
 			if !ok {
-				log.Println("Unauthorized WebSocket connection: missing jwt")
+				log.Println("Unauthorized WebSocket connection: missing token")
 				conn.Close()
 				return
 			}
 
-			wsService.AddConnection(userID, conn, jwtToken)
-			defer wsService.RemoveConnection(userID)
+			wsService.AddConnection(ctx, userID, conn, jwtToken)
+			defer wsService.RemoveConnection(ctx, userID)
 
 			log.Printf("WebSocket connection established for user %s", userID)
 
+			// if the client sends through the connection, echo back.
+			// chat messages are sent through the api then broadcasted on ws
 			for {
 				mt, msg, err := conn.ReadMessage()
 				if err != nil {

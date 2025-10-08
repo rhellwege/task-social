@@ -26,13 +26,14 @@ type ClubServicer interface {
 type ClubService struct {
 	q repository.Querier
 	i ImageServicer
+	w WebSocketServicer
 }
 
 // compile time assertion that ClubService implements ClubServicer
 var _ ClubServicer = (*ClubService)(nil)
 
-func NewClubService(q repository.Querier, i ImageServicer) *ClubService {
-	return &ClubService{q: q, i: i}
+func NewClubService(q repository.Querier, i ImageServicer, w WebSocketServicer) *ClubService {
+	return &ClubService{q: q, i: i, w: w}
 }
 
 type CreateClubRequest struct {

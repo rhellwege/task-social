@@ -13,9 +13,9 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	authService := services.NewAuthService()
 	imageService := services.NewImageService("./assets")
 	userService := services.NewUserService(querier, authService, imageService)
-	clubService := services.NewClubService(querier, imageService)
-	metricService := services.NewMetricService(querier, clubService)
 	wsService := services.NewWebSocketService()
+	clubService := services.NewClubService(querier, imageService, wsService)
+	metricService := services.NewMetricService(querier, clubService)
 
 	// Logger middleware
 	app.Use(logger.New(logger.Config{
@@ -69,6 +69,9 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	api.Get("/metric/:metric_id/latest-entries", handlers.GetLatestMetricEntries(metricService))
 	// gets all historical entries of a metric
 	api.Get("/metric/:metric_id/historical-entries", handlers.GetHistoricalMetricEntries(metricService))
+
+	// api.Get("/club/:clubID/messages", handlers.GetClubMessages(clubService))
+	// api.Post("/club/:")
 
 	// Serve uploaded assets
 	app.Static("/assets", "./assets")

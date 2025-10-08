@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"sync"
 	"time"
@@ -9,6 +10,16 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/golang-jwt/jwt/v5"
 )
+
+type WebSocketServicer interface {
+	AddConnection(ctx context.Context, userID string, conn *websocket.Conn, jwt *jwt.Token)
+	RemoveConnection(ctx context.Context, userID string)
+	GetConnection(ctx context.Context, userID string) (*websocket.Conn, bool)
+	CleanUpExpiredConnections(ctx context.Context)
+	BroadcastMessage(ctx context.Context, recipients []string, message string) error
+}
+
+var _ WebSocketServicer = (*WebSocketService)(nil)
 
 type WebSocketConnection struct {
 	Conn *websocket.Conn
@@ -26,19 +37,19 @@ func NewWebSocketService() *WebSocketService {
 	}
 }
 
-func (s *WebSocketService) AddConnection(userID string, conn *websocket.Conn, jwt *jwt.Token) {
+func (s *WebSocketService) AddConnection(ctx context.Context, userID string, conn *websocket.Conn, jwt *jwt.Token) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.connections[userID] = WebSocketConnection{Conn: conn, JWT: jwt}
 }
 
-func (s *WebSocketService) RemoveConnection(userID string) {
+func (s *WebSocketService) RemoveConnection(ctx context.Context, userID string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	delete(s.connections, userID)
 }
 
-func (s *WebSocketService) GetConnection(userID string) (*websocket.Conn, bool) {
+func (s *WebSocketService) GetConnection(ctx context.Context, userID string) (*websocket.Conn, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	conn, ok := s.connections[userID]
@@ -48,7 +59,7 @@ func (s *WebSocketService) GetConnection(userID string) (*websocket.Conn, bool) 
 	return conn.Conn, true
 }
 
-func (s *WebSocketService) CleanUpExpiredConnections() {
+func (s *WebSocketService) CleanUpExpiredConnections(ctx context.Context) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for userID, connData := range s.connections {
@@ -64,7 +75,7 @@ func (s *WebSocketService) CleanUpExpiredConnections() {
 	}
 }
 
-func (s *WebSocketService) BroadcastMessage(recipients []string, message string) error {
+func (s *WebSocketService) BroadcastMessage(ctx context.Context, recipients []string, message string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for _, recipient := range recipients {
@@ -82,7 +93,7 @@ func (s *WebSocketService) BroadcastMessage(recipients []string, message string)
 	return nil
 }
 
-func (s *WebSocketService) BroadcastGlobalMessage(message string) error {
+func (s *WebSocketService) BroadcastGlobalMessage(ctx context.Context, message string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for userID, connData := range s.connections {
@@ -96,7 +107,7 @@ func (s *WebSocketService) BroadcastGlobalMessage(message string) error {
 	return nil
 }
 
-func (s *WebSocketService) SendMessage(recipient string, message string) error {
+func (s *WebSocketService) SendMessage(ctx context.Context, recipient string, message string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	connData, ok := s.connections[recipient]
