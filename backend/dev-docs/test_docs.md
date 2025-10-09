@@ -289,3 +289,45 @@ A series of test cases are run with different passwords to check the `ValidatePa
 *   **Strong password - long:**
     *   **Action:** Validate "*#4ricIo0vmMI$0C0wkc940thoncnCNEFHOej0g(&#$*@(#98".
     *   **Expected Result:** Succeeds with no error.
+
+WebSocket Test Suite Documentation
+
+This document outlines the test cases for the WebSocket functionality in the backend.
+
+### TestWebsocketBasic
+
+This test verifies the basic functionality of the WebSocket endpoint.
+
+**Steps:**
+
+1.  A test user is created and logged in to obtain an authentication token.
+2.  A WebSocket connection is established with the server using the obtained token.
+3.  A message is sent to the server, which should echo the message back.
+4.  The connection is closed.
+
+*   **Websocket client connection with JWT:**
+    *   **Action:** A WebSocket connection is attempted with a valid JWT.
+    *   **Expected Result:** The connection is successful.
+*   **Websocket client send echo:**
+    *   **Action:** A message is sent to the WebSocket server.
+    *   **Expected Result:** The server echoes the message back to the client.
+*   **Multiple users echo:**
+    *   **Action:** Multiple users connect to the WebSocket server and send messages.
+    *   **Expected Result:** Each user receives their own echoed message.
+
+### TestClubWebsockets
+
+This test verifies that WebSocket messages are broadcast to all members of a club.
+
+**Steps:**
+
+1.  A club owner and several other users are created.
+2.  All users connect to the WebSocket server.
+3.  The club owner creates a new club.
+4.  All other users join the club.
+5.  One user sends a message to the club via the API.
+6.  **Expected Result:** The message is broadcast to all members of the club, including the sender.
+
+*   **Club message broadcasts to all joined users:**
+    *   **Action:** A user sends a message to a club they are a member of.
+    *   **Expected Result:** All members of the club receive the message via their WebSocket connection.

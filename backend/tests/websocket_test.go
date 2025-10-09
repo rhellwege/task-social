@@ -1,11 +1,15 @@
 package tests
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
 
 	"github.com/fasthttp/websocket"
+	"github.com/rhellwege/task-social/internal/api/handlers"
+	"github.com/rhellwege/task-social/internal/db/repository"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -94,6 +98,7 @@ func TestWebsocketBasic(t *testing.T) {
 func TestClubWebsockets(t *testing.T) {
 	type userInfo struct {
 		username string
+		token    string
 		conn     *websocket.Conn
 	}
 	var users []userInfo
@@ -113,6 +118,12 @@ func TestClubWebsockets(t *testing.T) {
 
 	// 3. Create a test club using one of the users
 	clubOwnerToken, err := CreateTestUser(app, "clubOwner", "clubOwner@email.com", "Password123!@")
+	headers := http.Header{}
+	headers.Set("Authorization", clubOwnerToken)
+	clubOwnerConn, _, err := dialer.Dial(wsEndpoint, headers)
+	assert.NoError(t, err)
+	assert.NotNil(t, clubOwnerConn)
+	defer clubOwnerConn.Close()
 	assert.NoError(t, err)
 	resp, err := CreateTestClub(app, clubOwnerToken, "Websocket Club", StringToPtr("description"), true)
 	assert.NoError(t, err)
@@ -134,6 +145,7 @@ func TestClubWebsockets(t *testing.T) {
 		users = append(users, userInfo{
 			username: username,
 			conn:     conn,
+			token:    token,
 		})
 		// 4. Have all users join the club
 		joinReq, err := NewProtectedRequest("POST", fmt.Sprintf("/api/club/%s/join", clubID), token, nil)
@@ -144,18 +156,32 @@ func TestClubWebsockets(t *testing.T) {
 	}
 
 	t.Run("Club message broadcasts to all joined users", func(t *testing.T) {
-		// // 5. Send a message from one user to the club
-		// message := "Hello, everyone!"
-		// sendReq, err := NewProtectedRequest("POST", fmt.Sprintf("/api/club/%s/message", clubID), users[0].conn, message)
-		// assert.NoError(t, err)
-		// sendResp, err := app.Test(sendReq)
-		// assert.NoError(t, err)
-		// assert.Equal(t, http.StatusOK, sendResp.StatusCode)
+		// 5. Send a message from one user to the club
+		message := handlers.ClubPostRequest{
+			TextContent: "Hello, everyone!",
+		}
+		jsonBody, err := json.Marshal(message)
+		assert.NoError(t, err)
+		sendReq, err := NewProtectedRequest("POST", fmt.Sprintf("/api/club/%s/post", clubID), users[0].token, bytes.NewBuffer(jsonBody))
+		assert.NoError(t, err)
+		sendResp, err := app.Test(sendReq)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, sendResp.StatusCode)
 
-		// // 6. Verify that all users receive the message
-		// for _, user := range users {
-		// 	msg := <-user.conn.ReadMessage()
-		// 	assert.Equal(t, message, string(msg))
-		// }
+		// 6. Verify that all users receive the message
+		for _, user := range users {
+			_, msg, err := user.conn.ReadMessage()
+			assert.NoError(t, err)
+			// read into message
+			var myMessage repository.ClubPost
+			json.Unmarshal(msg, &myMessage)
+			assert.Equal(t, myMessage.Content, message.TextContent)
+		}
+		// 6. including sender (club owner)
+		_, msg, err := clubOwnerConn.ReadMessage()
+		assert.NoError(t, err)
+		var myMessage repository.ClubPost
+		json.Unmarshal(msg, &myMessage)
+		assert.Equal(t, myMessage.Content, message.TextContent)
 	})
 }

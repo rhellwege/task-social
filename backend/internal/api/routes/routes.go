@@ -58,6 +58,9 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	)
 	api.Get("/club/:club_id/metrics", handlers.GetClubMetrics(clubService))
 
+	api.Get("/club/:club_id/posts", handlers.GetClubPosts(clubService))
+	api.Post("/club/:club_id/post", handlers.CreateClubPost(clubService))
+
 	// Metrics routes
 	api.Post("/metric", handlers.CreateMetric(metricService))
 	api.Get("/metric/:metric_id", handlers.GetMetric(metricService))
@@ -69,9 +72,6 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	api.Get("/metric/:metric_id/latest-entries", handlers.GetLatestMetricEntries(metricService))
 	// gets all historical entries of a metric
 	api.Get("/metric/:metric_id/historical-entries", handlers.GetHistoricalMetricEntries(metricService))
-
-	// api.Get("/club/:clubID/messages", handlers.GetClubMessages(clubService))
-	// api.Post("/club/:")
 
 	// Serve uploaded assets
 	app.Static("/assets", "./assets")

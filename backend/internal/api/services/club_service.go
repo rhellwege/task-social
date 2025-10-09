@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"path/filepath"
 
@@ -21,6 +22,8 @@ type ClubServicer interface {
 	UpdateClub(ctx context.Context, userID string, params repository.UpdateClubParams) error
 	UploadClubBanner(ctx context.Context, clubID string, fileBytes []byte) (string, error)
 	GetClubMetrics(ctx context.Context, userID string, clubID string) ([]repository.Metric, error)
+	GetClubPosts(ctx context.Context, userID string, clubID string) ([]repository.ClubPost, error)
+	CreateClubPost(ctx context.Context, userID string, clubID string, text string) (string, error)
 }
 
 type ClubService struct {
@@ -201,4 +204,37 @@ func (s *ClubService) GetClubMetrics(ctx context.Context, userID string, clubID 
 		return nil, errors.New("Permission denied: user is not a member of the club")
 	}
 	return s.q.GetClubMetrics(ctx, clubID)
+}
+
+func (s *ClubService) GetClubPosts(ctx context.Context, userID string, clubID string) ([]repository.ClubPost, error) {
+	return s.q.GetClubPosts(ctx, clubID)
+}
+
+func (s *ClubService) CreateClubPost(ctx context.Context, userID string, clubID string, text string) (string, error) {
+	id := util.GenerateUUID()
+	params := repository.CreateClubPostParams{
+		ID:      id,
+		UserID:  userID,
+		ClubID:  clubID,
+		Content: text,
+	}
+	err := s.q.CreateClubPost(ctx, params)
+	if err != nil {
+		return "", err
+	}
+	post, err := s.q.GetClubPost(ctx, id)
+	if err != nil {
+		return "", err
+	}
+	jsonStr, err := json.Marshal(post)
+	if err != nil {
+		return "", err
+	}
+
+	users, err := s.q.GetClubUserIds(ctx, clubID)
+	if err != nil {
+		return "", err
+	}
+	s.w.BroadcastMessage(ctx, users, string(jsonStr))
+	return id, nil
 }
