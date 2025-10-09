@@ -60,6 +60,8 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 
 	api.Get("/club/:club_id/posts", handlers.GetClubPosts(clubService))
 	api.Post("/club/:club_id/post", handlers.CreateClubPost(clubService))
+	api.Get("/club/:club_id/post/:post_id", handlers.GetClubPost(clubService))
+	api.Delete("/club/:club_id/post/:post_id", handlers.DeleteClubPost(clubService))
 
 	// Metrics routes
 	api.Post("/metric", handlers.CreateMetric(metricService))

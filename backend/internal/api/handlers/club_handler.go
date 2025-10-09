@@ -468,3 +468,55 @@ func CreateClubPost(clubService services.ClubServicer) fiber.Handler {
 		return c.JSON(postID)
 	}
 }
+
+// DeleteClubPost godoc
+//
+//	@ID				DeleteClubPost
+//	@Summary		Delete a club post
+//	@Description	Delete a club post
+//	@Tags			Club
+//	@Produce		json
+//	@Param			club_id	path	string	true	"Club ID"
+//	@Param			post_id	path	string	true	"Post ID"
+//	@Security		ApiKeyAuth
+//	@Success		200	{object}	SuccessResponse
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/club/{club_id}/post/{post_id} [delete]
+func DeleteClubPost(clubService services.ClubServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		userID := c.Locals("userID").(string)
+		clubID := c.Params("club_id")
+		postID := c.Params("post_id")
+
+		return clubService.DeleteClubPost(ctx, userID, clubID, postID)
+	}
+}
+
+// GetClubPost godoc
+//
+//	@ID				GetClubPost
+//	@Summary		Get a club post
+//	@Description	Get a club post
+//	@Tags			Club
+//	@Produce		json
+//	@Param			club_id	path	string	true	"Club ID"
+//	@Param			post_id	path	string	true	"Post ID"
+//	@Security		ApiKeyAuth
+//	@Success		200	{object}	SuccessResponse
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/club/{club_id}/post/{post_id} [get]
+func GetClubPost(clubService services.ClubServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		userID := c.Locals("userID").(string)
+		clubID := c.Params("club_id")
+		postID := c.Params("post_id")
+
+		return clubService.DeleteClubPost(ctx, userID, clubID, postID)
+	}
+}

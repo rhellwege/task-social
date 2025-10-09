@@ -24,6 +24,8 @@ type ClubServicer interface {
 	GetClubMetrics(ctx context.Context, userID string, clubID string) ([]repository.Metric, error)
 	GetClubPosts(ctx context.Context, userID string, clubID string) ([]repository.ClubPost, error)
 	CreateClubPost(ctx context.Context, userID string, clubID string, text string) (string, error)
+	GetClubPost(ctx context.Context, userID string, postID string) (repository.ClubPost, error)
+	DeleteClubPost(ctx context.Context, userID string, clubID string, postID string) error
 }
 
 type ClubService struct {
@@ -237,4 +239,19 @@ func (s *ClubService) CreateClubPost(ctx context.Context, userID string, clubID 
 	}
 	s.w.BroadcastMessage(ctx, users, string(jsonStr))
 	return id, nil
+}
+
+func (s *ClubService) GetClubPost(ctx context.Context, userID string, postID string) (repository.ClubPost, error) {
+	return s.q.GetClubPost(ctx, postID)
+}
+
+func (s *ClubService) DeleteClubPost(ctx context.Context, userID string, clubID string, postID string) error {
+	post, err := s.GetClubPost(ctx, userID, postID)
+	if err != nil {
+		return err
+	}
+	if post.UserID != userID {
+		return errors.New("Permission denied: user is not the author of the post")
+	}
+	return s.q.DeleteClubPost(ctx, postID)
 }
