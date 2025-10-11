@@ -289,3 +289,69 @@ A series of test cases are run with different passwords to check the `ValidatePa
 *   **Strong password - long:**
     *   **Action:** Validate "*#4ricIo0vmMI$0C0wkc940thoncnCNEFHOej0g(&#$*@(#98".
     *   **Expected Result:** Succeeds with no error.
+
+WebSocket Test Suite Documentation
+
+This document outlines the test cases for the WebSocket functionality in the backend.
+
+### TestWebsocketBasic
+
+This test verifies the basic functionality of the WebSocket endpoint.
+
+**Steps:**
+
+1.  A test user is created and logged in to obtain an authentication token.
+2.  A WebSocket connection is established with the server using the obtained token.
+3.  A message is sent to the server, which should echo the message back.
+4.  The connection is closed.
+
+*   **Websocket client connection with JWT:**
+    *   **Action:** A WebSocket connection is attempted with a valid JWT.
+    *   **Expected Result:** The connection is successful.
+*   **Websocket client send echo:**
+    *   **Action:** A message is sent to the WebSocket server.
+    *   **Expected Result:** The server echoes the message back to the client.
+*   **Multiple users echo:**
+    *   **Action:** Multiple users connect to the WebSocket server and send messages.
+    *   **Expected Result:** Each user receives their own echoed message.
+
+### TestClubWebsockets
+
+This test verifies that WebSocket messages are broadcast to all members of a club.
+
+**Steps:**
+
+1.  A club owner and several other users are created.
+2.  All users connect to the WebSocket server.
+3.  The club owner creates a new club.
+4.  All other users join the club.
+5.  One user sends a message to the club via the API.
+6.  **Expected Result:** The message is broadcast to all members of the club, including the sender.
+
+*   **Club message broadcasts to all joined users:**
+    *   **Action:** A user sends a message to a club they are a member of.
+    *   **Expected Result:** All members of the club receive the message via their WebSocket connection.
+
+### TestClubPosts
+
+This test verifies the functionality of creating, retrieving, and deleting club posts.
+
+**Steps:**
+
+1.  A test user is created and logged in.
+2.  The user creates a club.
+3.  A post is created in the club.
+    *   **Action:** A POST request is made to `/api/club/{clubId}/post` with the post content.
+    *   **Expected Result:** The post is created successfully, returning a `200 OK` status. The response body contains the new post's data.
+4.  The post is retrieved.
+    *   **Action:** A GET request is made to `/api/club/{clubId}/post/{postId}`.
+    *   **Expected Result:** The request is successful, returning a `200 OK` status. The response body contains the post's data.
+5.  All posts in the club are retrieved.
+    *   **Action:** A GET request is made to `/api/club/{clubId}/posts`.
+    *   **Expected Result:** The request is successful, returning a `200 OK` status. The response body contains a list of all posts in the club.
+6.  The post is deleted.
+    *   **Action:** A DELETE request is made to `/api/club/{clubId}/post/{postId}`.
+    *   **Expected Result:** The request is successful, returning a `200 OK` status.
+7.  The post is retrieved again.
+    *   **Action:** A GET request is made to `/api/club/{clubId}/post/{postId}`.
+    *   **Expected Result:** The request fails with a `404 Not Found` status.

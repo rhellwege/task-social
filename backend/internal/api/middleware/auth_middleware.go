@@ -41,6 +41,7 @@ func ProtectedRoute(authService services.AuthServicer) fiber.Handler {
 		}
 
 		c.Locals("userID", subject)
+		c.Locals("jwt", token)
 
 		return c.Next()
 	}

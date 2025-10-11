@@ -391,3 +391,72 @@ func TestGetClubLeaderboard(t *testing.T) {
 	assert.Equal(t, 0.0, leaderboardEntry.UserPoints)
 	assert.Equal(t, int64(0), leaderboardEntry.UserStreak)
 }
+
+func TestClubPosts(t *testing.T) {
+	app := SetupTestApp()
+
+	// Create a test user
+	username := "testuser"
+	email := "test@example.com"
+	password := "Password123!@"
+	token, err := CreateTestUser(app, username, email, password)
+	assert.NoError(t, err)
+
+	// Create a club
+	club, err := CreateTestClub(app, token, "Test Club", StringToPtr(""), true)
+	assert.NoError(t, err)
+
+	// Create a post
+	postContent := "This is a test post."
+	reqBody := handlers.ClubPostRequest{
+		TextContent: postContent,
+	}
+	jsonBody, err := json.Marshal(reqBody)
+	assert.NoError(t, err)
+	createPostReq, err := NewProtectedRequest("POST", fmt.Sprintf("/api/club/%s/post", club.ID), token, bytes.NewBuffer(jsonBody))
+	assert.NoError(t, err)
+	createPostResp, err := app.Test(createPostReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, createPostResp.StatusCode)
+	var createdPost handlers.CreatedResponse
+	err = json.NewDecoder(createPostResp.Body).Decode(&createdPost)
+	assert.NoError(t, err)
+
+	// Get the post
+	getPostReq, err := NewProtectedRequest("GET", fmt.Sprintf("/api/club/%s/post/%s", club.ID, createdPost.ID), token, nil)
+	assert.NoError(t, err)
+	getPostResp, err := app.Test(getPostReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, getPostResp.StatusCode)
+	var fetchedPost repository.ClubPost
+	err = json.NewDecoder(getPostResp.Body).Decode(&fetchedPost)
+	assert.NoError(t, err)
+	assert.Equal(t, createdPost.ID, fetchedPost.ID)
+	assert.Equal(t, postContent, fetchedPost.Content)
+
+	// Get all posts
+	getAllPostsReq, err := NewProtectedRequest("GET", fmt.Sprintf("/api/club/%s/posts", club.ID), token, nil)
+	assert.NoError(t, err)
+	getAllPostsResp, err := app.Test(getAllPostsReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, getAllPostsResp.StatusCode)
+	var fetchedPosts []repository.ClubPost
+	err = json.NewDecoder(getAllPostsResp.Body).Decode(&fetchedPosts)
+	assert.NoError(t, err)
+	assert.Len(t, fetchedPosts, 1)
+	assert.Equal(t, createdPost.ID, fetchedPosts[0].ID)
+
+	// Delete the post
+	deletePostReq, err := NewProtectedRequest("DELETE", fmt.Sprintf("/api/club/%s/post/%s", club.ID, createdPost.ID), token, nil)
+	assert.NoError(t, err)
+	deletePostResp, err := app.Test(deletePostReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, deletePostResp.StatusCode)
+
+	// Get the post again
+	getPostReq, err = NewProtectedRequest("GET", fmt.Sprintf("/api/club/%s/post/%s", club.ID, createdPost.ID), token, nil)
+	assert.NoError(t, err)
+	getPostResp, err = app.Test(getPostReq)
+	assert.NoError(t, err)
+	assert.NotEqual(t, http.StatusOK, getPostResp.StatusCode)
+}

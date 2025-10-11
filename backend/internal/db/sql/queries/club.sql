@@ -27,6 +27,9 @@ WHERE
     club_id = @club_id
 ORDER BY cm.user_points DESC, cm.user_streak DESC;
 
+-- name: GetClubUserIds :many
+SELECT user_id FROM club_membership WHERE club_id = @club_id;
+
 -- name: DeleteClub :exec
 DELETE FROM club
 WHERE
@@ -65,6 +68,14 @@ WHERE
 DELETE FROM club_post
 WHERE
     id = @id;
+
+-- name: GetClubPosts :many
+SELECT * FROM club_post
+WHERE club_id = @club_id;
+
+-- name: GetClubPost :one
+SELECT * FROM club_post
+WHERE id = @id;
 
 -- name: CreateClubPostAttachment :exec
 INSERT INTO club_post_attachment (id, post_id, url)
