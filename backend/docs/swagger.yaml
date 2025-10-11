@@ -607,7 +607,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/repository.ClubPost'
+            $ref: '#/definitions/handlers.CreatedResponse'
         "400":
           description: Bad Request
           schema:
@@ -684,7 +684,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.SuccessResponse'
+            $ref: '#/definitions/repository.ClubPost'
         "400":
           description: Bad Request
           schema:

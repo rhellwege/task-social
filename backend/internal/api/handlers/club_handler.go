@@ -439,7 +439,7 @@ type ClubPostRequest struct {
 //	@Param			club_id	path	string			true	"Club ID"
 //	@Param			body	body	ClubPostRequest	true	"Club post"
 //	@Security		ApiKeyAuth
-//	@Success		200	{object}	repository.ClubPost
+//	@Success		200	{object}	CreatedResponse
 //	@Failure		400	{object}	ErrorResponse
 //	@Failure		401	{object}	ErrorResponse
 //	@Failure		500	{object}	ErrorResponse
@@ -465,7 +465,9 @@ func CreateClubPost(clubService services.ClubServicer) fiber.Handler {
 			})
 		}
 
-		return c.JSON(postID)
+		return c.JSON(CreatedResponse{
+			ID: postID,
+		})
 	}
 }
 
@@ -491,7 +493,17 @@ func DeleteClubPost(clubService services.ClubServicer) fiber.Handler {
 		clubID := c.Params("club_id")
 		postID := c.Params("post_id")
 
-		return clubService.DeleteClubPost(ctx, userID, clubID, postID)
+		err := clubService.DeleteClubPost(ctx, userID, clubID, postID)
+
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.JSON(SuccessResponse{
+			Message: "Post deleted successfully",
+		})
 	}
 }
 
@@ -505,7 +517,7 @@ func DeleteClubPost(clubService services.ClubServicer) fiber.Handler {
 //	@Param			club_id	path	string	true	"Club ID"
 //	@Param			post_id	path	string	true	"Post ID"
 //	@Security		ApiKeyAuth
-//	@Success		200	{object}	SuccessResponse
+//	@Success		200	{object}	repository.ClubPost
 //	@Failure		400	{object}	ErrorResponse
 //	@Failure		401	{object}	ErrorResponse
 //	@Failure		500	{object}	ErrorResponse
@@ -517,6 +529,13 @@ func GetClubPost(clubService services.ClubServicer) fiber.Handler {
 		clubID := c.Params("club_id")
 		postID := c.Params("post_id")
 
-		return clubService.DeleteClubPost(ctx, userID, clubID, postID)
+		post, err := clubService.GetClubPost(ctx, userID, clubID, postID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(&ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.JSON(post)
 	}
 }

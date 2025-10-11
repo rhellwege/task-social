@@ -487,7 +487,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/repository.ClubPost"
+                            "$ref": "#/definitions/handlers.CreatedResponse"
                         }
                     },
                     "400": {
@@ -547,7 +547,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.SuccessResponse"
+                            "$ref": "#/definitions/repository.ClubPost"
                         }
                     },
                     "400": {

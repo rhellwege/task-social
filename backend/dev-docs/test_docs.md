@@ -331,3 +331,27 @@ This test verifies that WebSocket messages are broadcast to all members of a clu
 *   **Club message broadcasts to all joined users:**
     *   **Action:** A user sends a message to a club they are a member of.
     *   **Expected Result:** All members of the club receive the message via their WebSocket connection.
+
+### TestClubPosts
+
+This test verifies the functionality of creating, retrieving, and deleting club posts.
+
+**Steps:**
+
+1.  A test user is created and logged in.
+2.  The user creates a club.
+3.  A post is created in the club.
+    *   **Action:** A POST request is made to `/api/club/{clubId}/post` with the post content.
+    *   **Expected Result:** The post is created successfully, returning a `200 OK` status. The response body contains the new post's data.
+4.  The post is retrieved.
+    *   **Action:** A GET request is made to `/api/club/{clubId}/post/{postId}`.
+    *   **Expected Result:** The request is successful, returning a `200 OK` status. The response body contains the post's data.
+5.  All posts in the club are retrieved.
+    *   **Action:** A GET request is made to `/api/club/{clubId}/posts`.
+    *   **Expected Result:** The request is successful, returning a `200 OK` status. The response body contains a list of all posts in the club.
+6.  The post is deleted.
+    *   **Action:** A DELETE request is made to `/api/club/{clubId}/post/{postId}`.
+    *   **Expected Result:** The request is successful, returning a `200 OK` status.
+7.  The post is retrieved again.
+    *   **Action:** A GET request is made to `/api/club/{clubId}/post/{postId}`.
+    *   **Expected Result:** The request fails with a `404 Not Found` status.

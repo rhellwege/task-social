@@ -24,7 +24,7 @@ type ClubServicer interface {
 	GetClubMetrics(ctx context.Context, userID string, clubID string) ([]repository.Metric, error)
 	GetClubPosts(ctx context.Context, userID string, clubID string) ([]repository.ClubPost, error)
 	CreateClubPost(ctx context.Context, userID string, clubID string, text string) (string, error)
-	GetClubPost(ctx context.Context, userID string, postID string) (repository.ClubPost, error)
+	GetClubPost(ctx context.Context, userID string, clubID string, postID string) (repository.ClubPost, error)
 	DeleteClubPost(ctx context.Context, userID string, clubID string, postID string) error
 }
 
@@ -241,12 +241,12 @@ func (s *ClubService) CreateClubPost(ctx context.Context, userID string, clubID 
 	return id, nil
 }
 
-func (s *ClubService) GetClubPost(ctx context.Context, userID string, postID string) (repository.ClubPost, error) {
+func (s *ClubService) GetClubPost(ctx context.Context, userID string, clubID string, postID string) (repository.ClubPost, error) {
 	return s.q.GetClubPost(ctx, postID)
 }
 
 func (s *ClubService) DeleteClubPost(ctx context.Context, userID string, clubID string, postID string) error {
-	post, err := s.GetClubPost(ctx, userID, postID)
+	post, err := s.GetClubPost(ctx, userID, clubID, postID)
 	if err != nil {
 		return err
 	}
