@@ -22,7 +22,7 @@ func NewProtectedRequest(method string, path string, token string, body io.Reade
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", contentType)
 	req.Header.Set("Authorization", token)
 	return req, err
 }
