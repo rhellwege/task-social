@@ -13,7 +13,10 @@ require (
 	modernc.org/sqlite v1.38.2
 )
 
-require github.com/google/go-cmp v0.7.0 // indirect
+require (
+	github.com/chai2010/webp v1.4.0
+	github.com/google/go-cmp v0.7.0 // indirect
+)
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
