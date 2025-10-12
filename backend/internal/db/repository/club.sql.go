@@ -251,6 +251,87 @@ func (q *Queries) GetClubMetrics(ctx context.Context, clubID string) ([]Metric, 
 	return items, nil
 }
 
+const getClubPost = `-- name: GetClubPost :one
+SELECT id, user_id, club_id, content, created_at, updated_at FROM club_post
+WHERE id = ?1
+`
+
+func (q *Queries) GetClubPost(ctx context.Context, id string) (ClubPost, error) {
+	row := q.db.QueryRowContext(ctx, getClubPost, id)
+	var i ClubPost
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.ClubID,
+		&i.Content,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getClubPosts = `-- name: GetClubPosts :many
+SELECT id, user_id, club_id, content, created_at, updated_at FROM club_post
+WHERE club_id = ?1
+`
+
+func (q *Queries) GetClubPosts(ctx context.Context, clubID string) ([]ClubPost, error) {
+	rows, err := q.db.QueryContext(ctx, getClubPosts, clubID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ClubPost
+	for rows.Next() {
+		var i ClubPost
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.ClubID,
+			&i.Content,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getClubUserIds = `-- name: GetClubUserIds :many
+SELECT user_id FROM club_membership WHERE club_id = ?1
+`
+
+func (q *Queries) GetClubUserIds(ctx context.Context, clubID string) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, getClubUserIds, clubID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var user_id string
+		if err := rows.Scan(&user_id); err != nil {
+			return nil, err
+		}
+		items = append(items, user_id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPublicClubs = `-- name: GetPublicClubs :many
 SELECT id, name, description, owner_user_id, banner_image, is_public, created_at, updated_at FROM club
 WHERE is_public = true

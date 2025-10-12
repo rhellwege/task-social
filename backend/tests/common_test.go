@@ -17,7 +17,7 @@ import (
 	"github.com/rhellwege/task-social/internal/db/repository"
 )
 
-func NewProtectedRequest(method string, path string, token string, body io.Reader) (*http.Request, error) {
+func NewProtectedRequest(method string, path string, token string, body io.Reader, contentType string) (*http.Request, error) {
 	req, err := http.NewRequest(method, path, body)
 	if err != nil {
 		return nil, err
@@ -117,7 +117,7 @@ func CreateTestClub(app *fiber.App, token, name string, description *string, isP
 	if err != nil {
 		return nil, err
 	}
-	req, err := NewProtectedRequest("POST", "/api/club", token, bytes.NewBuffer(jsonBody))
+	req, err := NewProtectedRequest("POST", "/api/club", token, bytes.NewBuffer(jsonBody), "application/json")
 	if err != nil {
 		return nil, err
 	}

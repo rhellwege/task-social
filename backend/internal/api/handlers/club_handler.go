@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/rhellwege/task-social/internal/api/services"
 	"github.com/rhellwege/task-social/internal/db/repository"
 )
@@ -390,5 +391,151 @@ func GetClubMetrics(clubService services.ClubServicer) fiber.Handler {
 		}
 
 		return c.JSON(metrics)
+	}
+}
+
+// GetClubPosts godoc
+//
+//	@ID				GetClubPosts
+//	@Summary		Get club posts
+//	@Description	Get all posts in a club
+//	@Tags			Club
+//	@Produce		json
+//	@Param			club_id	path	string	true	"Club ID"
+//	@Security		ApiKeyAuth
+//	@Success		200	{array}		repository.ClubPost
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/club/{club_id}/posts [get]
+func GetClubPosts(clubService services.ClubServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		userID := c.Locals("userID").(string)
+		clubID := c.Params("club_id")
+
+		messages, err := clubService.GetClubPosts(ctx, userID, clubID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.JSON(messages)
+	}
+}
+
+type ClubPostRequest struct {
+	TextContent string `json:"text_content" binding:"required"`
+}
+
+// CreateClubPost godoc
+//
+//	@ID				CreateClubPost
+//	@Summary		Create a new club post
+//	@Description	Create a new post in a club
+//	@Tags			Club
+//	@Produce		json
+//	@Param			club_id	path	string			true	"Club ID"
+//	@Param			body	body	ClubPostRequest	true	"Club post"
+//	@Security		ApiKeyAuth
+//	@Success		200	{object}	CreatedResponse
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/club/{club_id}/post [post]
+func CreateClubPost(clubService services.ClubServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		userID := c.Locals("userID").(string)
+		clubID := c.Params("club_id")
+
+		var params ClubPostRequest
+		if err := c.BodyParser(&params); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		postID, err := clubService.CreateClubPost(ctx, userID, clubID, params.TextContent)
+		log.Error(err)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.JSON(CreatedResponse{
+			ID: postID,
+		})
+	}
+}
+
+// DeleteClubPost godoc
+//
+//	@ID				DeleteClubPost
+//	@Summary		Delete a club post
+//	@Description	Delete a club post
+//	@Tags			Club
+//	@Produce		json
+//	@Param			club_id	path	string	true	"Club ID"
+//	@Param			post_id	path	string	true	"Post ID"
+//	@Security		ApiKeyAuth
+//	@Success		200	{object}	SuccessResponse
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/club/{club_id}/post/{post_id} [delete]
+func DeleteClubPost(clubService services.ClubServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		userID := c.Locals("userID").(string)
+		clubID := c.Params("club_id")
+		postID := c.Params("post_id")
+
+		err := clubService.DeleteClubPost(ctx, userID, clubID, postID)
+
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.JSON(SuccessResponse{
+			Message: "Post deleted successfully",
+		})
+	}
+}
+
+// GetClubPost godoc
+//
+//	@ID				GetClubPost
+//	@Summary		Get a club post
+//	@Description	Get a club post
+//	@Tags			Club
+//	@Produce		json
+//	@Param			club_id	path	string	true	"Club ID"
+//	@Param			post_id	path	string	true	"Post ID"
+//	@Security		ApiKeyAuth
+//	@Success		200	{object}	repository.ClubPost
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/club/{club_id}/post/{post_id} [get]
+func GetClubPost(clubService services.ClubServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		userID := c.Locals("userID").(string)
+		clubID := c.Params("club_id")
+		postID := c.Params("post_id")
+
+		post, err := clubService.GetClubPost(ctx, userID, clubID, postID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(&ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.JSON(post)
 	}
 }
