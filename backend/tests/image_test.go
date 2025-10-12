@@ -33,28 +33,58 @@ func TestCreateProfilePicture(t *testing.T) {
 	assert.NotEmpty(t, token)
 
 	// Upload first profile picture
-	firstResp, err := uploadProfilePicture(app, token, "test_assets/testprofile1.jpg")
+	firstResp, err := uploadProfilePicture(app, token, "test_assets/testprofile.jpg")
 	assert.NoError(t, err)
 	assert.NotNil(t, firstResp)
 	assert.NotEmpty(t, firstResp.URL)
 
 	firstRel := strings.TrimPrefix(firstResp.URL, "/")
-	firstPath := filepath.Join(".", firstRel)
-	t.Logf("first profile path: %s", firstPath)
+	firstPath := filepath.Join("./assets", firstRel)
 
-	// TODO: Check first profile picture exists
+	// Check first profile picture exists
 	_, err = os.Stat(firstPath)
 	assert.NoError(t, err, "first profile picture should exist after upload")
 
 	// Upload second profile picture
-	// _, err = uploadProfilePicture(app, token, "test_assets/testprofile2.jpg")
-	// assert.NoError(t, err)
+	secondResp, err := uploadProfilePicture(app, token, "test_assets/testprofile.png")
+	assert.NoError(t, err)
+	assert.NotNil(t, secondResp)
+	assert.NotEmpty(t, secondResp.URL)
 
-	// TODO: Check first profile picture does not exist
+	secondRel := strings.TrimPrefix(secondResp.URL, "/")
+	secondPath := filepath.Join("./assets", secondRel)
 
-	// TODO: Check second profile picture exists
+	// Check first profile picture does not exist
+	_, err = os.Stat(firstPath)
+	assert.Error(t, err, "first profile picture should be deleted after second upload")
+	assert.True(t, os.IsNotExist(err), "expected first profile picture to be removed")
 
-	// TODO: Remove second profile picture
+	// Check second profile picture exists
+	_, err = os.Stat(secondPath)
+	assert.NoError(t, err, "second profile picture should exist after upload")
+
+	// Upload third profile picture
+	thirdResp, err := uploadProfilePicture(app, token, "test_assets/testprofile.webp")
+	assert.NoError(t, err)
+	assert.NotNil(t, thirdResp)
+	assert.NotEmpty(t, thirdResp.URL)
+
+	thirdRel := strings.TrimPrefix(thirdResp.URL, "/")
+	thirdPath := filepath.Join("./assets", thirdRel)
+
+	// Check second profile picture does not exist
+	_, err = os.Stat(firstPath)
+	assert.Error(t, err, "second profile picture should be deleted after second upload")
+	assert.True(t, os.IsNotExist(err), "expected second profile picture to be removed")
+
+	// Check third profile picture exists
+	_, err = os.Stat(thirdPath)
+	assert.NoError(t, err, "third profile picture should exist after upload")
+
+	// Delete third profile picture
+	if err := os.Remove(thirdPath); err != nil && !os.IsNotExist(err) {
+		t.Logf("Warning: failed to delete third profile picture: %v", err)
+	}
 }
 
 func newProtectedRequestWithType(method string, path string, token string, body io.Reader, contentType string) (*http.Request, error) {
@@ -91,8 +121,6 @@ func uploadProfilePicture(app *fiber.App, token, name string) (*handlers.UploadP
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println(string(respBody)) // helpful debug line
 
 	var createdResp handlers.UploadProfilePictureResponse
 	if err := json.Unmarshal(respBody, &createdResp); err != nil {
