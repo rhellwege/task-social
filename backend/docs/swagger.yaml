@@ -106,6 +106,36 @@ definitions:
       updated_at:
         type: string
     type: object
+  repository.CreateMetricEntryParams:
+    properties:
+      metric_instance_id:
+        type: string
+      user_id:
+        type: string
+      value:
+        type: number
+    type: object
+  repository.CreateMetricParams:
+    properties:
+      club_id:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      interval:
+        type: string
+      requires_verification:
+        type: boolean
+      start_at:
+        type: string
+      title:
+        type: string
+      unit:
+        type: string
+      unit_is_integer:
+        type: boolean
+    type: object
   repository.GetClubLeaderboardRow:
     properties:
       id:
@@ -149,6 +179,63 @@ definitions:
       username:
         type: string
     type: object
+  repository.Metric:
+    properties:
+      club_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      interval:
+        type: string
+      requires_verification:
+        type: boolean
+      start_at:
+        type: string
+      title:
+        type: string
+      unit:
+        type: string
+      unit_is_integer:
+        type: boolean
+      updated_at:
+        type: string
+    type: object
+  repository.MetricEntry:
+    properties:
+      created_at:
+        type: string
+      metric_instance_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      value:
+        type: number
+    type: object
+  repository.UpdateMetricParams:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      interval:
+        type: string
+      requires_verification:
+        type: boolean
+      start_at:
+        type: string
+      title:
+        type: string
+      unit:
+        type: string
+      unit_is_integer:
+        type: boolean
+    type: object
   services.CreateClubRequest:
     properties:
       banner_image:
@@ -171,6 +258,12 @@ paths:
     get:
       description: Get club info
       operationId: GetClub
+      parameters:
+      - description: Club ID
+        in: path
+        name: club_id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -299,6 +392,47 @@ paths:
       summary: Update a club
       tags:
       - Club
+  /api/club/{club_id}/banner:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a new banner image for the specified club
+      operationId: UploadClubBanner
+      parameters:
+      - description: Club banner file
+        in: formData
+        name: image
+        required: true
+        type: file
+      - description: Club ID
+        in: path
+        name: club_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.UploadClubBannerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload a club banner
+      tags:
+      - Club
   /api/club/{club_id}/join:
     post:
       description: Join a club with the given ID.
@@ -393,21 +527,14 @@ paths:
       summary: Leave a club
       tags:
       - Club
-  /api/club/{clubID}/banner:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Upload a new banner image for the specified club
-      operationId: UploadClubBanner
+  /api/club/{club_id}/metrics:
+    get:
+      description: Get metrics for the specified club
+      operationId: GetClubMetrics
       parameters:
-      - description: Club banner file
-        in: formData
-        name: image
-        required: true
-        type: file
       - description: Club ID
         in: path
-        name: clubID
+        name: club_id
         required: true
         type: string
       produces:
@@ -416,7 +543,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.UploadClubBannerResponse'
+            items:
+              $ref: '#/definitions/repository.Metric'
+            type: array
         "400":
           description: Bad Request
           schema:
@@ -431,7 +560,7 @@ paths:
             $ref: '#/definitions/handlers.ErrorResponse'
       security:
       - ApiKeyAuth: []
-      summary: Upload a club banner
+      summary: Get club metrics
       tags:
       - Club
   /api/clubs:
@@ -491,6 +620,249 @@ paths:
       summary: Login a user
       tags:
       - User
+  /api/metric:
+    post:
+      consumes:
+      - application/json
+      description: Create a new metric with the provided details.
+      operationId: CreateMetric
+      parameters:
+      - description: Metric details
+        in: body
+        name: metric
+        required: true
+        schema:
+          $ref: '#/definitions/repository.CreateMetricParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.CreatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new metric
+      tags:
+      - Metric
+  /api/metric/{metric_id}:
+    delete:
+      description: Delete a metric by ID.
+      operationId: DeleteMetric
+      parameters:
+      - description: Metric ID
+        in: path
+        name: metric_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a metric
+      tags:
+      - Metric
+    get:
+      description: Get a metric by ID.
+      operationId: GetMetric
+      parameters:
+      - description: Metric ID
+        in: path
+        name: metric_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repository.Metric'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a metric
+      tags:
+      - Metric
+    put:
+      consumes:
+      - application/json
+      description: Update a metric by ID.
+      operationId: UpdateMetric
+      parameters:
+      - description: Metric ID
+        in: path
+        name: metric_id
+        required: true
+        type: string
+      - description: Metric details
+        in: body
+        name: metric
+        required: true
+        schema:
+          $ref: '#/definitions/repository.UpdateMetricParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a metric
+      tags:
+      - Metric
+  /api/metric/{metric_id}/entry:
+    post:
+      consumes:
+      - application/json
+      description: Create a new metric entry for the current instance of a metric.
+      operationId: CreateMetricEntry
+      parameters:
+      - description: Metric ID
+        in: path
+        name: metric_id
+        required: true
+        type: string
+      - description: Metric entry details
+        in: body
+        name: entry
+        required: true
+        schema:
+          $ref: '#/definitions/repository.CreateMetricEntryParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.CreatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new metric entry
+      tags:
+      - Metric
+  /api/metric/{metric_id}/historical-entries:
+    get:
+      description: Get all entries for all metric instances given a metric.
+      operationId: GetHistoricalMetricEntries
+      parameters:
+      - description: Metric ID
+        in: path
+        name: metric_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repository.MetricEntry'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get Historical metric entries
+      tags:
+      - Metric
+  /api/metric/{metric_id}/latest-entries:
+    get:
+      description: Get all entries for the latest metric instance.
+      operationId: GetLatestMetricEntries
+      parameters:
+      - description: Metric ID
+        in: path
+        name: metric_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repository.MetricEntry'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get latest metric entries
+      tags:
+      - Metric
   /api/register:
     post:
       consumes:
@@ -608,6 +980,58 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get a list of a user's joined clubs
+      tags:
+      - User
+  /api/user/metric-entries:
+    get:
+      description: Get all metric entries turned in by a user.
+      operationId: GetUserMetricEntries
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repository.MetricEntry'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user metric entries
+      tags:
+      - User
+  /api/user/metrics:
+    get:
+      description: Get all metrics for a user from all joined clubs.
+      operationId: GetUserMetrics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repository.Metric'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user metrics
       tags:
       - User
   /api/user/profile-picture:

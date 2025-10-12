@@ -25,3 +25,62 @@ jobs:
       - name: Test Backend
         working-directory: ./backend
         run: go test ./... -v
+
+      - name: Collect Backend Unit Test Coverage
+        working-directory: ./backend
+        run: ./scripts/unit_test_coverage.sh
+      - name: Upload Unit Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-coverage-report
+          path: backend/coverage/unit* # Specify the path to your generated HTML report
+
+      - name: Collect Backend Integration Test Coverage
+        working-directory: ./backend
+        run: ./scripts/total_test_coverage.sh
+      - name: Upload Integration Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-coverage-report
+          path: backend/coverage/integration* # Specify the path to your generated HTML report
+  test_frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📦 Checkout project repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: 📦 Setup Node + NPM + install deps
+        uses: ./.github/actions/setup-node-npm-install
+      - name: 🏃‍♂️ Run ESLint PR
+        if: github.event_name == 'pull_request'
+        uses: reviewdog/action-eslint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          eslint_flags: ". --ext .js,.jsx,.ts,.tsx"
+          working-directory: frontend
+      - name: 🏃‍♂️ Run ESLint PR
+        if: github.event_name != 'pull_request'
+        run: npm run lint
+        working-directory: frontend
+      - name: 🚑 Run Doctor Checks
+        run: npx expo-doctor@latest
+        working-directory: frontend
+      - name: 📦 Install Reviewdog
+        if: github.event_name == 'pull_request'
+        uses: reviewdog/action-setup@v1
+      - name: 🏃‍♂️ Run TypeScript PR # Reviewdog tsc errorformat: %f:%l:%c - error TS%n: %m
+        # we only need to add the reviewdog step if it's a pull request
+        if: github.event_name == 'pull_request'
+        run: |
+          npm run type-check | reviewdog -name="tsc" -efm="%f(%l,%c): error TS%n: %m" -reporter="github-pr-review" -filter-mode="nofilter" -fail-on-error -tee
+        working-directory: frontend
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 🏃‍♂️ Run TypeScript Commit
+        # If it's not a Pull Request then we just need to run the type-check
+        if: github.event_name != 'pull_request'
+        run: npm run type-check
+        working-directory: frontend
