@@ -8,11 +8,13 @@ import (
 	"errors"
 	"fmt"
 	"image"
-	"image/jpeg"
+	_ "image/jpeg"
+	_ "image/png"
 	"os"
 	"path/filepath"
 	"time"
 
+	"github.com/chai2010/webp"
 	"github.com/rhellwege/task-social/config"
 	"golang.org/x/image/draw"
 )
@@ -36,21 +38,32 @@ func NewImageService(baseAssetsDir string) *ImageService {
 }
 
 func (s *ImageService) SaveImage(ctx context.Context, fileBytes []byte, width, height int, subDir string) (string, error) {
-	img, _, err := image.Decode(bytes.NewReader(fileBytes))
+	var img image.Image
+	var err error
+
+	// Try to decode common formats
+	img, _, err = image.Decode(bytes.NewReader(fileBytes))
 	if err != nil {
-		return "", errors.New("invalid image format")
+		if webpImg, err2 := webp.Decode(bytes.NewReader(fileBytes)); err2 == nil {
+			img = webpImg
+		} else {
+			return "", errors.New("invalid or unsupported image format")
+		}
 	}
 
+	// Resize image
 	img = resizeImage(img, width, height)
 
+	// Ensure directory exists
 	dirPath := filepath.Join(s.baseAssetsDir, subDir)
 	if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
 		return "", err
 	}
 
+	// Generate hashed filename
 	hash := sha1.Sum(fileBytes)
 	timestamp := time.Now().UnixNano()
-	filename := fmt.Sprintf("%s_%d.jpg", hex.EncodeToString(hash[:]), timestamp)
+	filename := fmt.Sprintf("%s_%d.webp", hex.EncodeToString(hash[:]), timestamp)
 	filePath := filepath.Join(dirPath, filename)
 
 	outFile, err := os.Create(filePath)
@@ -59,8 +72,9 @@ func (s *ImageService) SaveImage(ctx context.Context, fileBytes []byte, width, h
 	}
 	defer outFile.Close()
 
-	if err := jpeg.Encode(outFile, img, &jpeg.Options{Quality: 90}); err != nil {
-		return "", err
+	// Encode as webp
+	if err := webp.Encode(outFile, img, &webp.Options{Lossless: false, Quality: 90}); err != nil {
+		return "", fmt.Errorf("failed to encode webp: %w", err)
 	}
 
 	return "/" + subDir + "/" + filename, nil

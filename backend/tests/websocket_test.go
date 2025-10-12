@@ -148,7 +148,7 @@ func TestClubWebsockets(t *testing.T) {
 			token:    token,
 		})
 		// 4. Have all users join the club
-		joinReq, err := NewProtectedRequest("POST", fmt.Sprintf("/api/club/%s/join", clubID), token, nil)
+		joinReq, err := NewProtectedRequest("POST", fmt.Sprintf("/api/club/%s/join", clubID), token, nil, "application/json")
 		assert.NoError(t, err)
 		joinResp, err := app.Test(joinReq)
 		assert.NoError(t, err)
@@ -162,7 +162,7 @@ func TestClubWebsockets(t *testing.T) {
 		}
 		jsonBody, err := json.Marshal(message)
 		assert.NoError(t, err)
-		sendReq, err := NewProtectedRequest("POST", fmt.Sprintf("/api/club/%s/post", clubID), users[0].token, bytes.NewBuffer(jsonBody))
+		sendReq, err := NewProtectedRequest("POST", fmt.Sprintf("/api/club/%s/post", clubID), users[0].token, bytes.NewBuffer(jsonBody), "application/json")
 		assert.NoError(t, err)
 		sendResp, err := app.Test(sendReq)
 		assert.NoError(t, err)
