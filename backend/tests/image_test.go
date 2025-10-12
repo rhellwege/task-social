@@ -87,22 +87,12 @@ func TestCreateProfilePicture(t *testing.T) {
 	}
 }
 
-func newProtectedRequestWithType(method string, path string, token string, body io.Reader, contentType string) (*http.Request, error) {
-	req, err := http.NewRequest(method, path, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", contentType)
-	req.Header.Set("Authorization", token)
-	return req, err
-}
-
 func uploadProfilePicture(app *fiber.App, token, name string) (*handlers.UploadProfilePictureResponse, error) {
 	body, contentType, err := createMultipartFormData(name)
 	if err != nil {
 		return nil, err
 	}
-	req, err := newProtectedRequestWithType("POST", "/api/user/profile-picture", token, body, contentType)
+	req, err := NewProtectedRequest("POST", "/api/user/profile-picture", token, body, contentType)
 	if err != nil {
 		return nil, err
 	}
