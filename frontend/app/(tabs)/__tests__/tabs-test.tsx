@@ -5,22 +5,43 @@ import { Text, Platform } from 'react-native';
 // with 'import "@testing-library/react-native/extend-expect";'
 // If you are still seeing the "toBeOnTheScreen is not a function" error, ensure your 
 // jest config references your 'jest-setup.js' file.
+// --- Start of Type Definitions to Add/Replace ---
+
+type ColorSchemes = {
+  light: { tint: string };
+  dark: { tint: string };
+};
+
+// Define the shape of the props passed to the real HapticTab component
+interface HapticTabProps {
+  children: React.ReactNode;
+  accessibilityRole: 'button' | 'link' | undefined;
+  onPress: () => void;
+  onLongPress: () => void;
+  name: string; // The segment name passed from the mock
+  key: string;  // The key passed from the mock
+}
+
+// Define the shape of the props passed to the Tabs.Screen mock
+interface TabsScreenProps {
+  name: string;
+  options: {
+    title: string;
+    tabBarIcon: (props: { color: string; size: number }) => React.ReactElement;
+  };
+}
+
+// --- End of Type Definitions to Add/Replace ---
 
 // --- 1. Setup Mocks for External Dependencies ---
 
 // Mocking useColorScheme to ensure a predictable 'light' mode tint is used
-const mockColorScheme = 'light';
+const mockColorScheme: keyof ColorSchemes = 'light';
 const useColorScheme = () => mockColorScheme;
-
-// Mocking the Colors constant expected by the component
-const Colors = { 
-  light: { tint: '#007AFF' }, // Use a distinct color for verification if needed
-  dark: { tint: '#5856D6' }
-};
 
 // Mocking the HapticTab component used as tabBarButton.
 // In a test, we just need it to render the content (the icons/titles) correctly.
-const HapticTab = ({ children, accessibilityRole, onPress, onLongPress, name }) => (
+const HapticTab = ({ children, accessibilityRole, onPress, onLongPress }: HapticTabProps) => (
     // We render the children and add a specific test ID to ensure HapticTab was used
     <Text testID="haptic-tab-wrapper" onPress={onPress}>
         {children}
@@ -42,18 +63,18 @@ const Tabs = ({ children }) => <>{children}</>;
 
 // FIX APPLIED HERE: We use React.Fragment (<>) and wrap the title in its own Text component.
 // This isolates the text node, making it reliably searchable by screen.getByText().
-Tabs.Screen = ({ name, options }) => {
-    
+Tabs.Screen = ({ name, options }: TabsScreenProps) => {
+
     const TabContent = (
         <> 
             {/* Placing the title in its own Text component */}
             <Text>{options.title}</Text>
-            {options.tabBarIcon({ color: Colors[mockColorScheme].tint })}
+            {options.tabBarIcon({ color: Colors[mockColorScheme as keyof typeof Colors].tint, size: 24 })}
         </>
     );
 
     // 2. Wrap the content with the HapticTab mock (the tabBarButton)
-    return <HapticTab name={name} key={name}>{TabContent}</HapticTab>;
+    return <HapticTab name={name} key={name} accessibilityRole={'button'} onPress={() => {}} onLongPress={() => {}}>{TabContent}</HapticTab>
 };
 Tabs.Screen.displayName = 'TabsScreenMock';
 
