@@ -85,5 +85,5 @@ jobs:
         run: npm run type-check
         working-directory: frontend
       - name: Jest
-        run: npm run jest
+        run: npm run test
         working-directory: frontend
