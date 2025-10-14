@@ -3,8 +3,9 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { Link } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 
 interface Club {
   id: string;
@@ -20,14 +21,41 @@ interface Club {
 export default function Tab() {
   const colorScheme = useColorScheme();
   const [joinedClubs, setJoinedClubs] = useState<Club[]>([]);
-  const { joinedClub } = useLocalSearchParams(); // Returns string | string[] | undefined
+  const { joinedClub } = useLocalSearchParams();
 
-  useEffect(() => {
-    if (joinedClub) {
-      const clubData = typeof joinedClub === 'string' ? JSON.parse(joinedClub) : joinedClub;
-      setJoinedClubs(prev => [...prev, clubData as Club]);
+  const handleClubParam = useCallback((clubParam: string | string[] | undefined) => {
+    if (!clubParam) return;
+    let clubData: Club;
+    try {
+      if (typeof clubParam === 'string') {
+        clubData = JSON.parse(decodeURIComponent(clubParam)) as Club;
+      } else if (Array.isArray(clubParam)) {
+        clubData = JSON.parse(decodeURIComponent(clubParam[0])) as Club;
+      } else {
+        return;
+      }
+      setJoinedClubs(prev => {
+        if (!prev.find(c => c.id === clubData.id)) {
+          return [...prev, clubData];
+        }
+        return prev;
+      });
+    } catch (error) {
+      console.error('Error parsing joinedClub:', error);
     }
-  }, [joinedClub]);
+  }, []);
+
+  // Handle initial navigation
+  useEffect(() => {
+    handleClubParam(joinedClub);
+  }, [joinedClub, handleClubParam]);
+
+  // Handle tab focus
+  useFocusEffect(
+    useCallback(() => {
+      handleClubParam(joinedClub);
+    }, [joinedClub, handleClubParam])
+  );
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -55,6 +83,7 @@ export default function Tab() {
     </ThemeProvider>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
