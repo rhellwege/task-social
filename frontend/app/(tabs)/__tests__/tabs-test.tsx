@@ -1,16 +1,31 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
-import { Text, Platform } from 'react-native';
+import { Text, Platform, StyleProp, ViewStyle } from 'react-native';
+
 // This assumes you have configured the global Jest setup file (jest-setup.js) 
 // with 'import "@testing-library/react-native/extend-expect";'
 // If you are still seeing the "toBeOnTheScreen is not a function" error, ensure your 
 // jest config references your 'jest-setup.js' file.
+
 // --- Start of Type Definitions to Add/Replace ---
+
+// FIX 1: Define a mock Colors object to resolve "Cannot find name 'Colors'."
+const Colors = {
+    light: { tint: '#0A7AFF' },
+    dark: { tint: '#57B5FF' },
+};
 
 type ColorSchemes = {
   light: { tint: string };
   dark: { tint: string };
 };
+
+// FIX 2: Define props for the mock icon component
+interface MockIconProps {
+    name: string;
+    color: string;
+    size: number;
+}
 
 // Define the shape of the props passed to the real HapticTab component
 interface HapticTabProps {
@@ -31,6 +46,17 @@ interface TabsScreenProps {
   };
 }
 
+// FIX 5: Define props for the Tabs mock to include screenOptions
+interface TabsProps {
+    children: React.ReactNode;
+    screenOptions: {
+        tabBarActiveTintColor: string;
+        headerShown: boolean;
+        tabBarButton: React.ComponentType<HapticTabProps>;
+        tabBarStyle: StyleProp<ViewStyle>;
+    };
+}
+
 // --- End of Type Definitions to Add/Replace ---
 
 // --- 1. Setup Mocks for External Dependencies ---
@@ -40,16 +66,19 @@ const mockColorScheme: keyof ColorSchemes = 'light';
 const useColorScheme = () => mockColorScheme;
 
 // Mocking the HapticTab component used as tabBarButton.
-// In a test, we just need it to render the content (the icons/titles) correctly.
+// FIX 2: Explicitly type parameters using HapticTabProps
 const HapticTab = ({ children, accessibilityRole, onPress, onLongPress }: HapticTabProps) => (
     // We render the children and add a specific test ID to ensure HapticTab was used
     <Text testID="haptic-tab-wrapper" onPress={onPress}>
         {children}
     </Text>
 );
+// FIX 4: Add displayName to satisfy the error that the component's element doesn't have it.
+HapticTab.displayName = 'HapticTabMock'; 
 
 // Mocking the Expo Vector Icons to confirm their names and colors are passed correctly
-const MockIcon = ({ name, color, size }) => (
+// FIX 2: Explicitly type parameters using MockIconProps
+const MockIcon = ({ name, color, size }: MockIconProps) => (
     <Text testID={`icon-mock-${name}`} style={{ color, fontSize: size }}>
         {`ICON:${name}`}
     </Text>
@@ -59,7 +88,8 @@ const MaterialIcons = MockIcon;
 const SimpleLineIcons = MockIcon;
 
 // Mocking the Tabs component from expo-router to render its children
-const Tabs = ({ children }) => <>{children}</>;
+// FIX 5: Use TabsProps for the mock component
+const Tabs = ({ children, screenOptions }: TabsProps) => <>{children}</>;
 
 // FIX APPLIED HERE: We use React.Fragment (<>) and wrap the title in its own Text component.
 // This isolates the text node, making it reliably searchable by screen.getByText().
@@ -74,6 +104,7 @@ Tabs.Screen = ({ name, options }: TabsScreenProps) => {
     );
 
     // 2. Wrap the content with the HapticTab mock (the tabBarButton)
+    // The key is necessary here for React lists, even in a mock
     return <HapticTab name={name} key={name} accessibilityRole={'button'} onPress={() => {}} onLongPress={() => {}}>{TabContent}</HapticTab>
 };
 Tabs.Screen.displayName = 'TabsScreenMock';
@@ -91,7 +122,7 @@ const TabLayout = () => {
             tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
             headerShown: false,
             tabBarButton: HapticTab,
-            tabBarStyle: Platform.select({
+            tabBarStyle: Platform.select<ViewStyle | undefined>({ // Explicit type is helpful here
               ios: {
                 position: 'absolute',
               },
