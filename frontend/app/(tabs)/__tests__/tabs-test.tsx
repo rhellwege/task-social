@@ -5,7 +5,6 @@ import { Text, Platform } from 'react-native';
 // with 'import "@testing-library/react-native/extend-expect";'
 // If you are still seeing the "toBeOnTheScreen is not a function" error, ensure your 
 // jest config references your 'jest-setup.js' file.
-import '@testing-library/jest-native/extend-expect'; 
 
 // --- 1. Setup Mocks for External Dependencies ---
 
@@ -56,7 +55,7 @@ Tabs.Screen = ({ name, options }) => {
     // 2. Wrap the content with the HapticTab mock (the tabBarButton)
     return <HapticTab name={name} key={name}>{TabContent}</HapticTab>;
 };
-
+Tabs.Screen.displayName = 'TabsScreenMock';
 
 // --- 2. THE COMPONENT UNDER TEST ---
 // We define the TabLayout component exactly as provided by the user,
