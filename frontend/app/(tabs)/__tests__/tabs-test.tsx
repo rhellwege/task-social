@@ -1,3 +1,4 @@
+/// <reference types="@testing-library/react-native" />
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
 import { Text, Platform, StyleProp, ViewStyle } from 'react-native';
@@ -93,8 +94,8 @@ const Tabs = ({ children, screenOptions }: TabsProps) => <>{children}</>;
 
 // FIX APPLIED HERE: We use React.Fragment (<>) and wrap the title in its own Text component.
 // This isolates the text node, making it reliably searchable by screen.getByText().
-Tabs.Screen = ({ name, options }: TabsScreenProps) => {
-
+// Tabs.Screen is a named function
+Tabs.Screen = function TabsScreenMock({ name, options }: TabsScreenProps) {
     const TabContent = (
         <> 
             {/* Placing the title in its own Text component */}
@@ -104,10 +105,10 @@ Tabs.Screen = ({ name, options }: TabsScreenProps) => {
     );
 
     // 2. Wrap the content with the HapticTab mock (the tabBarButton)
-    // The key is necessary here for React lists, even in a mock
     return <HapticTab name={name} key={name} accessibilityRole={'button'} onPress={() => {}} onLongPress={() => {}}>{TabContent}</HapticTab>
 };
-Tabs.Screen.displayName = 'TabsScreenMock';
+// You can now remove the explicit `(Tabs.Screen as React.FC).displayName = 'TabsScreenMock';` 
+// line as the name is set by the function definition.
 
 // --- 2. THE COMPONENT UNDER TEST ---
 // We define the TabLayout component exactly as provided by the user,
