@@ -1,4 +1,4 @@
-/// <reference types="@testing-library/react-native" />
+/// <reference types="@testing-library/jest-native" />
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
 import { Text, Platform, StyleProp, ViewStyle } from 'react-native';
