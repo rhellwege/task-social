@@ -116,6 +116,44 @@ This test verifies that a club's leaderboard can be retrieved.
 3.  A GET request is made to `/api/club/{clubId}/leaderboard`.
     *   **Expected Result:** The request is successful, returning a `200 OK` status. The response body is a JSON array containing the user who created the club, with 0 points and a 0-day streak.
 
+### TestUserMembershipClub
+
+This test verifies that a user's access to a club's resources is dependent on their membership status.
+
+**Steps:**
+
+1.  Two users, User A and User B, are created.
+2.  User A creates a private club.
+3.  **Non-member access:**
+    *   **Action:** User B, who is not a member of the club, attempts to get club details, get the club leaderboard, and create a post in the club.
+    *   **Expected Result:** All requests fail with a status other than `200 OK`.
+4.  **Member access:**
+    *   **Action:** User B joins the club. User B then attempts to get club details, get the club leaderboard, and create a post.
+    *   **Expected Result:** All requests are successful, returning a `200 OK` status.
+5.  **Post-member access:**
+    *   **Action:** User B leaves the club and then attempts to get club details again.
+    *   **Expected Result:** The request fails with a status other than `200 OK`.
+
+### TestUserOwnershipClub
+
+This test verifies that only the owner of a club has the permission to update or delete it.
+
+**Steps:**
+
+1.  An owner and a member user are created.
+2.  The owner creates a club.
+3.  The member joins the club.
+4.  **Update club permissions:**
+    *   **Action:** The member attempts to update the club's name.
+    *   **Expected Result:** The request fails with a status other than `200 OK`.
+    *   **Action:** The owner attempts to update the club's name.
+    *   **Expected Result:** The request is successful, returning a `200 OK` status.
+5.  **Delete club permissions:**
+    *   **Action:** The member attempts to delete the club.
+    *   **Expected Result:** The request fails with a status other than `200 OK`.
+    *   **Action:** The owner attempts to delete the club.
+    *   **Expected Result:** The request is successful, returning a `200 OK` status.
+
 User Test Suite Documentation
 
 This document outlines the test cases for the user functionality in the backend.
