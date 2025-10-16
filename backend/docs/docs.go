@@ -36,8 +36,8 @@ const docTemplate = `{
                 "operationId": "CreateClub",
                 "parameters": [
                     {
-                        "description": "User update details",
-                        "name": "user",
+                        "description": "Create a new club",
+                        "name": "club",
                         "in": "body",
                         "required": true,
                         "schema": {
