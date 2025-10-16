@@ -460,3 +460,163 @@ func TestClubPosts(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEqual(t, http.StatusOK, getPostResp.StatusCode)
 }
+
+// Test users not a member of a club cannot do any operatoions other than join.
+func TestUserMembershipClub(t *testing.T) {
+	app := SetupTestApp()
+
+	// Create two users
+	tokenA, err := CreateTestUser(app, "userA", "userA@example.com", "Password123!@")
+	assert.NoError(t, err)
+
+	tokenB, err := CreateTestUser(app, "userB", "userB@example.com", "Password123!@")
+	assert.NoError(t, err)
+
+	// User A creates a private club
+	club, err := CreateTestClub(app, tokenA, "Private Club", StringToPtr("A private club"), false)
+	assert.NoError(t, err)
+
+	// User B (not a member) tries to access the club
+	t.Run("Non-member access", func(t *testing.T) {
+		// Try to get club details
+		getClubReq, err := NewProtectedRequest("GET", fmt.Sprintf("/api/club/%s", club.ID), tokenB, nil)
+		assert.NoError(t, err)
+		getClubResp, err := app.Test(getClubReq)
+		assert.NoError(t, err)
+		assert.NotEqual(t, http.StatusOK, getClubResp.StatusCode)
+
+		// Try to get club leaderboard
+		getLeaderboardReq, err := NewProtectedRequest("GET", fmt.Sprintf("/api/club/%s/leaderboard", club.ID), tokenB, nil)
+		assert.NoError(t, err)
+		getLeaderboardResp, err := app.Test(getLeaderboardReq)
+		assert.NoError(t, err)
+		assert.NotEqual(t, http.StatusOK, getLeaderboardResp.StatusCode)
+
+		// Try to create a post
+		postContent := "This is a test post."
+		reqBody := handlers.ClubPostRequest{
+			TextContent: postContent,
+		}
+		jsonBody, err := json.Marshal(reqBody)
+		assert.NoError(t, err)
+		createPostReq, err := NewProtectedRequest("POST", fmt.Sprintf("/api/club/%s/post", club.ID), tokenB, bytes.NewBuffer(jsonBody))
+		assert.NoError(t, err)
+		createPostResp, err := app.Test(createPostReq)
+		assert.NoError(t, err)
+		assert.NotEqual(t, http.StatusOK, createPostResp.StatusCode)
+	})
+
+	// User B joins the club
+	joinReq, err := NewProtectedRequest("POST", fmt.Sprintf("/api/club/%s/join", club.ID), tokenB, nil)
+	assert.NoError(t, err)
+	joinResp, err := app.Test(joinReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, joinResp.StatusCode)
+
+	t.Run("Member access", func(t *testing.T) {
+		// Try to get club details
+		getClubReq, err := NewProtectedRequest("GET", fmt.Sprintf("/api/club/%s", club.ID), tokenB, nil)
+		assert.NoError(t, err)
+		getClubResp, err := app.Test(getClubReq)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, getClubResp.StatusCode)
+
+		// Try to get club leaderboard
+		getLeaderboardReq, err := NewProtectedRequest("GET", fmt.Sprintf("/api/club/%s/leaderboard", club.ID), tokenB, nil)
+		assert.NoError(t, err)
+		getLeaderboardResp, err := app.Test(getLeaderboardReq)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, getLeaderboardResp.StatusCode)
+
+		// Try to create a post
+		postContent := "This is a test post."
+		reqBody := handlers.ClubPostRequest{
+			TextContent: postContent,
+		}
+		jsonBody, err := json.Marshal(reqBody)
+		assert.NoError(t, err)
+		createPostReq, err := NewProtectedRequest("POST", fmt.Sprintf("/api/club/%s/post", club.ID), tokenB, bytes.NewBuffer(jsonBody))
+		assert.NotNil(t, createPostReq)
+		assert.NoError(t, err)
+		createPostResp, err := app.Test(createPostReq)
+		assert.NotNil(t, createPostResp)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, createPostResp.StatusCode)
+	})
+
+	// User B leaves the club
+	leaveReq, err := NewProtectedRequest("POST", fmt.Sprintf("/api/club/%s/leave", club.ID), tokenB, nil)
+	assert.NotNil(t, leaveReq)
+	assert.NoError(t, err)
+	leaveResp, err := app.Test(leaveReq)
+	assert.NotNil(t, leaveResp)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, leaveResp.StatusCode)
+
+	t.Run("Post-member access", func(t *testing.T) {
+		// Try to get club details
+		getClubReq, err := NewProtectedRequest("GET", fmt.Sprintf("/api/club/%s", club.ID), tokenB, nil)
+		assert.NotNil(t, getClubReq)
+		assert.NoError(t, err)
+		getClubResp, err := app.Test(getClubReq)
+		assert.NotNil(t, getClubResp)
+		assert.NotEqual(t, http.StatusOK, getClubResp.StatusCode)
+	})
+}
+
+// test write permissions
+func TestUserOwnershipClub(t *testing.T) {
+	app := SetupTestApp()
+
+	// Create users
+	ownerToken, err := CreateTestUser(app, "owner", "owner@example.com", "Password123!@")
+	assert.NoError(t, err)
+
+	memberToken, err := CreateTestUser(app, "member", "member@example.com", "Password123!@")
+	assert.NoError(t, err)
+
+	// Owner creates a club
+	club, err := CreateTestClub(app, ownerToken, "Test Club", StringToPtr("A club for testing permissions"), false)
+	assert.NoError(t, err)
+
+	// Moderator and Member join the club
+	joinMemberReq, err := NewProtectedRequest("POST", fmt.Sprintf("/api/club/%s/join", club.ID), memberToken, nil)
+	assert.NoError(t, err)
+	joinMemberResp, err := app.Test(joinMemberReq)
+	assert.NoError(t, err)
+	assert.NotNil(t, joinMemberResp)
+	assert.Equal(t, http.StatusOK, joinMemberResp.StatusCode)
+
+	t.Run("Update club permissions", func(t *testing.T) {
+		newName := "Updated Club Name"
+		reqBody := handlers.UpdateClubRequest{
+			Name: &newName,
+		}
+		jsonBody, err := json.Marshal(reqBody)
+		assert.NoError(t, err)
+
+		// Member tries to update
+		updateReqMember, err := NewProtectedRequest("PUT", fmt.Sprintf("/api/club/%s", club.ID), memberToken, bytes.NewBuffer(jsonBody))
+		assert.NoError(t, err)
+		updateRespMember, err := app.Test(updateReqMember)
+		assert.NoError(t, err)
+		assert.NotEqual(t, http.StatusOK, updateRespMember.StatusCode)
+
+		// Owner tries to update
+		updateReqOwner, _ := NewProtectedRequest("PUT", fmt.Sprintf("/api/club/%s", club.ID), ownerToken, bytes.NewBuffer(jsonBody))
+		updateRespOwner, _ := app.Test(updateReqOwner)
+		assert.Equal(t, http.StatusOK, updateRespOwner.StatusCode)
+	})
+
+	t.Run("Delete club permissions", func(t *testing.T) {
+		// Member tries to delete
+		deleteReqMember, _ := NewProtectedRequest("DELETE", fmt.Sprintf("/api/club/%s", club.ID), memberToken, nil)
+		deleteRespMember, _ := app.Test(deleteReqMember)
+		assert.NotEqual(t, http.StatusOK, deleteRespMember.StatusCode)
+
+		// Owner tries to delete
+		deleteReqOwner, _ := NewProtectedRequest("DELETE", fmt.Sprintf("/api/club/%s", club.ID), ownerToken, nil)
+		deleteRespOwner, _ := app.Test(deleteReqOwner)
+		assert.Equal(t, http.StatusOK, deleteRespOwner.StatusCode)
+	})
+}
