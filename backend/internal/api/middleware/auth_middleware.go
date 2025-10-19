@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,6 +14,7 @@ func ProtectedRoute(authService services.AuthServicer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.Context()
 		tokenString := c.Get("Authorization")
+		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 		if tokenString == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(handlers.ErrorResponse{
 				Error: "Unauthorized: missing token",
