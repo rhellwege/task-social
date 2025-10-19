@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 set -x
-
 echo "Checking http client code generation..."
 pwd
 cp services/api/Api.ts services/Api.ts.bak

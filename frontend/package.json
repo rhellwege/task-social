@@ -10,7 +10,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "type-check": "tsc --noEmit",
-    "generate-api": "npx swagger-typescript-api generate --path ../backend/docs/swagger.json -o ./services/api -n Api.ts --clean-output",
+    "generate-api": "sh ./scripts/generate_api.sh",
     "check-codegen": "sh ./scripts/check_codegen.sh"
   },
   "dependencies": {
