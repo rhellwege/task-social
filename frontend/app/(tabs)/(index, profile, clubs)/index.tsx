@@ -21,7 +21,6 @@ export default function Tab() {
       // Remove from explore
       setClubs(prev => prev.filter(club => club.id !== clubId));
       // Navigate to Clubs tab
-      // @ts-expect-error: TypeScript cannot infer dynamic route
       router.replace(`/(tabs)/(clubs)/clubs?joinedClub=${encodeURIComponent(JSON.stringify(joinedClub))}`);
       alert(`Joined ${clubId}!`);
     }
