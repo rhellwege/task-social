@@ -1,9 +1,13 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useApi } from "@/hooks/useApi";
-import { HandlersRegisterUserRequest } from "@/services/api/Api";
+import {
+  HandlersErrorResponse,
+  HandlersRegisterUserRequest,
+} from "@/services/api/Api";
 import { storage } from "@/services/storage";
-import { toastError, toastSuccess } from "@/services/toast";
+import { toastAxiosError, toastError, toastSuccess } from "@/services/toast";
+import { AxiosError } from "axios";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { Button, TextInput, StyleSheet } from "react-native";
@@ -24,17 +28,14 @@ export default function RegisterScreen() {
 
     try {
       const resp = await api.api.registerUser(params);
-      console.log(resp);
-      console.log("Registration successful");
       router.replace("/(tabs)");
       console.log("Storing new token");
       storage.setToken(resp.data.token!);
       api.setSecurityData(resp.data);
       toastSuccess("Registration successful");
-    } catch (error) {
+    } catch (error: AxiosError<HandlersErrorResponse>) {
       console.log(error);
-      // console.error("Registration failed", resp.status, resp.data);
-      toastError(`Registration failed`);
+      toastAxiosError(error);
     }
   };
 
