@@ -31,11 +31,13 @@ export default function RegisterScreen() {
       router.replace("/(tabs)");
       console.log("Storing new token");
       storage.setToken(resp.data.token!);
-      api.setSecurityData(resp.data);
+      api.setSecurityData(resp.data.token!);
       toastSuccess("Registration successful");
-    } catch (error: AxiosError<HandlersErrorResponse>) {
+      const version = await api.api.version();
+      console.log(version.data);
+    } catch (error) {
       console.log(error);
-      toastAxiosError(error);
+      toastAxiosError(error as AxiosError<HandlersErrorResponse>);
     }
   };
 

@@ -16,22 +16,18 @@ export const useApi = (): Api<unknown> => {
 export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const api = useMemo(() => {
-    const api = new Api({
-      securityWorker: async (securityData) => {
-        const token = await storage.getToken();
-        if (token) {
-          return {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          };
-        }
-        // if no token, redirect to login page
-        router.replace("/(auth)/login");
-        return {};
-      },
+    const api = new Api();
+
+    // auth interceptor: attach token to each request header
+    api.instance.interceptors.request.use(async (config) => {
+      const token = await storage.getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
     });
 
+    // unauthorized interceptor:
     // if any request responds with unauthorized, redirect to login page
     // api.instance.interceptors.response.use(
     //   (response) => response,

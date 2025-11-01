@@ -4,8 +4,13 @@ import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { Button, TextInput, StyleSheet } from "react-native";
 import { useApi } from "@/hooks/useApi";
-import { HandlersLoginUserRequest } from "@/services/api/Api";
+import {
+  HandlersErrorResponse,
+  HandlersLoginUserRequest,
+} from "@/services/api/Api";
 import { storage } from "@/services/storage";
+import { toastAxiosError, toastError, toastSuccess } from "@/services/toast";
+import { AxiosError } from "axios";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -20,16 +25,16 @@ export default function LoginScreen() {
         password,
       };
       const resp = await api.api.loginUser(user);
-      if (resp.status === 200 || resp.status === 201) {
-        router.replace("/(tabs)");
-        console.log("Storing new token");
-        storage.setToken(resp.data.token!);
-        api.setSecurityData(resp.data);
-      } else {
-        console.error("Login failed", resp.status, resp.data);
-      }
+      toastSuccess("Login successful");
+      router.replace("/(tabs)");
+      console.log("Storing new token");
+      storage.setToken(resp.data.token!);
+      api.setSecurityData(resp.data.token!);
+      const version = await api.api.version();
+      console.log(version.data);
     } catch (error) {
       console.error(error);
+      toastAxiosError(error as AxiosError<HandlersErrorResponse>);
       // Handle login error (e.g., show an alert)
     }
   };
