@@ -23,7 +23,7 @@ func NewProtectedRequest(method string, path string, token string, body io.Reade
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", token)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	return req, err
 }
 
