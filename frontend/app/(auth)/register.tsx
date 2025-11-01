@@ -1,10 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useApi } from "@/hooks/useApi";
-import {
-  HandlersErrorResponse,
-  HandlersRegisterUserRequest,
-} from "@/services/api/Api";
+import { HandlersRegisterUserRequest } from "@/services/api/Api";
 import { storage } from "@/services/storage";
 import { toastFetchError, toastSuccess } from "@/services/toast";
 import { Link, useRouter } from "expo-router";

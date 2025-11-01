@@ -29,7 +29,7 @@ const InitialLayout = () => {
     };
 
     checkToken();
-  }, []);
+  }, [router]);
 
   return (
     <Stack>
