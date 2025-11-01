@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/rhellwege/task-social/internal/api/handlers"
 	"github.com/rhellwege/task-social/internal/api/middleware"
@@ -16,6 +17,14 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	wsService := services.NewWebSocketService()
 	clubService := services.NewClubService(querier, imageService, wsService)
 	metricService := services.NewMetricService(querier, clubService)
+
+	// CORS Origins should not be * but temporarily this is allowed
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowMethods: "GET,POST,PUT,DELETE,PATCH",
+		AllowHeaders: "Origin,Content-Type,Accept,Authorization",
+		// AllowCredentials: true,
+	}))
 
 	// Logger middleware
 	app.Use(logger.New(logger.Config{
