@@ -3,39 +3,33 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import { Stack, useRouter, useRootNavigationState } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { ApiProvider } from "@/hooks/useApi";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { storage } from "@/services/storage";
+
+import Toast from "react-native-toast-message";
 
 const InitialLayout = () => {
   const router = useRouter();
-  const navigationState = useRootNavigationState();
-  const [tokenChecked, setTokenChecked] = useState(false);
 
   useEffect(() => {
-    if (!navigationState?.key || tokenChecked) return;
-
     const checkToken = async () => {
       const token = await storage.getToken();
       if (!token) {
-        console.log("No token found, redirecting to login");
-        router.replace("/(auth)/login");
+        console.log("No token found, redirecting to register");
+        router.replace("/(auth)/register");
       } else {
+        console.log("Using token found in storage");
         router.replace("/(tabs)");
       }
-      setTokenChecked(true);
     };
 
     checkToken();
-  }, [navigationState?.key, tokenChecked]);
-
-  if (!navigationState?.key) {
-    return null;
-  }
+  }, []);
 
   return (
     <Stack>
@@ -53,6 +47,7 @@ export default function Layout() {
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <InitialLayout />
         <StatusBar style="auto" />
+        <Toast />
       </ThemeProvider>
     </ApiProvider>
   );

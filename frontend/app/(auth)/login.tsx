@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button, TextInput, StyleSheet } from "react-native";
 import { useApi } from "@/hooks/useApi";
 import { HandlersLoginUserRequest } from "@/services/api/Api";
+import { storage } from "@/services/storage";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -18,8 +19,15 @@ export default function LoginScreen() {
         email,
         password,
       };
-      await api.api.loginUser(user);
-      router.replace("/(tabs)");
+      const resp = await api.api.loginUser(user);
+      if (resp.status === 200 || resp.status === 201) {
+        router.replace("/(tabs)");
+        console.log("Storing new token");
+        storage.setToken(resp.data.token!);
+        api.setSecurityData(resp.data);
+      } else {
+        console.error("Login failed", resp.status, resp.data);
+      }
     } catch (error) {
       console.error(error);
       // Handle login error (e.g., show an alert)

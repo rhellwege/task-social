@@ -2,6 +2,8 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useApi } from "@/hooks/useApi";
 import { HandlersRegisterUserRequest } from "@/services/api/Api";
+import { storage } from "@/services/storage";
+import { toastError, toastSuccess } from "@/services/toast";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { Button, TextInput, StyleSheet } from "react-native";
@@ -14,17 +16,25 @@ export default function RegisterScreen() {
   const router = useRouter();
 
   const handleRegister = async () => {
+    const params: HandlersRegisterUserRequest = {
+      email,
+      password,
+      username,
+    };
+
     try {
-      const params: HandlersRegisterUserRequest = {
-        email,
-        password,
-        username,
-      };
       const resp = await api.api.registerUser(params);
+      console.log(resp);
+      console.log("Registration successful");
       router.replace("/(tabs)");
+      console.log("Storing new token");
+      storage.setToken(resp.data.token!);
+      api.setSecurityData(resp.data);
+      toastSuccess("Registration successful");
     } catch (error) {
-      console.error(error);
-      // Handle registration error
+      console.log(error);
+      // console.error("Registration failed", resp.status, resp.data);
+      toastError(`Registration failed`);
     }
   };
 
@@ -33,7 +43,7 @@ export default function RegisterScreen() {
       <ThemedText type="title">Register</ThemedText>
       <TextInput
         style={styles.input}
-        placeholder="Name"
+        placeholder="Username"
         value={username}
         onChangeText={setUsername}
         autoCapitalize="words"
