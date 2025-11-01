@@ -1,6 +1,4 @@
-import { AxiosError } from "axios";
 import Toast from "react-native-toast-message";
-import { HandlersErrorResponse } from "./api/Api";
 
 export const toastInfo = (message: string) => {
   console.log(message);
@@ -26,11 +24,11 @@ export const toastError = (message: string) => {
   });
 };
 
-export const toastAxiosError = (error: AxiosError<HandlersErrorResponse>) => {
+export const toastFetchError = (error: any) => {
   console.error(error);
   Toast.show({
     type: "error",
-    text1: error.response?.data.error,
+    text1: error.error!.error,
   });
 };
 

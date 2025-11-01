@@ -2,4 +2,4 @@
 set -e
 set -x
 mkdir -p ./services/api
-npx swagger-typescript-api generate --path ../backend/docs/swagger.json --axios -o ./services/api -n Api.ts --clean-output
+npx swagger-typescript-api generate --path ../backend/docs/swagger.json -o ./services/api -n Api.ts --clean-output

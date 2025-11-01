@@ -2,6 +2,7 @@ import { Api } from "@/services/api/Api";
 import React, { createContext, useContext, useMemo } from "react";
 import { useRouter } from "expo-router";
 import { storage } from "@/services/storage";
+import { toastError } from "@/services/toast";
 
 const ApiContext = createContext<Api<unknown> | null>(null);
 
@@ -18,26 +19,37 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
   const api = useMemo(() => {
     const api = new Api();
 
-    // auth interceptor: attach token to each request header
-    api.instance.interceptors.request.use(async (config) => {
-      const token = await storage.getToken();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    });
+    // monkey patch fetch to add interceptors
+    const { fetch: originalFetch } = window;
 
-    // unauthorized interceptor:
-    // if any request responds with unauthorized, redirect to login page
-    // api.instance.interceptors.response.use(
-    //   (response) => response,
-    //   (error) => {
-    //     if (error.response && error.response.status === 401) {
-    //       router.replace("/(auth)/login");
-    //     }
-    //     return Promise.reject(error);
-    //   },
-    // );
+    window.fetch = async (...args) => {
+      let [resource, config] = args;
+
+      // request interceptor here
+      const requestInterceptor = async (config: any) => {
+        const token = await storage.getToken();
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      };
+
+      const response = await originalFetch(
+        resource,
+        await requestInterceptor(config),
+      );
+
+      // response interceptor here
+      const responseInterceptor = async (response: any) => {
+        if (response.status === 401) {
+          router.replace("/(auth)/login");
+          toastError("Login expired, please login again");
+        }
+        return response;
+      };
+
+      return await responseInterceptor(response);
+    };
 
     return api;
   }, [router]);

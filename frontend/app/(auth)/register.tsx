@@ -6,8 +6,7 @@ import {
   HandlersRegisterUserRequest,
 } from "@/services/api/Api";
 import { storage } from "@/services/storage";
-import { toastAxiosError, toastError, toastSuccess } from "@/services/toast";
-import { AxiosError } from "axios";
+import { toastFetchError, toastSuccess } from "@/services/toast";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { Button, TextInput, StyleSheet } from "react-native";
@@ -31,13 +30,11 @@ export default function RegisterScreen() {
       router.replace("/(tabs)");
       console.log("Storing new token");
       storage.setToken(resp.data.token!);
-      api.setSecurityData(resp.data.token!);
       toastSuccess("Registration successful");
       const version = await api.api.version();
       console.log(version.data);
     } catch (error) {
-      console.log(error);
-      toastAxiosError(error as AxiosError<HandlersErrorResponse>);
+      toastFetchError(error);
     }
   };
 
