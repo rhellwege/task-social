@@ -25,7 +25,6 @@ export default function LoginScreen() {
       router.replace("/(tabs)");
       console.log("Storing new token");
       storage.setToken(resp.data.token!);
-      api.setSecurityData(resp.data.token!);
       const version = await api.api.version();
       console.log(version.data);
     } catch (error) {
@@ -37,6 +36,7 @@ export default function LoginScreen() {
     <ThemedView style={styles.container}>
       <ThemedText type="title">Login</ThemedText>
       <TextInput
+        style={styles.input}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
@@ -44,6 +44,7 @@ export default function LoginScreen() {
         autoCapitalize="none"
       />
       <TextInput
+        style={styles.input}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}

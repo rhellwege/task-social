@@ -1,4 +1,5 @@
 import Toast from "react-native-toast-message";
+import { HandlersErrorResponse } from "./api/Api";
 
 export const toastInfo = (message: string) => {
   console.log(message);
@@ -26,9 +27,10 @@ export const toastError = (message: string) => {
 
 export const toastFetchError = (error: any) => {
   console.error(error);
+  const errResponse: HandlersErrorResponse = error.error!;
   Toast.show({
     type: "error",
-    text1: error.error!.error,
+    text1: errResponse.error,
   });
 };
 
