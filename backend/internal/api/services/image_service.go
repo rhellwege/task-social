@@ -77,7 +77,7 @@ func (s *ImageService) SaveImage(ctx context.Context, fileBytes []byte, width, h
 		return "", fmt.Errorf("failed to encode webp: %w", err)
 	}
 
-	return "/" + subDir + "/" + filename, nil
+	return "/assets/" + subDir + "/" + filename, nil
 }
 
 func (s *ImageService) SaveProfileImage(ctx context.Context, fileBytes []byte) (string, error) {
