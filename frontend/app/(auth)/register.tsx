@@ -43,7 +43,7 @@ export default function RegisterScreen() {
         placeholder="Username"
         value={username}
         onChangeText={setUsername}
-        autoCapitalize="words"
+        autoCapitalize="none"
       />
       <TextInput
         style={styles.input}
@@ -61,9 +61,12 @@ export default function RegisterScreen() {
         secureTextEntry
       />
       <Button title="Register" onPress={handleRegister} />
-      <Link href="/(auth)/login" style={styles.link}>
-        <ThemedText type="link">Already have an account? Login</ThemedText>
-      </Link>
+      <ThemedText style={styles.link}>
+        Already have an account?{" "}
+        <Link href="/(auth)/login">
+          <ThemedText type="link">Login</ThemedText>
+        </Link>
+      </ThemedText>
     </ThemedView>
   );
 }

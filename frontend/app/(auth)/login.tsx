@@ -51,9 +51,12 @@ export default function LoginScreen() {
         secureTextEntry
       />
       <Button title="Login" onPress={handleLogin} />
-      <Link href="/(auth)/register" style={styles.link}>
-        <ThemedText type="link">{"Don't have an account? Register"}</ThemedText>
-      </Link>
+      <ThemedText style={styles.link}>
+        {"Don't have an account? "}
+        <Link href="/(auth)/register">
+          <ThemedText type="link">Register</ThemedText>
+        </Link>
+      </ThemedText>
     </ThemedView>
   );
 }
