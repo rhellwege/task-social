@@ -28,7 +28,10 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 
 	// Logger middleware
 	app.Use(logger.New(logger.Config{
-		Format: "${time} [${ip}]:${port} ${locals:requestid} ${status} - ${method} ${path} ${latency} \n",
+		Format: "${time} [${ip}]:${port} ${locals:requestid} ${status} - ${method} ${path} ${latency} ${json}\n",
+		CustomTags: map[string]logger.LogFunc{
+			"json": middleware.BodyLogger,
+		},
 	}))
 
 	// Public routes
