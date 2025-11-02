@@ -39,7 +39,7 @@ check:
 
 build: swagger
 	@mkdir -p $(BIN_DIR)
-	go build -ldflags="${LDFLAGS}" -o ${BIN_DIR}/main cmd/main.go
+	go build -ldflags="${LDFLAGS}" -o ${BIN_DIR}/tasksocial cmd/main.go
 
 run: build
 	$(BIN_DIR)/main
