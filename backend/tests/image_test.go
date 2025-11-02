@@ -39,7 +39,7 @@ func TestCreateProfilePicture(t *testing.T) {
 	assert.NotEmpty(t, firstResp.URL)
 
 	firstRel := strings.TrimPrefix(firstResp.URL, "/")
-	firstPath := filepath.Join("./assets", firstRel)
+	firstPath := filepath.Join("./", firstRel)
 
 	// Check first profile picture exists
 	_, err = os.Stat(firstPath)
@@ -52,7 +52,7 @@ func TestCreateProfilePicture(t *testing.T) {
 	assert.NotEmpty(t, secondResp.URL)
 
 	secondRel := strings.TrimPrefix(secondResp.URL, "/")
-	secondPath := filepath.Join("./assets", secondRel)
+	secondPath := filepath.Join("./", secondRel)
 
 	// Check first profile picture does not exist
 	_, err = os.Stat(firstPath)
@@ -70,7 +70,7 @@ func TestCreateProfilePicture(t *testing.T) {
 	assert.NotEmpty(t, thirdResp.URL)
 
 	thirdRel := strings.TrimPrefix(thirdResp.URL, "/")
-	thirdPath := filepath.Join("./assets", thirdRel)
+	thirdPath := filepath.Join("./", thirdRel)
 
 	// Check second profile picture does not exist
 	_, err = os.Stat(firstPath)
