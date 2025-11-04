@@ -54,7 +54,7 @@ export default function LoginScreen() {
       />
       <Button title="Login" onPress={handleLogin} testID="login-button" />
       <View style={styles.linkContainer}>
-        <ThemedText>Don't have an account? </ThemedText>
+        <ThemedText>{"Don't have an account? "}</ThemedText>
         <Link href="/(auth)/register" testID="register-link">
           <ThemedText type="link">Register</ThemedText>
         </Link>

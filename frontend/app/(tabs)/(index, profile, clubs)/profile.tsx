@@ -28,12 +28,14 @@ export default function Tab() {
   }, [api]);
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={styles.container} testID="profile-screen">
       <ThemedView style={styles.profileView}>
         <Image source={{ uri: profilePic }} style={styles.circle} />
         <View style={styles.name}>
           <ThemedText type="title">User</ThemedText>
-          <ThemedText type="subtitle">@{username}</ThemedText>
+          <ThemedText type="subtitle" testID="username">
+            @{username}
+          </ThemedText>
           <ThemedText>Joined on {formattedDate}</ThemedText>
         </View>
       </ThemedView>
