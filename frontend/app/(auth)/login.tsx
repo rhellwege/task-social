@@ -42,6 +42,7 @@ export default function LoginScreen() {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        testID="email-input"
       />
       <TextInput
         style={styles.input}
@@ -49,11 +50,12 @@ export default function LoginScreen() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        testID="password-input"
       />
-      <Button title="Login" onPress={handleLogin} />
+      <Button title="Login" onPress={handleLogin} testID="login-button" />
       <ThemedText style={styles.link}>
         {"Don't have an account? "}
-        <Link href="/(auth)/register">
+        <Link href="/(auth)/register" testID="register-link">
           <ThemedText type="link">Register</ThemedText>
         </Link>
       </ThemedText>

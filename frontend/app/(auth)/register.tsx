@@ -44,6 +44,7 @@ export default function RegisterScreen() {
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
+        testID="username-input"
       />
       <TextInput
         style={styles.input}
@@ -52,6 +53,7 @@ export default function RegisterScreen() {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        testID="email-input"
       />
       <TextInput
         style={styles.input}
@@ -59,11 +61,16 @@ export default function RegisterScreen() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        testID="password-input"
       />
-      <Button title="Register" onPress={handleRegister} />
+      <Button
+        title="Register"
+        onPress={handleRegister}
+        testID="register-button"
+      />
       <ThemedText style={styles.link}>
         Already have an account?{" "}
-        <Link href="/(auth)/login">
+        <Link href="/(auth)/login" testID="login-link">
           <ThemedText type="link">Login</ThemedText>
         </Link>
       </ThemedText>
