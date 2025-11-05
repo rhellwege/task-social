@@ -48,3 +48,15 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+
+# End to End testing
+This only works on mac since the tests use ios native simulators.
+
+## Install dependencies
+1. install detox-cli: `npm install detox-cli --global`
+2. install applesimutils `brew tap wix/brew
+brew install applesimutils`
+3. You may need to change the configuration inside .detoxrc.js if your mac doesnt support Iphone 16 simulators.
+4. run scripts/build-e2e.sh
+5. run scripts/test-e2e.sh
