@@ -34,6 +34,11 @@ The following scenarios are currently covered by our E2E test suite, located in 
 -   **Test:** `should register a new user and redirect to main page`
 -   **Description:** This test covers the full "happy path" for user registration. It types a username, email, and password into the input fields, submits the form, and asserts that the user is successfully logged in by navigating to the profile page and checking for the correct username.
 
+3. Successful Login
+-   **Test:** `should login with registered user and redirect to main page`
+-   **Description:** This test covers the full "happy path" for user login. It types an email and password into the input fields, submits the form, and asserts that the user is successfully logged in by navigating to the profile page and checking for the correct username.
+- **Note:** This test assumes that the user has already registered  in the backend which should be the case during this testing.
+
 ## Future Test Scenarios
 
 To improve our test coverage and ensure application stability, the following E2E tests should be added:

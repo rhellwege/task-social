@@ -6,4 +6,3 @@ set -x
 
 npx expo prebuild --platform ios
 detox build --configuration ios.sim.debug
-detox test --configuration ios.sim.debug
