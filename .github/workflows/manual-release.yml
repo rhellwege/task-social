@@ -1,0 +1,40 @@
+name: Manually Release With New Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      major:
+        description: "Major version number"
+        required: true
+      minor:
+        description: "Minor version number"
+        required: true
+      patch:
+        description: "Patch version number"
+        required: true
+
+jobs:
+  manual_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches all history for all tags
+
+      - name: Validate inputs are integers
+        run: |
+          if ! [[ "${{ github.event.inputs.major }}" =~ ^[0-9]+$ && \
+                "${{ github.event.inputs.minor }}" =~ ^[0-9]+$ && \
+                "${{ github.event.inputs.patch }}" =~ ^[0-9]+$ ]]; then
+            echo "Error: major, minor, and patch inputs must be non-negative integers."
+            exit 1
+          fi
+          echo "Inputs are valid integers."
+
+      - name: Create and push new tag
+        run: |
+          NEW_TAG="v${{ github.event.inputs.major }}.${{ github.event.inputs.minor }}.${{ github.event.inputs.patch }}-1"
+          echo "Creating new tag: $NEW_TAG"
+          git tag -a "$NEW_TAG" -m "Manual release: $NEW_TAG"
+          git push origin "$NEW_TAG"

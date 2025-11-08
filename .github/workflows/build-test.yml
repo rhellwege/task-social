@@ -87,3 +87,6 @@ jobs:
       - name: Jest
         run: npm run test
         working-directory: frontend
+      - name: API Codegen Check
+        run: ./scripts/check_codegen.sh
+        working-directory: frontend
