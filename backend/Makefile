@@ -39,10 +39,14 @@ check:
 
 build: swagger
 	@mkdir -p $(BIN_DIR)
-	go build -ldflags="${LDFLAGS}" -o ${BIN_DIR}/tasksocial cmd/main.go
+	CGO_ENABLED=1 go build -ldflags="${LDFLAGS}" -o ${BIN_DIR}/tasksocial cmd/main.go
+
+build_no_checks:
+	@mkdir -p $(BIN_DIR)
+	CGO_ENABLED=1 go build -ldflags="${LDFLAGS}" -o ${BIN_DIR}/tasksocial cmd/main.go
 
 run: build
-	$(BIN_DIR)/main
+	$(BIN_DIR)/tasksocial
 
 test: build check
 	go test -v ./...

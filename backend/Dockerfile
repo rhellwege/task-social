@@ -1,33 +1,37 @@
 # ---- Builder Stage ----
-# This stage builds the Go binary using the Makefile
-FROM golang:1.21-alpine AS builder
+# This stage builds the Go binary
+FROM golang:1.25-bookworm AS builder
+
+# Arguments for versioning, passed from the docker build command
+ARG TAG
+ARG COMMIT_HASH
+ARG BUILD_DATE
 
 # Install build dependencies
-RUN apk add --no-cache make git
+RUN apt-get update && apt-get install -y gcc libwebp-dev
 
 WORKDIR /app
 
-# Copy Go module files and download dependencies
-# This is done first to leverage Docker layer caching
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy the rest of the source code
 COPY . .
 
-# Install the build tools (swag, sqlc) using the provided script
-RUN ./scripts/get_tools.sh
-
-# Build the application using the Makefile
-# The 'build' target compiles the binary and generates swagger docs
-RUN make build
+# Build the application, passing version info via ldflags
+# This replaces the need for the Makefile and .git directory inside the container
+RUN PACKAGE="github.com/rhellwege/task-social" && \
+    LDFLAGS="-X '${PACKAGE}/config.Version=${TAG}' -X '${PACKAGE}/config.CommitHash=${COMMIT_HASH}' -X '${PACKAGE}/config.BuildDate=${BUILD_DATE}'" && \
+    CGO_ENABLED=1 go build -ldflags="$LDFLAGS" -o /app/tasksocial ./cmd/main.go
 
 # ---- Final Stage ----
 # This stage creates the final, minimal image
-FROM scratch
+FROM debian:bookworm-slim
+
+# Install the required runtime dependency for libwebp
+RUN apt-get update && apt-get install -y libwebp7 && rm -rf /var/lib/apt/lists/*
 
 # Copy the compiled binary from the builder stage
-COPY --from=builder /app/bin/tasksocial /tasksocial
+COPY --from=builder /app/tasksocial /tasksocial
 
 # Expose the port the application listens on
 EXPOSE 5050
