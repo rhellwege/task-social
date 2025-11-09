@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
@@ -80,7 +79,7 @@ func main() {
 		panic(err)
 	}
 
-	scheduler.NewJob(gocron.DurationJob(1*time.Minute), gocron.NewTask(func() {
+	scheduler.NewJob(gocron.DurationJob(config.MetricCheckPeriod), gocron.NewTask(func() {
 		err = middleware.CheckMetricsForExpiration(ctx, queries)
 		if err != nil {
 			panic(err)
