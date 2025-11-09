@@ -7,12 +7,16 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
 
+	"github.com/go-co-op/gocron/v2"
+
 	"github.com/rhellwege/task-social/config"
 	_ "github.com/rhellwege/task-social/docs"
+	"github.com/rhellwege/task-social/internal/api/middleware"
 	"github.com/rhellwege/task-social/internal/api/routes"
 	"github.com/rhellwege/task-social/internal/db"
 	"github.com/rhellwege/task-social/internal/db/repository"
@@ -70,6 +74,20 @@ func main() {
 		port = config.DefaultPort
 	}
 	routes.SetupServicesAndRoutes(app, queries)
+
+	scheduler, err := gocron.NewScheduler()
+	if err != nil {
+		panic(err)
+	}
+
+	scheduler.NewJob(gocron.DurationJob(1*time.Minute), gocron.NewTask(func() {
+		err = middleware.CheckMetricsForExpiration(ctx, queries)
+		if err != nil {
+			panic(err)
+		}
+	}))
+
+	scheduler.Start()
 
 	serverAddr := fmt.Sprintf(":%s", port)
 	go func() {
