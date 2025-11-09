@@ -20,7 +20,7 @@ type ClubServicer interface {
 	GetClubLeaderboard(ctx context.Context, userID string, clubID string) ([]repository.GetClubLeaderboardRow, error)
 	DeleteClub(ctx context.Context, userID string, clubID string) error
 	UpdateClub(ctx context.Context, userID string, params repository.UpdateClubParams) error
-	UploadClubBanner(ctx context.Context, clubID string, fileBytes []byte) (string, error)
+	UploadClubBanner(ctx context.Context, userID string, clubID string, fileBytes []byte) (string, error)
 	GetClubMetrics(ctx context.Context, userID string, clubID string) ([]repository.Metric, error)
 	GetClubPosts(ctx context.Context, userID string, clubID string) ([]repository.ClubPost, error)
 	CreateClubPost(ctx context.Context, userID string, clubID string, text string) (string, error)
@@ -166,8 +166,7 @@ func (s *ClubService) UpdateClub(ctx context.Context, userID string, params repo
 	return s.q.UpdateClub(ctx, params)
 }
 
-func (s *ClubService) UploadClubBanner(ctx context.Context, clubID string, fileBytes []byte) (string, error) {
-	userID := ctx.Value("userID").(string)
+func (s *ClubService) UploadClubBanner(ctx context.Context, userID string, clubID string, fileBytes []byte) (string, error) {
 	// 1. Get existing banner
 	club, err := s.q.GetClub(ctx, clubID)
 	if err != nil {
