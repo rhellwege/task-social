@@ -16,7 +16,7 @@ import (
 //	@Accept			json
 //	@Produce		json
 //	@Security		ApiKeyAuth
-//	@Param			user	body		services.CreateClubRequest	true	"User update details"
+//	@Param			club	body		services.CreateClubRequest	true	"Create a new club"
 //	@Success		201		{object}	CreatedResponse
 //	@Failure		400		{object}	ErrorResponse
 //	@Failure		401		{object}	ErrorResponse
