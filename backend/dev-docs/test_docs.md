@@ -393,3 +393,34 @@ This test verifies the functionality of creating, retrieving, and deleting club 
 7.  The post is retrieved again.
     *   **Action:** A GET request is made to `/api/club/{clubId}/post/{postId}`.
     *   **Expected Result:** The request fails with a `404 Not Found` status.
+
+Image Test Suite Documentation
+
+This document outlines the test cases for the image upload functionality in the backend.
+
+### TestCreateProfilePicture
+
+This test verifies that a user can upload, replace, and manage their profile pictures. It also ensures that previous profile pictures are deleted when a new one is uploaded.
+
+**Steps:**
+
+1.  A test user is created and logged in to obtain an authentication token.
+2.  The user uploads their first profile picture (`.jpg` format):
+    *   **Action:** A POST request is made to `/api/user/profile-picture` with a `.jpg` image.
+    *   **Expected Result:** The upload succeeds, returning a `200 OK` status. The file exists in the server’s storage.
+3.  The user uploads a second profile picture (`.png` format):
+    *   **Action:** A POST request is made to `/api/user/profile-picture` with a `.png` image.
+    *   **Expected Result:** The first profile picture is deleted. The new picture is saved successfully, returning a `200 OK` status. The file exists in the server’s storage.
+4.  The user uploads a third profile picture (`.webp` format):
+    *   **Action:** A POST request is made to `/api/user/profile-picture` with a `.webp` image.
+    *   **Expected Result:** The second profile picture is deleted. The third picture is saved successfully, returning a `200 OK` status. The file exists in the server’s storage.
+5.  **Cleanup:**
+    *   **Action:** The test deletes the third profile picture after verification.
+    *   **Expected Result:** The server storage is cleaned up, and no test profile picture files remain.
+
+**Key Validations:**
+
+- Previous profile pictures are automatically deleted when a new one is uploaded.
+- The uploaded picture file exists at the expected path.
+- Uploads of different formats (`.jpg`, `.png`, `.webp`) are supported.
+- Proper cleanup is performed at the end of the test to maintain a clean environment.
