@@ -313,9 +313,9 @@ paths:
       description: Create a new club with the provided details.
       operationId: CreateClub
       parameters:
-      - description: User update details
+      - description: Create a new club
         in: body
-        name: user
+        name: club
         required: true
         schema:
           $ref: '#/definitions/services.CreateClubRequest'
