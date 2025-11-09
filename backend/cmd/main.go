@@ -15,8 +15,8 @@ import (
 
 	"github.com/rhellwege/task-social/config"
 	_ "github.com/rhellwege/task-social/docs"
-	"github.com/rhellwege/task-social/internal/api/middleware"
 	"github.com/rhellwege/task-social/internal/api/routes"
+	"github.com/rhellwege/task-social/internal/api/services"
 	"github.com/rhellwege/task-social/internal/db"
 	"github.com/rhellwege/task-social/internal/db/repository"
 )
@@ -80,7 +80,7 @@ func main() {
 	}
 
 	scheduler.NewJob(gocron.DurationJob(config.MetricCheckPeriod), gocron.NewTask(func() {
-		err = middleware.CheckMetricsForExpiration(ctx, queries)
+		err = services.CheckMetricsForExpiration(ctx, queries)
 		if err != nil {
 			panic(err)
 		}
