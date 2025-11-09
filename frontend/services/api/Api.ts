@@ -454,11 +454,11 @@ export class Api<
      * @request POST:/api/club
      * @secure
      */
-    createClub: (user: ServicesCreateClubRequest, params: RequestParams = {}) =>
+    createClub: (club: ServicesCreateClubRequest, params: RequestParams = {}) =>
       this.request<HandlersCreatedResponse, HandlersErrorResponse>({
         path: `/api/club`,
         method: "POST",
-        body: user,
+        body: club,
         secure: true,
         type: ContentType.Json,
         format: "json",
