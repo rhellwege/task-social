@@ -52,6 +52,9 @@ jobs:
         run: ./scripts/install-e2e-deps.sh
         working-directory: ./frontend
 
+      - name: List applesimutils devices
+        run: applesimutils --list
+
       - name: Build Detox app for iOS Simulator
         run: ./scripts/build-e2e.sh
         working-directory: ./frontend
