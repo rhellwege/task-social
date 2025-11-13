@@ -16,7 +16,7 @@ import (
 //	@Accept			json
 //	@Produce		json
 //	@Security		ApiKeyAuth
-//	@Param			user	body		services.CreateClubRequest	true	"User update details"
+//	@Param			club	body		services.CreateClubRequest	true	"Create a new club"
 //	@Success		201		{object}	CreatedResponse
 //	@Failure		400		{object}	ErrorResponse
 //	@Failure		401		{object}	ErrorResponse
@@ -326,6 +326,7 @@ func UploadClubBanner(clubService services.ClubServicer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.Context()
 		clubID := c.Params("club_id")
+		userID := c.Locals("userID").(string)
 
 		file, err := c.FormFile("image")
 		if err != nil {
@@ -344,7 +345,7 @@ func UploadClubBanner(clubService services.ClubServicer) fiber.Handler {
 
 		fileBytes := c.Locals("uploadedImageBytes").([]byte)
 
-		url, err := clubService.UploadClubBanner(ctx, clubID, fileBytes)
+		url, err := clubService.UploadClubBanner(ctx, userID, clubID, fileBytes)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
 				Error: err.Error(),
