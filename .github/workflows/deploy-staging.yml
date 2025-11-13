@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version_tag:
-        description: "The git tag to build and deploy (e.g., v1.2.3-4)"
+        description: "The git tag (or commit hash) to build and deploy (e.g., v1.2.3-4)"
         required: true
         type: string
 
@@ -29,7 +29,13 @@ jobs:
           echo "image_id=$(docker inspect --format='{{.Image}}' ${{ env.CONTAINER_NAME }} 2>/dev/null || echo '')" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
-        run: docker build -t ${{ env.IMAGE_NAME }}:${{ github.event.inputs.version_tag }} ./backend
+        run: |
+          docker build \
+            --build-arg "TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo '')" \
+            --build-arg "COMMIT_HASH=$(git rev-parse HEAD)" \
+            --build-arg "BUILD_DATE=$(date '+%Y-%m-%dT%H:%M:%S')" \
+            -t ${{ env.IMAGE_NAME }}:${{ github.event.inputs.version_tag }} \
+            ./backend
 
       - name: Stop and remove existing container
         run: |
