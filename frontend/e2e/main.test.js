@@ -4,11 +4,12 @@ describe("App Startup Registration and Profile", () => {
   const password = "Password123!@#";
 
   beforeAll(async () => {
-    // we need to delete the keychain data before every run
+    // delete the app off the simulator if it already exists
     await device.launchApp({ delete: true });
   });
 
   beforeEach(async () => {
+    // we need to delete the keychain data before every run
     await device.clearKeychain();
     await device.launchApp({ newInstance: true });
   });

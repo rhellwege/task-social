@@ -3,14 +3,14 @@ name: End-to-End Tests
 on:
   workflow_dispatch:
     inputs:
-      branch:
-        description: "Branch to test"
-        required: true
-        default: "main"
       api_server:
         description: 'API server to use (or "http://localhost:5050" to run it in the workflow)'
         required: true
         default: "http://localhost:5050"
+      version_tag:
+        description: "The git tag or commit hash to test (e.g., v1.2.3-4)"
+        required: true
+        type: string
 
 jobs:
   e2e-test:
@@ -19,7 +19,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch }}
+          ref: ${{ github.event.inputs.version_tag }}
 
       - name: Set up Go
         uses: actions/setup-go@v5
