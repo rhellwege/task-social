@@ -84,6 +84,9 @@ jobs:
         if: github.event_name != 'pull_request'
         run: npm run type-check
         working-directory: frontend
+      - name: Jest
+        run: npm run test
+        working-directory: frontend
       - name: API Codegen Check
         run: ./scripts/check_codegen.sh
         working-directory: frontend

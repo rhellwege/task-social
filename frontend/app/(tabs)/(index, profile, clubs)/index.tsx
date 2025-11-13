@@ -3,14 +3,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { useState } from 'react';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { RouteParams } from 'expo-router'; // Adjust import based on your setup
-
-// Define navigation param type
-type RootStackParamList = {
-  '(tabs)/clubs': { joinedClub: string };
-  // Add other routes if needed
-};
+import { useRouter } from 'expo-router';
 
 const mockClubs = [
   { id: "1", name: "Chess Club", description: "A club for chess enthusiasts." },
@@ -20,12 +13,15 @@ const mockClubs = [
 export default function Tab() {
   const colorScheme = useColorScheme();
   const [clubs, setClubs] = useState(mockClubs);
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const router = useRouter();
 
   const handleJoin = (clubId: string) => {
     const joinedClub = clubs.find(club => club.id === clubId);
     if (joinedClub) {
-      navigation.navigate('(tabs)/clubs', { joinedClub: JSON.stringify(joinedClub) });
+      // Remove from explore
+      setClubs(prev => prev.filter(club => club.id !== clubId));
+      // Navigate to Clubs tab
+      router.replace(`/(tabs)/(clubs)/clubs?joinedClub=${encodeURIComponent(JSON.stringify(joinedClub))}`);
       alert(`Joined ${clubId}!`);
     }
   };
@@ -34,7 +30,7 @@ export default function Tab() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <ScrollView contentContainerStyle={[styles.container, { marginTop: 60 }]}>
         {clubs.map(club => (
-          <View key={club.id} style={[styles.tile, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+          <View key={club.id} style={[styles.tile, styles.shadow, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
             <View style={styles.tileContent}>
               <View style={styles.circle}></View>
               <Text style={{ color: Colors[colorScheme ?? 'light'].text, fontSize: 25, fontWeight: 'bold', textAlign: 'center' }}>
