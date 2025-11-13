@@ -22,6 +22,7 @@ export default function ClubDetail() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
   useEffect(() => {
+    // Load mock data based on club ID
     setLeaderboard([
       { user: "User1", score: 100 },
       { user: "User2", score: 80 },
@@ -37,9 +38,17 @@ export default function ClubDetail() {
       <View style={styles.container}>
         <Text style={{ color: Colors[colorScheme ?? 'light'].text, fontSize: 24 }}>Club ID: {id}</Text>
         <Text style={{ color: Colors[colorScheme ?? 'light'].text, fontSize: 20 }}>Leaderboard</Text>
-        {leaderboard.map((entry, idx) => <Text key={idx}>{entry.user}: {entry.score}</Text>)}
+        {leaderboard.map((entry, idx) => (
+          <Text key={idx} style={{ color: Colors[colorScheme ?? 'light'].text }}>
+            {entry.user}: {entry.score}
+          </Text>
+        ))}
         <Text style={{ color: Colors[colorScheme ?? 'light'].text, fontSize: 20 }}>Chat</Text>
-        {chatMessages.map((msg, idx) => <Text key={idx}>{msg.user}: {msg.text}</Text>)}
+        {chatMessages.map((msg, idx) => (
+          <Text key={idx} style={{ color: Colors[colorScheme ?? 'light'].text }}>
+            {msg.user}: {msg.text}
+          </Text>
+        ))}
       </View>
     </ThemeProvider>
   );

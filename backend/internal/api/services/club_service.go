@@ -20,7 +20,7 @@ type ClubServicer interface {
 	GetClubLeaderboard(ctx context.Context, userID string, clubID string) ([]repository.GetClubLeaderboardRow, error)
 	DeleteClub(ctx context.Context, userID string, clubID string) error
 	UpdateClub(ctx context.Context, userID string, params repository.UpdateClubParams) error
-	UploadClubBanner(ctx context.Context, clubID string, fileBytes []byte) (string, error)
+	UploadClubBanner(ctx context.Context, userID string, clubID string, fileBytes []byte) (string, error)
 	GetClubMetrics(ctx context.Context, userID string, clubID string) ([]repository.Metric, error)
 	GetClubPosts(ctx context.Context, userID string, clubID string) ([]repository.ClubPost, error)
 	CreateClubPost(ctx context.Context, userID string, clubID string, text string) (string, error)
@@ -166,11 +166,19 @@ func (s *ClubService) UpdateClub(ctx context.Context, userID string, params repo
 	return s.q.UpdateClub(ctx, params)
 }
 
-func (s *ClubService) UploadClubBanner(ctx context.Context, clubID string, fileBytes []byte) (string, error) {
+func (s *ClubService) UploadClubBanner(ctx context.Context, userID string, clubID string, fileBytes []byte) (string, error) {
 	// 1. Get existing banner
 	club, err := s.q.GetClub(ctx, clubID)
 	if err != nil {
 		return "", err
+	}
+
+	isModerator, err := s.IsUserModeratorOfClub(ctx, userID, clubID)
+	if err != nil {
+		return "", err
+	}
+	if !isModerator {
+		return "", errors.New("Permission denied: user is not a moderator of the club")
 	}
 
 	// 2. Delete old banner if exists
@@ -209,10 +217,25 @@ func (s *ClubService) GetClubMetrics(ctx context.Context, userID string, clubID 
 }
 
 func (s *ClubService) GetClubPosts(ctx context.Context, userID string, clubID string) ([]repository.ClubPost, error) {
+	isMember, err := s.IsUserMemberOfClub(ctx, userID, clubID)
+	if err != nil {
+		return nil, err
+	}
+	if !isMember {
+		return nil, errors.New("Permission denied: user is not a member of the club")
+	}
 	return s.q.GetClubPosts(ctx, clubID)
 }
 
 func (s *ClubService) CreateClubPost(ctx context.Context, userID string, clubID string, text string) (string, error) {
+	isMember, err := s.IsUserMemberOfClub(ctx, userID, clubID)
+	if err != nil {
+		return "", err
+	}
+	if !isMember {
+		return "", errors.New("Permission denied: user is not a member of the club")
+	}
+
 	id := util.GenerateUUID()
 	params := repository.CreateClubPostParams{
 		ID:      id,
@@ -220,7 +243,7 @@ func (s *ClubService) CreateClubPost(ctx context.Context, userID string, clubID 
 		ClubID:  clubID,
 		Content: text,
 	}
-	err := s.q.CreateClubPost(ctx, params)
+	err = s.q.CreateClubPost(ctx, params)
 	if err != nil {
 		return "", err
 	}
@@ -241,7 +264,15 @@ func (s *ClubService) CreateClubPost(ctx context.Context, userID string, clubID 
 	return id, nil
 }
 
+// Club posts are only visible to members, even if the club is public.
 func (s *ClubService) GetClubPost(ctx context.Context, userID string, clubID string, postID string) (repository.ClubPost, error) {
+	isMember, err := s.IsUserMemberOfClub(ctx, userID, clubID)
+	if err != nil {
+		return repository.ClubPost{}, err
+	}
+	if !isMember {
+		return repository.ClubPost{}, errors.New("Permission denied: user is not a member of the club")
+	}
 	return s.q.GetClubPost(ctx, postID)
 }
 
