@@ -6,7 +6,7 @@ import { storage } from "@/services/storage";
 import { toastFetchError, toastSuccess } from "@/services/toast";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
-import { Button, TextInput, StyleSheet } from "react-native";
+import { Button, TextInput, StyleSheet, View } from "react-native";
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
@@ -36,7 +36,7 @@ export default function RegisterScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={styles.container} testID="register-page">
       <ThemedText type="title">Register</ThemedText>
       <TextInput
         style={styles.input}
@@ -44,6 +44,7 @@ export default function RegisterScreen() {
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
+        testID="username-input"
       />
       <TextInput
         style={styles.input}
@@ -52,6 +53,7 @@ export default function RegisterScreen() {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        testID="email-input"
       />
       <TextInput
         style={styles.input}
@@ -59,14 +61,19 @@ export default function RegisterScreen() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        testID="password-input"
       />
-      <Button title="Register" onPress={handleRegister} />
-      <ThemedText style={styles.link}>
-        Already have an account?{" "}
-        <Link href="/(auth)/login">
+      <Button
+        title="Register"
+        onPress={handleRegister}
+        testID="register-button"
+      />
+      <View style={styles.linkContainer}>
+        <ThemedText>Already have an account? </ThemedText>
+        <Link href="/(auth)/login" testID="login-link">
           <ThemedText type="link">Login</ThemedText>
         </Link>
-      </ThemedText>
+      </View>
     </ThemedView>
   );
 }
@@ -85,8 +92,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     color: "white",
   },
-  link: {
+  linkContainer: {
     marginTop: 16,
-    textAlign: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  link: {
+    lineHeight: 30,
+    fontSize: 16,
+    color: "#0a7ea4",
   },
 });

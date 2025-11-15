@@ -1,8 +1,9 @@
-import { Api } from "@/services/api/Api";
+import { Api, ApiConfig } from "@/services/api/Api";
 import React, { createContext, useContext, useMemo } from "react";
 import { useRouter } from "expo-router";
 import { storage } from "@/services/storage";
 import { toastError } from "@/services/toast";
+import { API_BASE_URL } from "@/constants/Api";
 
 const ApiContext = createContext<Api<unknown> | null>(null);
 
@@ -17,7 +18,10 @@ export const useApi = (): Api<unknown> => {
 export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const api = useMemo(() => {
-    const api = new Api();
+    const apiConfig: ApiConfig = {
+      baseUrl: API_BASE_URL,
+    };
+    const api = new Api(apiConfig);
 
     // monkey patch fetch to add interceptors
     const { fetch: originalFetch } = window;

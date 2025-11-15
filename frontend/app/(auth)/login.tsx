@@ -2,7 +2,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
-import { Button, TextInput, StyleSheet } from "react-native";
+import { Button, TextInput, StyleSheet, View } from "react-native";
 import { useApi } from "@/hooks/useApi";
 import { HandlersLoginUserRequest } from "@/services/api/Api";
 import { storage } from "@/services/storage";
@@ -33,7 +33,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={styles.container} testID="login-page">
       <ThemedText type="title">Login</ThemedText>
       <TextInput
         style={styles.input}
@@ -42,6 +42,7 @@ export default function LoginScreen() {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        testID="email-input"
       />
       <TextInput
         style={styles.input}
@@ -49,14 +50,15 @@ export default function LoginScreen() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        testID="password-input"
       />
-      <Button title="Login" onPress={handleLogin} />
-      <ThemedText style={styles.link}>
-        {"Don't have an account? "}
-        <Link href="/(auth)/register">
+      <Button title="Login" onPress={handleLogin} testID="login-button" />
+      <View style={styles.linkContainer}>
+        <ThemedText>{"Don't have an account? "}</ThemedText>
+        <Link href="/(auth)/register" testID="register-link">
           <ThemedText type="link">Register</ThemedText>
         </Link>
-      </ThemedText>
+      </View>
     </ThemedView>
   );
 }
@@ -75,8 +77,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     color: "white",
   },
-  link: {
+  linkContainer: {
     marginTop: 16,
-    textAlign: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  link: {
+    lineHeight: 30,
+    fontSize: 16,
+    color: "#0a7ea4",
   },
 });
