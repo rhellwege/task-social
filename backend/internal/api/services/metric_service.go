@@ -89,7 +89,7 @@ func (s *MetricService) GetLatestMetricInstance(ctx context.Context, metricID st
 
 func CheckMetricsForExpiration(ctx context.Context, q repository.Querier) error {
 	// Get all public clubs
-	clubs, err := q.GetPublicClubs(ctx)
+	clubs, err := q.GetAllClubs(ctx)
 	if err != nil {
 		return err
 	}
