@@ -5,6 +5,9 @@ VALUES (@id, @name, @description, @owner_user_id, @banner_image, @is_public);
 -- name: GetClub :one
 SELECT * FROM club WHERE id = @id;
 
+-- name: GetAllClubs :many
+SELECT * FROM club;
+
 -- name: UpdateClub :exec
 UPDATE club
 SET

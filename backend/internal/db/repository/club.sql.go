@@ -139,6 +139,42 @@ func (q *Queries) DeleteClubPostAttachment(ctx context.Context, id string) error
 	return err
 }
 
+const getAllClubs = `-- name: GetAllClubs :many
+SELECT id, name, description, owner_user_id, banner_image, is_public, created_at, updated_at FROM club
+`
+
+func (q *Queries) GetAllClubs(ctx context.Context) ([]Club, error) {
+	rows, err := q.db.QueryContext(ctx, getAllClubs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Club
+	for rows.Next() {
+		var i Club
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.OwnerUserID,
+			&i.BannerImage,
+			&i.IsPublic,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getClub = `-- name: GetClub :one
 SELECT id, name, description, owner_user_id, banner_image, is_public, created_at, updated_at FROM club WHERE id = ?1
 `
