@@ -9,6 +9,9 @@ on:
 jobs:
   seed:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -18,25 +21,11 @@ jobs:
         with:
           node-version: '20'
           cache: 'yarn'
-          cache-dependency-path: frontend/yarn.lock
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-        working-directory: frontend
-
-      - name: Start backend Docker
-        run: |
-          docker run -d -p 5050:5050 --name task-social-backend task-social-backend
-          echo "Waiting for backend..."
-          sleep 15
-          curl -f http://localhost:5050/api/version || exit 1
 
       - name: Run seed script
-        run: yarn seed:data --url=http://localhost:5050 --count=3
-        working-directory: frontend
-
-      - name: Stop backend Docker
-        if: always()
-        run: |
-          docker stop task-social-backend || true
-          docker rm task-social-backend || true
+        run: yarn seed:data --url=${{ secrets.STAGING_BACKEND_URL || 'http://localhost:5050' }} --count=3
+        env:
+          STAGING_BACKEND_URL: ${{ secrets.STAGING_BACKEND_URL }}  # secret for staging over docker as the docker image does not exist in the workflow.
