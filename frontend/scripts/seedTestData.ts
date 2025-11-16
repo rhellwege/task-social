@@ -13,28 +13,30 @@ interface Args {
 
 function generateStrongPassword(): string {
   const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+  const numbers = '0123456789';
   const length = 12;
   const specialCount = 2;
+  const numberCount = 1; // <-- NEW: guarantee 1 number
 
   let pwd = '';
-  // guarantee the required special chars
+  // guarantee special chars
   for (let i = 0; i < specialCount; i++) {
     pwd += special.charAt(Math.floor(Math.random() * special.length));
   }
-  // fill the rest with alphanumeric
+  // guarantee number
+  pwd += numbers.charAt(Math.floor(Math.random() * numbers.length));
+  // fill the rest
   for (let i = pwd.length; i < length; i++) {
     pwd += faker.string.alphanumeric(1);
   }
-  // shuffle so specials aren't always at the front
+  // shuffle
   return pwd
     .split('')
     .sort(() => Math.random() - 0.5)
     .join('');
 }
 
-/**
- * Helper: create a club (re-usable)
- */
+// Helper: create a club (re-usable)
 async function seedClub(api: any, clubName: string, description: string) {
   const clubRes = await api.request({
     path: '/api/club',
@@ -79,7 +81,7 @@ async function main() {
   // 1. Generate test users
   console.log(`\nGenerating ${userCount} test users...\n`);
   for (let i = 0; i < userCount; i++) {
-    const password = generateStrongPassword(); // 2+ special chars
+    const password = generateStrongPassword(); // 2+ special, 1+ number
     const username = faker.internet.username();
     const email = faker.internet.email({ firstName: username });
     // Add other fields from your user schema
