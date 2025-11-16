@@ -18,12 +18,25 @@ jobs:
         with:
           node-version: '20'
           cache: 'yarn'
-          cache-dependency-path: frontend/yarn.lock #hopefully this is the correct path
+          cache-dependency-path: frontend/yarn.lock
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
         working-directory: frontend
 
+      - name: Start backend Docker
+        run: |
+          docker run -d -p 5050:5050 --name task-social-backend task-social-backend
+          echo "Waiting for backend..."
+          sleep 15
+          curl -f http://localhost:5050/api/version || exit 1
+
       - name: Run seed script
         run: yarn seed:data --url=http://localhost:5050 --count=3
         working-directory: frontend
+
+      - name: Stop backend Docker
+        if: always()
+        run: |
+          docker stop task-social-backend || true
+          docker rm task-social-backend || true
