@@ -9,23 +9,23 @@ on:
 jobs:
   seed:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     steps:
-      - name: Checkout repository
+      - name: Checkout repository into frontend/
         uses: actions/checkout@v4
+        with:
+          path: frontend
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'yarn'
+          cache-dependency-path: frontend/yarn.lock
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+        working-directory: frontend
 
       - name: Run seed script
         run: yarn seed:data --url=${{ secrets.STAGING_BACKEND_URL || 'http://localhost:5050' }} --count=3
-        env:
-          STAGING_BACKEND_URL: ${{ secrets.STAGING_BACKEND_URL }}  # secret for staging over docker as the docker image does not exist in the workflow.
+        working-directory: frontend
