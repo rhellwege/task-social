@@ -13,13 +13,19 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout frontend
+        uses: actions/checkout@v4
+        with:
+          path: frontend
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'yarn'
 
-      - run: yarn install --frozen-lockfile
+      - name: Install deps
+        run: yarn install --frozen-lockfile
 
-      - run: yarn seed:data --url=http://localhost:5050 --count=3
+      - name: Run seed script
+        run: yarn seed:data --url=http://localhost:5050 --count=3
