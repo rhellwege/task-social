@@ -10,10 +10,8 @@ jobs:
   seed:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository into frontend/
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          path: frontend
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
