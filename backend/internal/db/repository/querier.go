@@ -32,6 +32,7 @@ type Querier interface {
 	DeleteMetricEntryVerification(ctx context.Context, arg DeleteMetricEntryVerificationParams) error
 	DeleteMetricInstance(ctx context.Context, id string) error
 	DeleteUser(ctx context.Context, id string) error
+	GetAllClubs(ctx context.Context) ([]Club, error)
 	GetClub(ctx context.Context, id string) (Club, error)
 	GetClubLeaderboard(ctx context.Context, clubID string) ([]GetClubLeaderboardRow, error)
 	GetClubMetrics(ctx context.Context, clubID string) ([]Metric, error)
