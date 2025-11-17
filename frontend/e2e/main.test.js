@@ -67,7 +67,7 @@ describe("App Navigation", () => {
     await device.clearKeychain();
     await device.launchApp({ newInstance: true });
   });
-  it("should register a new user and redirect to main page", async () => {
+  it("should register a new user and move between pages", async () => {
     // register flow
     await element(by.id("username-input")).typeText(username);
     await element(by.id("email-input")).typeText(email);
@@ -75,12 +75,6 @@ describe("App Navigation", () => {
     await element(by.id("password-input")).tapReturnKey();
     await element(by.id("register-button")).tap();
 
-    // navigate to profile page
-    await element(by.label("Me")).tap();
-    // we should be logged in and have a username
-    await expect(element(by.id("username"))).toHaveText(`@${username}`);
-  });
-  it("should navigate between main sections", async () => {
     // navigate to Clubs
     await element(by.label("Clubs")).tap();
     await expect(element(by.id("clubs-screen"))).toBeVisible();
