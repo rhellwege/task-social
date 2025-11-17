@@ -4,7 +4,9 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
+import { LogBox } from 'react-native';
 
+LogBox.ignoreAllLogs()
 const mockClubs = [
   { id: "1", name: "Chess Club", description: "A club for chess enthusiasts." },
   { id: "2", name: "Coding Club", description: "For coding challenges." },
@@ -28,7 +30,7 @@ export default function Tab() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <ScrollView contentContainerStyle={[styles.container, { marginTop: 60 }]} testID='index-screen'>
+      <ScrollView contentContainerStyle={[styles.container, { marginTop: 60 }]} testID={'index-screen'}>
         {clubs.map(club => (
           <View key={club.id} style={[styles.tile, styles.shadow, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
             <View style={styles.tileContent}>

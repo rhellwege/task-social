@@ -67,22 +67,24 @@ describe("App Navigation", () => {
     await device.clearKeychain();
     await device.launchApp({ newInstance: true });
   });
-  it("should register a new user and move between pages", async () => {
-    // register flow
-    await element(by.id("username-input")).typeText(username);
+  it("should login as the created user and move between pages", async () => {
+    await element(by.id("login-link")).tap();
+    await expect(element(by.id("login-page"))).toBeVisible();
+    // login flow
     await element(by.id("email-input")).typeText(email);
     await element(by.id("password-input")).typeText(password);
     await element(by.id("password-input")).tapReturnKey();
-    await element(by.id("register-button")).tap();
+    await element(by.id("login-button")).tap();
+
 
     // navigate to Clubs
-    await element(by.label("Clubs")).tap();
+    await element(by.id("tab-clubs")).tap();
     await expect(element(by.id("clubs-screen"))).toBeVisible();
     // navigate to Profile
-    await element(by.label("Me")).tap();
+    await element(by.id("tab-profile")).tap();
     await expect(element(by.id("profile-screen"))).toBeVisible();
     // navigate to Explore
-    await element(by.label("Explore")).tap();
+    await element(by.id("tab-index")).tap();
     await expect(element(by.id("index-screen"))).toBeVisible();
   });
 });
