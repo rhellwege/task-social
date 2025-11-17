@@ -4,9 +4,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { LogBox } from 'react-native';
 
-LogBox.ignoreAllLogs()
 const mockClubs = [
   { id: "1", name: "Chess Club", description: "A club for chess enthusiasts." },
   { id: "2", name: "Coding Club", description: "For coding challenges." },
