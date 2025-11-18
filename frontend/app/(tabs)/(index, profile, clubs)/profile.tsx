@@ -28,7 +28,7 @@ export default function Tab() {
   }, [api]);
 
   return (
-    <ThemedView style={styles.container} testID="profile-screen">
+    <ThemedView style={styles.container} testID={"profile-screen"}>
       <ThemedView style={styles.profileView}>
         <Image source={{ uri: profilePic }} style={styles.circle} />
         <View style={styles.name}>

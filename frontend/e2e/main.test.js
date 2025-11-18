@@ -53,3 +53,38 @@ describe("App Startup Registration and Profile", () => {
     await expect(element(by.id("username"))).toHaveText(`@${username}`);
   });
 });
+
+describe("App Navigation", () => {
+  const username = "testuser";
+  const email = "testuser@example.com";
+  const password = "Password123!@#";
+  beforeAll(async () => {
+    // delete the app off the simulator if it already exists
+    await device.launchApp({ delete: true });
+  });
+  beforeEach(async () => {
+    // we need to delete the keychain data before every run
+    await device.clearKeychain();
+    await device.launchApp({ newInstance: true });
+  });
+  it("should login as the created user and move between pages", async () => {
+    await element(by.id("login-link")).tap();
+    await expect(element(by.id("login-page"))).toBeVisible();
+    // login flow
+    await element(by.id("email-input")).typeText(email);
+    await element(by.id("password-input")).typeText(password);
+    await element(by.id("password-input")).tapReturnKey();
+    await element(by.id("login-button")).tap();
+
+
+    // navigate to Clubs
+    await element(by.id("tab-clubs")).tap();
+    await expect(element(by.id("clubs-screen"))).toBeVisible();
+    // navigate to Profile
+    await element(by.id("tab-profile")).tap();
+    await expect(element(by.id("profile-screen"))).toBeVisible();
+    // navigate to Explore
+    await element(by.id("tab-index")).tap();
+    await expect(element(by.id("index-screen"))).toBeVisible();
+  });
+});

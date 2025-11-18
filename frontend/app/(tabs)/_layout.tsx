@@ -29,6 +29,7 @@ export default function TabLayout() {
         name="(clubs)"
         options={{
           title: "Clubs",
+          tabBarButtonTestID: "tab-clubs",
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="people" size={24} color={color} />
           ),
@@ -38,6 +39,7 @@ export default function TabLayout() {
         name="(index)"
         options={{
           title: "Explore",
+          tabBarButtonTestID: "tab-index",
           tabBarIcon: ({ color }) => (
             <SimpleLineIcons name="globe-alt" size={24} color={color} />
           ),
@@ -47,6 +49,7 @@ export default function TabLayout() {
         name="(profile)"
         options={{
           title: "Me",
+          tabBarButtonTestID: "tab-profile",
           tabBarIcon: ({ color }) => (
             <Ionicons name="person-circle-outline" size={24} color={color} />
           ),
