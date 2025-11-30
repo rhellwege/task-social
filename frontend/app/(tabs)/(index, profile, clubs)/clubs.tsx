@@ -75,6 +75,15 @@ export default function Tab() {
                 <Text style={{ color: Colors[colorScheme ?? 'light'].text, fontSize: 20, fontWeight: 'bold', textAlign: 'center' }}>
                   {club.name}
                 </Text>
+                <Text style={{ 
+                  color: Colors[colorScheme ?? 'light'].text, 
+                  fontSize: 14, 
+                  opacity: 0.7, 
+                  textAlign: 'center',
+                  marginTop: 6 
+                }}>
+                  Marketplace • Buy & Sell
+                </Text>
               </View>
             </Link>
           ))
