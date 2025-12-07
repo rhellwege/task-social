@@ -1,0 +1,254 @@
+/* === SwapStop Dark Green Theme === */
+
+/* Global base layout */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #041b11 0%, #0a291c 100%); /* almost-black green */
+  color: #f5f5f5;
+  font-family: "Inter", sans-serif;
+}
+
+/* Root container */
+.wrap {
+  background: transparent;
+  min-height: 100vh;
+}
+
+/* Header & Footer */
+.header,
+.footer {
+  background-color: #0a291c;
+  border-color: #c9b100;
+  color: #d8f3dc;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Footer spacing */
+.footer {
+  border-top: 1px solid #c9b100;
+  margin-top: 2rem;
+}
+
+/* Brand title */
+.brand {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #d8f3dc;
+}
+
+/* Tabs (navigation) */
+.tab {
+  background: transparent;
+  color: #f5f5f5;
+  border: none;
+  padding: 0.8rem 1.2rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s, color 0.3s;
+  border-radius: 6px;
+}
+
+.tab:hover,
+.tab.active {
+  background-color: #2d6a4f;
+  color: #c9b100;
+}
+
+/* Cards (used for sections and item containers) */
+.card {
+  background-color: #123524; /* deep muted green */
+  border: 1px solid #c9b100;
+  color: #f5f5f5;
+  border-radius: 12px;
+  padding: 1.5em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Section titles */
+h2 {
+  color: #c9b100;
+}
+
+/* Buttons */
+.btn {
+  background-color: #1f5133;
+  border: none;
+  color: #fff;
+  padding: 0.7rem 1.3rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.btn:hover {
+  background-color: #2d6a4f;
+}
+
+.btn.outline {
+  background: transparent;
+  border: 2px solid #c9b100;
+  color: #c9b100;
+}
+
+.btn.outline:hover {
+  background: #c9b100;
+  color: #041b11;
+}
+
+/* Inputs, selects, and textareas */
+.input {
+  background: #1b4332;
+  color: #f5f5f5;
+  border: 1px solid #c9b100;
+  border-radius: 6px;
+  padding: 0.5rem;
+  width: 100%;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #ffd60a;
+  background: #2d6a4f;
+}
+
+/* Muted (secondary) text */
+.muted {
+  color: #b7e4c7;
+}
+
+/* Grid layout (items/home cards) */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Image styling */
+.thumb {
+  border-radius: 10px;
+  filter: brightness(0.9) contrast(1.05);
+}
+
+/* Modal background blur */
+.modal-overlay {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.header,
+.footer {
+  background-color: #0a291c !important;
+  border-color: #c9b100 !important;
+  color: #d8f3dc !important;
+}
+
+.card {
+  background-color: #123524 !important; /* deep muted green card */
+  border: 1px solid #c9b100 !important;
+  color: #f5f5f5 !important;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* === Centered Login Page with Blurred Background === */
+
+.login-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: url("/images/login-bg.jpg") center center / cover no-repeat;
+  overflow: hidden;
+}
+
+/* Add a subtle dark overlay for readability */
+.login-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  backdrop-filter: blur(10px); /* blurs background image */
+  background-color: rgba(0, 0, 0, 0.45); /* soft dark overlay */
+  z-index: 0;
+}
+
+/* Login card itself */
+.login-card {
+  position: relative;
+  z-index: 1;
+  width: 90%;
+  max-width: 420px;
+  background: rgba(18, 53, 36, 0.85); /* semi-transparent deep green */
+  border: 1px solid #c9b100;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  color: #f5f5f5;
+  backdrop-filter: blur(5px);
+}
+
+/* === Header Search Bar === */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0a291c;
+  border-bottom: 2px solid #c9b100;
+  padding: 0.8rem 1rem;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 1rem;
+}
+
+.header-search {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.header-search-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #c9b100;
+  background-color: #1b4332;
+  color: #f5f5f5;
+  font-size: 1rem;
+  transition: 0.2s ease-in-out;
+}
+
+.header-search-input::placeholder {
+  color: #b7e4c7;
+}
+
+.header-search-input:focus {
+  outline: none;
+  border-color: #ffd60a;
+  background-color: #2d6a4f;
+}
