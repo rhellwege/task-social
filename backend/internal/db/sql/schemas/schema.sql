@@ -13,14 +13,14 @@ CREATE TABLE IF NOT EXISTS user (
 );
 
 CREATE TABLE trades (
-    id INTEGER PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     proposer_id TEXT NOT NULL,
     proposer_item_id TEXT NOT NULL,
     responder_id TEXT NOT NULL,
     responder_item_id TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'pending',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 
     FOREIGN KEY (proposer_id) REFERENCES user(id) ON DELETE CASCADE,
     FOREIGN KEY (responder_id) REFERENCES user(id) ON DELETE CASCADE,

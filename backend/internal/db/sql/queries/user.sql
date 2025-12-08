@@ -20,6 +20,28 @@ WHERE id = ?;
 -- name: DeleteUser :exec
 DELETE FROM user WHERE id = ?;
 
+-- name: CreateItem :exec
+INSERT INTO items (id, name, description, price_estimate, is_available, owner_id)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- name: UpdateItem :exec
+UPDATE items
+SET
+    name = COALESCE(sqlc.narg(name), name),
+    description = COALESCE(sqlc.narg(description), description),
+    price_estimate = COALESCE(sqlc.narg(price_estimate), price_estimate),
+    is_available = COALESCE(sqlc.narg(is_available), is_available),
+    owner_id = COALESCE(sqlc.narg(owner_id), owner_id)
+WHERE
+    id = @id;
+
+-- name: DeleteItem :exec
+DELETE FROM items WHERE id = ?;
+
+-- name: TradeCreate :exec
+INSERT INTO trades (id, proposer_id, proposer_item_id, responder_id, responder_item_id, status, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
 -- name: CreateFriend :exec
 INSERT INTO user_friendship (user_id, friend_id)
 VALUES (?, ?);
@@ -44,7 +66,9 @@ SET
     email = COALESCE(sqlc.narg(email), email),
     username = COALESCE(sqlc.narg(username), username),
     password = COALESCE(sqlc.narg(password), password),
-    profile_picture = COALESCE(sqlc.narg(profile_picture), profile_picture)
+    profile_picture = COALESCE(sqlc.narg(profile_picture), profile_picture),
+    balance = COALESCE(sqlc.narg(balance), balance),
+    items = COALESCE(sqlc.narg(items), items)
 WHERE
     id = @id;
 
