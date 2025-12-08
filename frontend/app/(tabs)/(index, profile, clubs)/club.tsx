@@ -3,7 +3,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { useLocalSearchParams } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface Listing {
   id: string;
@@ -15,19 +15,13 @@ interface Listing {
 export default function ClubDetail() {
   const { id } = useLocalSearchParams();
   const colorScheme = useColorScheme();
-  
-  const [listings, setListings] = useState<Listing[]>([]);
-
-  useEffect(() => {
-    // Replace old dummy leaderboard/chat with marketplace listings
-    setListings([
-      { id: "1", title: "Chess Set - Like New", price: "$40", seller: "alex123" },
-      { id: "2", title: "Mechanical Keyboard", price: "$85", seller: "coder_in_cave" },
-      { id: "3", title: "Used Nintendo Switch", price: "$220", seller: "gamer4life" },
-      { id: "4", title: "Python Books Bundle", price: "$25", seller: "py_dev" },
-      { id: "5", title: "Monitor 24\" 144Hz", price: "$150", seller: "techdude" },
-    ]);
-  }, [id]);
+  const [listings] = useState<Listing[]>([
+    { id: "1", title: "Chess Set - Like New", price: "$40", seller: "alex123" },
+    { id: "2", title: "Mechanical Keyboard", price: "$85", seller: "coder_in_cave" },
+    { id: "3", title: "Used Nintendo Switch", price: "$220", seller: "gamer4life" },
+    { id: "4", title: "Python Books Bundle", price: "$25", seller: "py_dev" },
+    { id: "5", title: "Monitor 24\" 144Hz", price: "$150", seller: "techdude" },
+  ]);
 
   const renderListing = ({ item }: { item: Listing }) => (
     <View style={styles.listingItem}>
@@ -49,7 +43,7 @@ export default function ClubDetail() {
         <Text style={{ color: Colors[colorScheme ?? 'light'].text, fontSize: 26, fontWeight: 'bold', marginBottom: 20 }}>
           Club Marketplace
         </Text>
-        
+       
         <FlatList
           data={listings}
           renderItem={renderListing}
@@ -60,8 +54,7 @@ export default function ClubDetail() {
             <Text style={{ color: '#888', fontSize: 16 }}>No items for sale yet!</Text>
           }
         />
-
-        {/* Optional: Add a little "Post Item" button later */}
+        {/* Optional: Add "Post Item" button later, current is dummy */}
         <TouchableOpacity style={styles.postButton}>
           <Text style={{ color: 'white', fontWeight: 'bold' }}>+ Post Item for Sale</Text>
         </TouchableOpacity>
@@ -69,7 +62,6 @@ export default function ClubDetail() {
     </ThemeProvider>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
