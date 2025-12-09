@@ -11,6 +11,12 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// WebSocketMessage defines the structure for messages sent over the WebSocket.
+type WebSocketMessage struct {
+	Event   string      `json:"event"`
+	Payload interface{} `json:"payload"`
+}
+
 type WebSocketServicer interface {
 	AddConnection(ctx context.Context, userID string, conn *websocket.Conn, jwt *jwt.Token)
 	RemoveConnection(ctx context.Context, userID string)

@@ -251,7 +251,13 @@ func (s *ClubService) CreateClubPost(ctx context.Context, userID string, clubID 
 	if err != nil {
 		return "", err
 	}
-	jsonStr, err := json.Marshal(post)
+
+	wsMessage := WebSocketMessage{
+		Event:   "new_post",
+		Payload: post,
+	}
+
+	jsonBytes, err := json.Marshal(wsMessage)
 	if err != nil {
 		return "", err
 	}
@@ -260,7 +266,7 @@ func (s *ClubService) CreateClubPost(ctx context.Context, userID string, clubID 
 	if err != nil {
 		return "", err
 	}
-	s.w.BroadcastMessage(ctx, users, string(jsonStr))
+	s.w.BroadcastMessage(ctx, users, string(jsonBytes))
 	return id, nil
 }
 

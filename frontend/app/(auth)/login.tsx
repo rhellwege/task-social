@@ -1,18 +1,16 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Link, useRouter } from "expo-router";
+import { Link } from "expo-router";
 import { useState } from "react";
 import { Button, TextInput, StyleSheet, View } from "react-native";
 import { useApi } from "@/hooks/useApi";
 import { HandlersLoginUserRequest } from "@/services/api/Api";
-import { storage } from "@/services/storage";
 import { toastFetchError, toastSuccess } from "@/services/toast";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const api = useApi();
-  const router = useRouter();
+  const { api, login } = useApi();
 
   const handleLogin = async () => {
     try {
@@ -20,13 +18,12 @@ export default function LoginScreen() {
         email,
         password,
       };
-      const resp = await api.api.loginUser(user);
-      toastSuccess("Login successful");
-      router.replace("/(tabs)");
-      console.log("Storing new token");
-      storage.setToken(resp.data.token!);
-      const version = await api.api.version();
-      console.log(version.data);
+      const resp = await api.loginUser(user);
+      if (resp.data.token) {
+        await login(resp.data.token);
+        toastSuccess("Login successful");
+        // The redirect is now handled by the root layout observer
+      }
     } catch (error) {
       toastFetchError(error);
     }

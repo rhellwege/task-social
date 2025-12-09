@@ -2,9 +2,8 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useApi } from "@/hooks/useApi";
 import { HandlersRegisterUserRequest } from "@/services/api/Api";
-import { storage } from "@/services/storage";
 import { toastFetchError, toastSuccess } from "@/services/toast";
-import { Link, useRouter } from "expo-router";
+import { Link } from "expo-router";
 import { useState } from "react";
 import { Button, TextInput, StyleSheet, View } from "react-native";
 
@@ -12,8 +11,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
-  const api = useApi();
-  const router = useRouter();
+  const { api, login } = useApi();
 
   const handleRegister = async () => {
     const params: HandlersRegisterUserRequest = {
@@ -23,13 +21,12 @@ export default function RegisterScreen() {
     };
 
     try {
-      const resp = await api.api.registerUser(params);
-      router.replace("/(tabs)");
-      console.log("Storing new token");
-      storage.setToken(resp.data.token!);
-      toastSuccess("Registration successful");
-      const version = await api.api.version();
-      console.log(version.data);
+      const resp = await api.registerUser(params);
+      if (resp.data.token) {
+        await login(resp.data.token);
+        toastSuccess("Registration successful");
+        // The redirect is now handled by the root layout observer
+      }
     } catch (error) {
       toastFetchError(error);
     }

@@ -1,13 +1,27 @@
 import { Api, ApiConfig } from "@/services/api/Api";
-import React, { createContext, useContext, useMemo } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useRouter } from "expo-router";
 import { storage } from "@/services/storage";
 import { toastError } from "@/services/toast";
 import { API_BASE_URL } from "@/constants/Api";
 
-const ApiContext = createContext<Api<unknown> | null>(null);
+// Define the shape of the context value
+interface ApiContextType {
+  api: Api<unknown>;
+  token: string | null;
+  login: (newToken: string) => Promise<void>;
+  logout: () => Promise<void>;
+}
 
-export const useApi = (): Api<unknown> => {
+const ApiContext = createContext<ApiContextType | null>(null);
+
+export const useApi = (): ApiContextType => {
   const context = useContext(ApiContext);
   if (!context) {
     throw new Error("useApi must be used within an ApiProvider");
@@ -17,11 +31,31 @@ export const useApi = (): Api<unknown> => {
 
 export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
+  const [token, setToken] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize token from storage on app load
+  useEffect(() => {
+    const loadToken = async () => {
+      try {
+        const storedToken = await storage.getToken();
+        if (storedToken) {
+          setToken(storedToken);
+        }
+      } catch (e) {
+        console.error("Failed to load token from storage", e);
+      } finally {
+        setIsInitialized(true);
+      }
+    };
+    loadToken();
+  }, []);
+
   const api = useMemo(() => {
     const apiConfig: ApiConfig = {
       baseUrl: API_BASE_URL,
     };
-    const api = new Api(apiConfig);
+    const apiInstance = new Api(apiConfig);
 
     // monkey patch fetch to add interceptors
     const { fetch: originalFetch } = window;
@@ -29,9 +63,9 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
     window.fetch = async (...args) => {
       let [resource, config] = args;
 
-      // request interceptor here
-      const requestInterceptor = async (config: any) => {
-        const token = await storage.getToken();
+      // request interceptor to add the token
+      const requestInterceptor = (config: any) => {
+        // Use the token from our state
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -40,23 +74,44 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
 
       const response = await originalFetch(
         resource,
-        await requestInterceptor(config),
+        requestInterceptor(config),
       );
 
-      // response interceptor here
-      const responseInterceptor = async (response: any) => {
-        if (response.status === 401) {
-          router.replace("/(auth)/login");
+      // response interceptor for 401 errors
+      const responseInterceptor = async (response: Response) => {
+        if (response.status === 401 && token) {
+          await logout();
           toastError("Login expired, please login again");
         }
         return response;
       };
 
-      return await responseInterceptor(response);
+      // Clone the response before passing it to the interceptor, as it can only be consumed once.
+      return await responseInterceptor(response.clone());
     };
 
-    return api;
-  }, [router]);
+    return apiInstance;
+  }, [token]); // Re-create api instance if token changes
 
-  return <ApiContext.Provider value={api}>{children}</ApiContext.Provider>;
+  const login = async (newToken: string) => {
+    setToken(newToken);
+    await storage.setToken(newToken);
+  };
+
+  const logout = async () => {
+    setToken(null);
+    await storage.deleteToken();
+    router.replace("/(auth)/login");
+  };
+
+  // Render children only after token is initialized
+  if (!isInitialized) {
+    return null; // Or a loading spinner
+  }
+
+  return (
+    <ApiContext.Provider value={{ api, token, login, logout }}>
+      {children}
+    </ApiContext.Provider>
+  );
 };
