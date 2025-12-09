@@ -31,8 +31,8 @@ export default function ClubPostsPage() {
     const fetchPosts = async () => {
       try {
         setIsLoading(true);
-        const response = await api.getClubPosts({ clubId: HARDCODED_CLUB_ID });
-        setPosts(response.data.posts || []);
+        const response = await api.api.getClubPosts(HARDCODED_CLUB_ID);
+        setPosts(response.data || []);
       } catch (error) {
         toastError("Failed to fetch club posts.");
         console.error(error);
@@ -65,9 +65,8 @@ export default function ClubPostsPage() {
     if (newPostContent.trim() === "") return;
 
     try {
-      await api.createClubPost({
-        clubId: HARDCODED_CLUB_ID,
-        text: newPostContent,
+      await api.api.createClubPost(HARDCODED_CLUB_ID, {
+        text_content: newPostContent,
       });
       setNewPostContent("");
       // No need to manually add the post to the state.

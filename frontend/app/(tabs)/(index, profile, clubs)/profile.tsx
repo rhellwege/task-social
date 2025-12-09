@@ -5,7 +5,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 
 export default function Tab() {
-  const api = useApi();
+  const { api } = useApi();
   const [username, setUsername] = useState("");
   const [createdDate, setCreatedDate] = useState("");
   const [profilePic, setProfilePic] = useState("");

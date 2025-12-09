@@ -21,7 +21,7 @@ export default function RegisterScreen() {
     };
 
     try {
-      const resp = await api.registerUser(params);
+      const resp = await api.api.registerUser(params);
       if (resp.data.token) {
         await login(resp.data.token);
         toastSuccess("Registration successful");

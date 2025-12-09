@@ -6,7 +6,7 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import { useAuth } from "./useAuth";
+import { useApi } from "./useApi";
 import { toastError, toastSuccess } from "@/services/toast";
 import { API_WEBSOCKET_URL } from "@/constants/Api";
 import { useSegments } from "expo-router";
@@ -36,11 +36,15 @@ export const WebSocketProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { token } = useAuth();
+  const { token } = useApi();
   const socketRef = useRef<WebSocket | null>(null);
   const [status, setStatus] = useState<WebSocketStatus>("disconnected");
   const eventListeners = useRef<Record<string, ((data: any) => void)[]>>({});
+
+  // Use a ref to track segments to prevent re-connections on navigation
   const segments = useSegments();
+  const segmentsRef = useRef(segments);
+  segmentsRef.current = segments;
 
   const connect = useCallback(() => {
     if (!token || socketRef.current) {
@@ -64,16 +68,17 @@ export const WebSocketProvider = ({
         // Global notification logic
         if (message.event === "new_post") {
           const post: ClubPost = message.payload;
-          const currentClubId = segments[2];
+          // Use the ref to get the current segments without causing re-connects
+          const currentSegments = segmentsRef.current;
+          const currentClubId = currentSegments[2];
 
-          // Check if we are on a club page and if it's the same club as the post
           const isOnClubPostsPage =
-            segments[0] === "(tabs)" &&
-            segments[1] === "(index, profile, clubs)" &&
+            currentSegments[0] === "(tabs)" &&
+            currentSegments[1] === "(index, profile, clubs)" &&
             currentClubId === post.club_id;
 
           if (!isOnClubPostsPage) {
-            toastSuccess(`New post in club ${post.club_id}`); // In a real app, you might fetch club name
+            toastSuccess(`New post in club ${post.club_id}`);
           }
         }
 
@@ -98,11 +103,16 @@ export const WebSocketProvider = ({
       setStatus("disconnected");
       socketRef.current = null;
     };
-  }, [token, segments]);
+  }, [token]); // The dependency array no longer includes 'segments'
 
   const disconnect = useCallback(() => {
     if (socketRef.current) {
+      // Set onclose to null before closing to prevent the 'onclose' handler
+      // from running during intentional disconnects (like logout).
+      socketRef.current.onclose = null;
       socketRef.current.close();
+      socketRef.current = null;
+      setStatus("disconnected");
     }
   }, []);
 
@@ -114,6 +124,7 @@ export const WebSocketProvider = ({
     }
 
     return () => {
+      // This cleanup will run on logout
       disconnect();
     };
   }, [token, connect, disconnect]);

@@ -18,7 +18,7 @@ export default function LoginScreen() {
         email,
         password,
       };
-      const resp = await api.loginUser(user);
+      const resp = await api.api.loginUser(user);
       if (resp.data.token) {
         await login(resp.data.token);
         toastSuccess("Login successful");
