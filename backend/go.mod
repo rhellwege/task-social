@@ -8,10 +8,15 @@ require (
 	github.com/gofiber/swagger v1.1.1
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/uuid v1.6.0
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/swag v1.16.6
 	golang.org/x/crypto v0.42.0
 	modernc.org/sqlite v1.38.2
+)
+
+require (
+	github.com/jonboulle/clockwork v0.5.0 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 )
 
 require (
@@ -28,6 +33,7 @@ require (
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/go-co-op/gocron/v2 v2.18.0
 	github.com/go-openapi/jsonpointer v0.21.2 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/spec v0.21.0 // indirect

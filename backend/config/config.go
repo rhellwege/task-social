@@ -13,6 +13,7 @@ const (
 	DefaultDBURL            = "./test.sqlite"
 	HandlerTimeout          = 10 * time.Second
 	TokenExpirationDuration = 24 * time.Hour
+	MetricCheckPeriod       = 1 * time.Minute
 	MinPasswordLength       = 8
 	MinPasswordLowercase    = 1
 	MinPasswordUppercase    = 1
