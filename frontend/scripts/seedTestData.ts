@@ -16,7 +16,7 @@ function generateStrongPassword(): string {
   const numbers = '0123456789';
   const length = 12;
   const specialCount = 2;
-  const numberCount = 1; // <-- NEW: guarantee 1 number
+  const numberCount = 1; // guarantee 1 number
 
   let pwd = '';
   // guarantee special chars

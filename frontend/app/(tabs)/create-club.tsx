@@ -32,11 +32,9 @@ export default function CreateClub() {
     };
 
     allClubs.push(newClub);
-
     setName('');
     setDescription('');
-
-    router.push({ pathname: '/', params: { refresh: Date.now().toString() } });
+    router.push({ pathname: '/clubs', params: { refresh: Date.now().toString() } });
   };
 
   return (
@@ -55,8 +53,8 @@ export default function CreateClub() {
           onChangeText={setDescription}
           multiline
         />
-        <TouchableOpacity 
-          style={[styles.button, { backgroundColor: '#FFFFFF' }]} 
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: '#FFFFFF' }]}
           onPress={handleCreate}
         >
           <Text style={styles.buttonText}>Create Club</Text>
