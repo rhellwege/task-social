@@ -1,0 +1,59 @@
+name: Seed Test Data
+
+on:
+  workflow_dispatch:
+    inputs:
+      server_url:
+        description: 'Backend URL (e.g. http://localhost:5050 or staging)'
+        required: true
+        default: 'http://localhost:5050'
+      count:
+        description: 'Number of users to seed'
+        required: false
+        type: number
+        default: 5
+      spin_backend:
+        description: 'Start backend Docker in CI? (true/false)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js + Yarn cache
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      # 3. Install dependencies
+      - name: Install deps
+        run: yarn install --frozen-lockfile
+
+      # 4. Optional: Spin up backend Docker
+      - name: Start backend Docker
+        if: inputs.spin_backend == 'true'
+        run: |
+          docker run -d -p 5050:5050 --name task-social-backend task-social-backend
+          echo "Waiting for backend..."
+          sleep 15
+          curl -f http://localhost:5050/api/version || exit 1
+
+      # 5. Run the seed script
+      - name: Run seedTestData.ts
+        run: |
+          yarn seed:data --url=${{ inputs.server_url }} --count=${{ inputs.count }}
+
+      # 6. Cleanup backend
+      - name: Stop backend Docker
+        if: always() && inputs.spin_backend == 'true'
+        run: |
+          docker stop task-social-backend || true
+          docker rm task-social-backend || true

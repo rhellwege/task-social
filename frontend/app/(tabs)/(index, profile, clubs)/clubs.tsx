@@ -6,6 +6,7 @@ import { Link } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import { allClubs, joinedClubs } from '../mockData';
 
 interface Club {
   id: string;
@@ -20,8 +21,16 @@ interface Club {
 
 export default function Tab() {
   const colorScheme = useColorScheme();
-  const [joinedClubs, setJoinedClubs] = useState<Club[]>([]);
-  const { joinedClub } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+  const [displayedClubs, setDisplayedClubs] = useState<Club[]>([]);
+  const { joinedClub } = params;
+
+  const computeDisplayedClubs = () => {
+    const owned = allClubs.filter(c => c.owner_user_id === 'current_user');
+    const combined = [...owned, ...joinedClubs];
+    const unique = combined.filter((c, index) => combined.findIndex(d => d.id === c.id) === index);
+    setDisplayedClubs(unique);
+  };
 
   const handleClubParam = useCallback((clubParam: string | string[] | undefined) => {
     if (!clubParam) return;
@@ -34,12 +43,9 @@ export default function Tab() {
       } else {
         return;
       }
-      setJoinedClubs(prev => {
-        if (!prev.find(c => c.id === clubData.id)) {
-          return [...prev, clubData];
-        }
-        return prev;
-      });
+      if (!joinedClubs.find(c => c.id === clubData.id)) {
+        joinedClubs.push(clubData);
+      }
     } catch (error) {
       console.error('Error parsing joinedClub:', error);
     }
@@ -54,18 +60,31 @@ export default function Tab() {
   useFocusEffect(
     useCallback(() => {
       handleClubParam(joinedClub);
+      computeDisplayedClubs();
     }, [joinedClub, handleClubParam])
   );
+
+  // Initial compute
+  useEffect(() => {
+    computeDisplayedClubs();
+  }, []);
+
+  // Handle refresh param
+  useEffect(() => {
+    if (params.refresh) {
+      computeDisplayedClubs();
+    }
+  }, [params.refresh]);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <ScrollView contentContainerStyle={styles.container}>
-        {joinedClubs.length === 0 ? (
+        {displayedClubs.length === 0 ? (
           <Text style={{ color: Colors[colorScheme ?? 'light'].text, fontSize: 18, textAlign: 'center' }}>
             No clubs joined
           </Text>
         ) : (
-          joinedClubs.map(club => (
+          displayedClubs.map(club => (
             <Link
               key={club.id}
               href={{ pathname: '/club', params: { id: club.id } }}
@@ -74,6 +93,15 @@ export default function Tab() {
               <View style={styles.tileContent}>
                 <Text style={{ color: Colors[colorScheme ?? 'light'].text, fontSize: 20, fontWeight: 'bold', textAlign: 'center' }}>
                   {club.name}
+                </Text>
+                <Text style={{
+                  color: Colors[colorScheme ?? 'light'].text,
+                  fontSize: 14,
+                  opacity: 0.7,
+                  textAlign: 'center',
+                  marginTop: 6
+                }}>
+                  Marketplace • Buy & Sell
                 </Text>
               </View>
             </Link>
