@@ -51,6 +51,17 @@ type ClubTag struct {
 	Tag    string `json:"tag"`
 }
 
+type Item struct {
+	ID            string    `json:"id"`
+	Name          string    `json:"name"`
+	Description   *string   `json:"description"`
+	PriceEstimate *float64  `json:"price_estimate"`
+	IsAvailable   bool      `json:"is_available"`
+	OwnerID       string    `json:"owner_id"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
 type Metric struct {
 	ID                   string    `json:"id"`
 	ClubID               string    `json:"club_id"`
@@ -100,6 +111,17 @@ type MetricInstance struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type Trade struct {
+	ID              string    `json:"id"`
+	ProposerID      string    `json:"proposer_id"`
+	ProposerItemID  string    `json:"proposer_item_id"`
+	ResponderID     string    `json:"responder_id"`
+	ResponderItemID string    `json:"responder_item_id"`
+	Status          string    `json:"status"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+}
+
 type User struct {
 	ID             string    `json:"id"`
 	Email          string    `json:"email"`
@@ -108,6 +130,8 @@ type User struct {
 	ProfilePicture *string   `json:"profile_picture"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
+	Balance        float64   `json:"balance"`
+	Items          *string   `json:"items"`
 }
 
 type UserFriendship struct {

@@ -14,6 +14,7 @@ type Querier interface {
 	CreateClubPost(ctx context.Context, arg CreateClubPostParams) error
 	CreateClubPostAttachment(ctx context.Context, arg CreateClubPostAttachmentParams) error
 	CreateFriend(ctx context.Context, arg CreateFriendParams) error
+	CreateItem(ctx context.Context, arg CreateItemParams) error
 	CreateMetric(ctx context.Context, arg CreateMetricParams) error
 	CreateMetricEntry(ctx context.Context, arg CreateMetricEntryParams) error
 	CreateMetricEntryAttachment(ctx context.Context, arg CreateMetricEntryAttachmentParams) error
@@ -26,6 +27,7 @@ type Querier interface {
 	DeleteClubPostAttachment(ctx context.Context, id string) error
 	// assumes user_id < friend_id
 	DeleteFriend(ctx context.Context, arg DeleteFriendParams) error
+	DeleteItem(ctx context.Context, id string) error
 	DeleteMetric(ctx context.Context, id string) error
 	DeleteMetricEntry(ctx context.Context, arg DeleteMetricEntryParams) error
 	DeleteMetricEntryAttachment(ctx context.Context, id string) error
@@ -62,10 +64,12 @@ type Querier interface {
 	IsUserModeratorOfClub(ctx context.Context, arg IsUserModeratorOfClubParams) (int64, error)
 	// returns boolean
 	IsUserOwnerOfClub(ctx context.Context, arg IsUserOwnerOfClubParams) (int64, error)
+	TradeCreate(ctx context.Context, arg TradeCreateParams) error
 	UpdateClub(ctx context.Context, arg UpdateClubParams) error
 	UpdateClubMembership(ctx context.Context, arg UpdateClubMembershipParams) error
 	UpdateClubPost(ctx context.Context, arg UpdateClubPostParams) error
 	UpdateClubPostAttachment(ctx context.Context, arg UpdateClubPostAttachmentParams) error
+	UpdateItem(ctx context.Context, arg UpdateItemParams) error
 	UpdateMetric(ctx context.Context, arg UpdateMetricParams) error
 	UpdateMetricEntry(ctx context.Context, arg UpdateMetricEntryParams) error
 	UpdateMetricEntryAttachment(ctx context.Context, arg UpdateMetricEntryAttachmentParams) error
