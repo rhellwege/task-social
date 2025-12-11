@@ -1,18 +1,19 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Link, useRouter } from "expo-router";
+import { Link } from "expo-router";
 import { useState } from "react";
 import { Button, TextInput, StyleSheet, View } from "react-native";
 import { useApi } from "@/hooks/useApi";
 import { HandlersLoginUserRequest } from "@/services/api/Api";
-import { storage } from "@/services/storage";
 import { toastFetchError, toastSuccess } from "@/services/toast";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { Colors } from "@/constants/Colors";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const api = useApi();
-  const router = useRouter();
+  const { api, login } = useApi();
+  const colorScheme = useColorScheme();
 
   const handleLogin = async () => {
     try {
@@ -21,36 +22,42 @@ export default function LoginScreen() {
         password,
       };
       const resp = await api.api.loginUser(user);
-      toastSuccess("Login successful");
-      router.replace("/(tabs)");
-      console.log("Storing new token");
-      storage.setToken(resp.data.token!);
-      const version = await api.api.version();
-      console.log(version.data);
+      if (resp.data.token) {
+        await login(resp.data.token);
+        toastSuccess("Login successful");
+        // The redirect is now handled by the root layout observer
+      }
     } catch (error) {
       toastFetchError(error);
     }
+  };
+
+  const inputStyle = {
+    color: Colors[colorScheme ?? "light"].text,
+    borderColor: Colors[colorScheme ?? "light"].icon,
   };
 
   return (
     <ThemedView style={styles.container} testID="login-page">
       <ThemedText type="title">Login</ThemedText>
       <TextInput
-        style={styles.input}
+        style={[styles.input, inputStyle]}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
         testID="email-input"
+        placeholderTextColor={Colors[colorScheme ?? "light"].icon}
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, inputStyle]}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
         testID="password-input"
+        placeholderTextColor={Colors[colorScheme ?? "light"].icon}
       />
       <Button title="Login" onPress={handleLogin} testID="login-button" />
       <View style={styles.linkContainer}>
@@ -71,11 +78,9 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 40,
-    borderColor: "gray",
     borderWidth: 1,
     marginBottom: 12,
     paddingHorizontal: 8,
-    color: "white",
   },
   linkContainer: {
     marginTop: 16,

@@ -22,9 +22,9 @@ type ClubServicer interface {
 	UpdateClub(ctx context.Context, userID string, params repository.UpdateClubParams) error
 	UploadClubBanner(ctx context.Context, userID string, clubID string, fileBytes []byte) (string, error)
 	GetClubMetrics(ctx context.Context, userID string, clubID string) ([]repository.Metric, error)
-	GetClubPosts(ctx context.Context, userID string, clubID string) ([]repository.ClubPost, error)
+	GetClubPosts(ctx context.Context, userID string, clubID string) ([]repository.GetClubPostsRow, error)
 	CreateClubPost(ctx context.Context, userID string, clubID string, text string) (string, error)
-	GetClubPost(ctx context.Context, userID string, clubID string, postID string) (repository.ClubPost, error)
+	GetClubPost(ctx context.Context, userID string, clubID string, postID string) (repository.GetClubPostRow, error)
 	DeleteClubPost(ctx context.Context, userID string, clubID string, postID string) error
 }
 
@@ -93,11 +93,66 @@ func (s *ClubService) GetPublicClubs(ctx context.Context) ([]repository.Club, er
 }
 
 func (s *ClubService) JoinClub(ctx context.Context, userID string, clubID string, isModerator bool) error {
-	return s.q.CreateClubMembership(ctx, repository.CreateClubMembershipParams{
+	err := s.q.CreateClubMembership(ctx, repository.CreateClubMembershipParams{
 		UserID:      userID,
 		ClubID:      clubID,
 		IsModerator: isModerator,
 	})
+	if err != nil {
+		return err
+	}
+
+	// Fetch details for WebSocket message
+	user, err := s.q.GetUserDisplay(ctx, userID)
+	if err != nil {
+		// Log error but don't fail the whole operation
+		return nil
+	}
+	club, err := s.q.GetClub(ctx, clubID)
+	if err != nil {
+		// Log error but don't fail the whole operation
+		return nil
+	}
+
+	// Construct payload
+	payload := map[string]string{
+		"user_id":   userID,
+		"username":  user.Username,
+		"club_id":   clubID,
+		"club_name": club.Name,
+	}
+
+	wsMessage := WebSocketMessage{
+		Event:   "user_joined_club",
+		Payload: payload,
+	}
+
+	jsonBytes, err := json.Marshal(wsMessage)
+	if err != nil {
+		// Log error but don't fail the whole operation
+		return nil
+	}
+
+	// Get all members to broadcast to
+	allRecipients, err := s.q.GetClubUserIds(ctx, clubID)
+	if err != nil {
+		// Log error but don't fail the whole operation
+		return nil
+	}
+
+	// Filter out the user who just joined from the broadcast list
+	var broadcastList []string
+	for _, recipientID := range allRecipients {
+		if recipientID != userID {
+			broadcastList = append(broadcastList, recipientID)
+		}
+	}
+
+	if len(broadcastList) > 0 {
+		s.w.BroadcastMessage(ctx, broadcastList, string(jsonBytes))
+	}
+
+	return nil
 }
 
 func (s *ClubService) LeaveClub(ctx context.Context, params repository.DeleteClubMembershipParams) error {
@@ -216,7 +271,7 @@ func (s *ClubService) GetClubMetrics(ctx context.Context, userID string, clubID 
 	return s.q.GetClubMetrics(ctx, clubID)
 }
 
-func (s *ClubService) GetClubPosts(ctx context.Context, userID string, clubID string) ([]repository.ClubPost, error) {
+func (s *ClubService) GetClubPosts(ctx context.Context, userID string, clubID string) ([]repository.GetClubPostsRow, error) {
 	isMember, err := s.IsUserMemberOfClub(ctx, userID, clubID)
 	if err != nil {
 		return nil, err
@@ -251,7 +306,13 @@ func (s *ClubService) CreateClubPost(ctx context.Context, userID string, clubID 
 	if err != nil {
 		return "", err
 	}
-	jsonStr, err := json.Marshal(post)
+
+	wsMessage := WebSocketMessage{
+		Event:   "new_post",
+		Payload: post,
+	}
+
+	jsonBytes, err := json.Marshal(wsMessage)
 	if err != nil {
 		return "", err
 	}
@@ -260,18 +321,18 @@ func (s *ClubService) CreateClubPost(ctx context.Context, userID string, clubID 
 	if err != nil {
 		return "", err
 	}
-	s.w.BroadcastMessage(ctx, users, string(jsonStr))
+	s.w.BroadcastMessage(ctx, users, string(jsonBytes))
 	return id, nil
 }
 
 // Club posts are only visible to members, even if the club is public.
-func (s *ClubService) GetClubPost(ctx context.Context, userID string, clubID string, postID string) (repository.ClubPost, error) {
+func (s *ClubService) GetClubPost(ctx context.Context, userID string, clubID string, postID string) (repository.GetClubPostRow, error) {
 	isMember, err := s.IsUserMemberOfClub(ctx, userID, clubID)
 	if err != nil {
-		return repository.ClubPost{}, err
+		return repository.GetClubPostRow{}, err
 	}
 	if !isMember {
-		return repository.ClubPost{}, errors.New("Permission denied: user is not a member of the club")
+		return repository.GetClubPostRow{}, errors.New("Permission denied: user is not a member of the club")
 	}
 	return s.q.GetClubPost(ctx, postID)
 }

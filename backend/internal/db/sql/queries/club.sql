@@ -73,12 +73,19 @@ WHERE
     id = @id;
 
 -- name: GetClubPosts :many
-SELECT * FROM club_post
-WHERE club_id = @club_id;
+SELECT cp.*, u.username as author_username, c.name as club_name
+FROM club_post cp
+JOIN "user" u on u.id = cp.user_id
+JOIN club c on c.id = cp.club_id
+WHERE cp.club_id = @club_id
+ORDER BY cp.created_at DESC;
 
 -- name: GetClubPost :one
-SELECT * FROM club_post
-WHERE id = @id;
+SELECT cp.*, u.username as author_username, c.name as club_name
+FROM club_post cp
+JOIN "user" u on u.id = cp.user_id
+JOIN club c on c.id = cp.club_id
+WHERE cp.id = @id;
 
 -- name: CreateClubPostAttachment :exec
 INSERT INTO club_post_attachment (id, post_id, url)

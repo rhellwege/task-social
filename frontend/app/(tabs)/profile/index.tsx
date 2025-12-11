@@ -3,9 +3,10 @@ import { useApi } from "@/hooks/useApi";
 import { useEffect, useState } from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { Stack } from "expo-router";
 
 export default function Tab() {
-  const api = useApi();
+  const { api } = useApi();
   const [username, setUsername] = useState("");
   const [createdDate, setCreatedDate] = useState("");
   const [profilePic, setProfilePic] = useState("");
@@ -28,36 +29,39 @@ export default function Tab() {
   }, [api]);
 
   return (
-    <ThemedView style={styles.container} testID="profile-screen">
-      <ThemedView style={styles.profileView}>
-        <Image source={{ uri: profilePic }} style={styles.circle} />
-        <View style={styles.name}>
-          <ThemedText type="title">User</ThemedText>
-          <ThemedText type="subtitle" testID="username">
-            @{username}
-          </ThemedText>
-          <ThemedText>Joined on {formattedDate}</ThemedText>
+    <>
+      <Stack.Screen options={{ title: "Profile" }} />
+      <ThemedView style={styles.container} testID="profile-screen">
+        <ThemedView style={styles.profileView}>
+          <Image source={{ uri: profilePic }} style={styles.circle} />
+          <View style={styles.name}>
+            <ThemedText type="title">User</ThemedText>
+            <ThemedText type="subtitle" testID="username">
+              @{username}
+            </ThemedText>
+            <ThemedText>Joined on {formattedDate}</ThemedText>
+          </View>
+        </ThemedView>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <ThemedText type="default">Edit Profile</ThemedText>
+          <View style={styles.line} />
+          <ThemedText type="default">Account Settings</ThemedText>
+          <View style={styles.line} />
+          <ThemedText> App Settings </ThemedText>
+          <View style={styles.line} />
+          <ThemedText type="default">Your Data</ThemedText>
+          <View style={styles.line} />
+          <ThemedText type="default">Contact Us</ThemedText>
         </View>
       </ThemedView>
-      <View
-        style={{
-          flex: 1,
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
-        <ThemedText type="default">Edit Profile</ThemedText>
-        <View style={styles.line} />
-        <ThemedText type="default">Account Settings</ThemedText>
-        <View style={styles.line} />
-        <ThemedText> App Settings </ThemedText>
-        <View style={styles.line} />
-        <ThemedText type="default">Your Data</ThemedText>
-        <View style={styles.line} />
-        <ThemedText type="default">Contact Us</ThemedText>
-      </View>
-    </ThemedView>
+    </>
   );
 }
 

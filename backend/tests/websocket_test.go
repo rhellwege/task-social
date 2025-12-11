@@ -170,18 +170,33 @@ func TestClubWebsockets(t *testing.T) {
 
 		// 6. Verify that all users receive the message
 		for _, user := range users {
-			_, msg, err := user.conn.ReadMessage()
-			assert.NoError(t, err)
-			// read into message
-			var myMessage repository.ClubPost
-			json.Unmarshal(msg, &myMessage)
-			assert.Equal(t, myMessage.Content, message.TextContent)
+			var myMessage struct {
+				Event   string              `json:"event"`
+				Payload repository.ClubPost `json:"payload"`
+			}
+			for myMessage.Event != "new_post" {
+				_, msg, err := user.conn.ReadMessage()
+				assert.NoError(t, err)
+				// read into message
+				err = json.Unmarshal(msg, &myMessage)
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, "new_post", myMessage.Event)
+			assert.Equal(t, message.TextContent, myMessage.Payload.Content)
 		}
 		// 6. including sender (club owner)
-		_, msg, err := clubOwnerConn.ReadMessage()
-		assert.NoError(t, err)
-		var myMessage repository.ClubPost
-		json.Unmarshal(msg, &myMessage)
-		assert.Equal(t, myMessage.Content, message.TextContent)
+		var myMessage struct {
+			Event   string              `json:"event"`
+			Payload repository.ClubPost `json:"payload"`
+		}
+		for myMessage.Event != "new_post" {
+			_, msg, err := clubOwnerConn.ReadMessage()
+			assert.NoError(t, err)
+			// read into message
+			err = json.Unmarshal(msg, &myMessage)
+			assert.NoError(t, err)
+		}
+		assert.Equal(t, "new_post", myMessage.Event)
+		assert.Equal(t, message.TextContent, myMessage.Payload.Content)
 	})
 }
