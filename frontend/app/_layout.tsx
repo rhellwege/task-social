@@ -25,7 +25,7 @@ const InitialLayout = () => {
     }
     // If the token is present and the user is in the auth group, redirect to the main app.
     else if (token && inAuthGroup) {
-      router.replace("/(tabs)");
+      router.replace("/explore");
     }
   }, [token, segments, router]);
 

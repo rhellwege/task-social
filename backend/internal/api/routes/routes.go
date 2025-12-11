@@ -44,9 +44,9 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 
 	// User routes
 	api.Get("/user", handlers.GetUser(userService))
+	api.Get("/user/clubs", handlers.GetUserClubs(userService))
 	api.Get("/user/:id", handlers.GetUserByID(userService))
 	api.Put("/user", handlers.UpdateUser(userService))
-	api.Get("/user/clubs", handlers.GetUserClubs(userService))
 	api.Post("/user/profile-picture",
 		middleware.ImageUploadMiddleware("./assets"),
 		handlers.UploadProfilePicture(userService),
