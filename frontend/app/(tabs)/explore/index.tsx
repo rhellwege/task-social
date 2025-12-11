@@ -13,6 +13,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useApi } from "@/hooks/useApi";
 import { RepositoryClub } from "@/services/api/Api";
 import { toastError, toastSuccess } from "@/services/toast";
+import { Stack } from "expo-router";
 
 export default function Tab() {
   const colorScheme = useColorScheme();
@@ -52,50 +53,53 @@ export default function Tab() {
   };
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { marginTop: 60 }]}>
-      {isLoading ? (
-        <ActivityIndicator size="large" />
-      ) : (
-        clubs.map((club) => (
-          <View
-            key={club.id}
-            style={[
-              styles.tile,
-              styles.shadow,
-              { backgroundColor: Colors[colorScheme ?? "light"].background },
-            ]}
-          >
-            <View style={styles.tileContent}>
-              <View style={styles.circle}></View>
+    <>
+      <Stack.Screen options={{ title: "Explore" }} />
+      <ScrollView contentContainerStyle={[styles.container, { marginTop: 20 }]}>
+        {isLoading ? (
+          <ActivityIndicator size="large" />
+        ) : (
+          clubs.map((club) => (
+            <View
+              key={club.id}
+              style={[
+                styles.tile,
+                styles.shadow,
+                { backgroundColor: Colors[colorScheme ?? "light"].background },
+              ]}
+            >
+              <View style={styles.tileContent}>
+                <View style={styles.circle}></View>
+                <Text
+                  style={{
+                    color: Colors[colorScheme ?? "light"].text,
+                    fontSize: 25,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                >
+                  {club.name}
+                </Text>
+              </View>
               <Text
                 style={{
                   color: Colors[colorScheme ?? "light"].text,
-                  fontSize: 25,
-                  fontWeight: "bold",
-                  textAlign: "center",
+                  fontSize: 18,
+                  padding: 10,
                 }}
               >
-                {club.name}
+                {club.description}
               </Text>
+              <Button
+                title="Join"
+                onPress={() => handleJoin(club.id!)}
+                color={Colors[colorScheme ?? "light"].tint}
+              />
             </View>
-            <Text
-              style={{
-                color: Colors[colorScheme ?? "light"].text,
-                fontSize: 18,
-                padding: 10,
-              }}
-            >
-              {club.description}
-            </Text>
-            <Button
-              title="Join"
-              onPress={() => handleJoin(club.id!)}
-              color={Colors[colorScheme ?? "light"].tint}
-            />
-          </View>
-        ))
-      )}
-    </ScrollView>
+          ))
+        )}
+      </ScrollView>
+    </>
   );
 }
 
