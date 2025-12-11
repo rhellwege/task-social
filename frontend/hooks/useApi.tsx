@@ -5,13 +5,14 @@ import React, {
   useEffect,
   useMemo,
   useState,
+  useCallback,
+  useRef,
 } from "react";
 import { useRouter } from "expo-router";
 import { storage } from "@/services/storage";
 import { toastError } from "@/services/toast";
 import { API_BASE_URL } from "@/constants/Api";
 
-// Define the shape of the context value
 interface ApiContextType {
   api: Api<unknown>;
   token: string | null;
@@ -34,8 +35,21 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize token from storage on app load
+  // Create a ref to hold the current token. This avoids stale closures.
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
+
+  const logout = useCallback(async () => {
+    setToken(null);
+    await storage.deleteToken();
+    router.replace("/(auth)/login");
+  }, [router]);
+
+  const logoutRef = useRef(logout);
+  logoutRef.current = logout;
+
   useEffect(() => {
+    // On mount, load token from storage
     const loadToken = async () => {
       try {
         const storedToken = await storage.getToken();
@@ -49,62 +63,51 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
     loadToken();
-  }, []);
+
+    // On mount, patch window.fetch
+    const { fetch: originalFetch } = window;
+    window.fetch = async (...args) => {
+      let [resource, config] = args;
+
+      // Ensure config and headers objects exist
+      if (!config) config = {};
+      if (!config.headers) config.headers = {};
+
+      // Use the ref to get the *current* token, avoiding stale values
+      const currentToken = tokenRef.current;
+      if (currentToken) {
+        config.headers.Authorization = `Bearer ${currentToken}`;
+      }
+
+      const response = await originalFetch(resource, config);
+      const responseClone = response.clone();
+
+      if (response.status === 401 && tokenRef.current) {
+        await logoutRef.current();
+        toastError("Login expired, please login again");
+      }
+
+      return responseClone;
+    };
+
+    // On unmount, restore original fetch
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, [logout]);
 
   const api = useMemo(() => {
     const apiConfig: ApiConfig = {
       baseUrl: API_BASE_URL,
     };
-    const apiInstance = new Api(apiConfig);
-
-    // monkey patch fetch to add interceptors
-    const { fetch: originalFetch } = window;
-
-    window.fetch = async (...args) => {
-      let [resource, config] = args;
-
-      // request interceptor to add the token
-      const requestInterceptor = (config: any) => {
-        // Use the token from our state
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      };
-
-      const response = await originalFetch(
-        resource,
-        requestInterceptor(config),
-      );
-
-      // response interceptor for 401 errors
-      const responseInterceptor = async (response: Response) => {
-        if (response.status === 401 && token) {
-          await logout();
-          toastError("Login expired, please login again");
-        }
-        return response;
-      };
-
-      // Clone the response before passing it to the interceptor, as it can only be consumed once.
-      return await responseInterceptor(response.clone());
-    };
-
-    return apiInstance;
-  }, [token]); // Re-create api instance if token changes
+    return new Api(apiConfig);
+  }, []);
 
   const login = async (newToken: string) => {
     setToken(newToken);
     await storage.setToken(newToken);
   };
 
-  const logout = async () => {
-    setToken(null);
-    await storage.deleteToken();
-    router.replace("/(auth)/login");
-  };
-
-  // Render children only after token is initialized
   if (!isInitialized) {
     return null; // Or a loading spinner
   }

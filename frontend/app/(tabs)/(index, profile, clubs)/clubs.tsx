@@ -1,135 +1,153 @@
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/Colors';
-import { Link } from 'expo-router';
-import { useState, useEffect, useCallback } from 'react';
-import { useLocalSearchParams } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
-import { allClubs, joinedClubs } from '../mockData';
-
-interface Club {
-  id: string;
-  name: string;
-  description: string;
-  owner_user_id: string;
-  banner_image: string | null;
-  is_public: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import {
+  ScrollView,
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { Colors } from "@/constants/Colors";
+import { Link } from "expo-router";
+import { useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useApi } from "@/hooks/useApi";
+import { RepositoryGetUserClubsRow } from "@/services/api/Api";
 
 export default function Tab() {
   const colorScheme = useColorScheme();
-  const params = useLocalSearchParams();
-  const [displayedClubs, setDisplayedClubs] = useState<Club[]>([]);
-  const { joinedClub } = params;
+  const { api } = useApi();
+  const [clubs, setClubs] = useState<RepositoryGetUserClubsRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const computeDisplayedClubs = () => {
-    const owned = allClubs.filter(c => c.owner_user_id === 'current_user');
-    const combined = [...owned, ...joinedClubs];
-    const unique = combined.filter((c, index) => combined.findIndex(d => d.id === c.id) === index);
-    setDisplayedClubs(unique);
-  };
-
-  const handleClubParam = useCallback((clubParam: string | string[] | undefined) => {
-    if (!clubParam) return;
-    let clubData: Club;
-    try {
-      if (typeof clubParam === 'string') {
-        clubData = JSON.parse(decodeURIComponent(clubParam)) as Club;
-      } else if (Array.isArray(clubParam)) {
-        clubData = JSON.parse(decodeURIComponent(clubParam[0])) as Club;
-      } else {
-        return;
-      }
-      if (!joinedClubs.find(c => c.id === clubData.id)) {
-        joinedClubs.push(clubData);
-      }
-    } catch (error) {
-      console.error('Error parsing joinedClub:', error);
-    }
-  }, []);
-
-  // Handle initial navigation
-  useEffect(() => {
-    handleClubParam(joinedClub);
-  }, [joinedClub, handleClubParam]);
-
-  // Handle tab focus
   useFocusEffect(
     useCallback(() => {
-      handleClubParam(joinedClub);
-      computeDisplayedClubs();
-    }, [joinedClub, handleClubParam])
+      const fetchClubs = async () => {
+        try {
+          setIsLoading(true);
+          const response = await api.api.getUserClubs();
+          setClubs(response.data || []);
+        } catch (error) {
+          console.error("Failed to fetch user clubs:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchClubs();
+    }, [api]),
   );
 
-  // Initial compute
-  useEffect(() => {
-    computeDisplayedClubs();
-  }, []);
-
-  // Handle refresh param
-  useEffect(() => {
-    if (params.refresh) {
-      computeDisplayedClubs();
-    }
-  }, [params.refresh]);
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <View style={{ flex: 1 }}>
+      <View style={styles.header}>
+        <Text
+          style={[
+            styles.headerTitle,
+            { color: Colors[colorScheme ?? "light"].text },
+          ]}
+        >
+          My Clubs
+        </Text>
+        <Link href="/create-club" style={styles.createButton}>
+          <Text style={styles.createButtonText}>+ Create Club</Text>
+        </Link>
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
-        {displayedClubs.length === 0 ? (
-          <Text style={{ color: Colors[colorScheme ?? 'light'].text, fontSize: 18, textAlign: 'center' }}>
-            No clubs joined
+        {isLoading ? (
+          <ActivityIndicator size="large" style={{ marginTop: 20 }} />
+        ) : clubs.length === 0 ? (
+          <Text
+            style={{
+              color: Colors[colorScheme ?? "light"].text,
+              fontSize: 18,
+              textAlign: "center",
+              marginTop: 20,
+            }}
+          >
+            No clubs joined. Find one to join!
           </Text>
         ) : (
-          displayedClubs.map(club => (
+          clubs.map((club) => (
             <Link
-              key={club.id}
-              href={{ pathname: '/club', params: { id: club.id } }}
-              style={[styles.tile, styles.shadow, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}
+              key={club.club_id}
+              href={{ pathname: "/club", params: { id: club.club_id } }}
+              style={[
+                styles.tile,
+                styles.shadow,
+                { backgroundColor: Colors[colorScheme ?? "light"].background },
+              ]}
             >
               <View style={styles.tileContent}>
-                <Text style={{ color: Colors[colorScheme ?? 'light'].text, fontSize: 20, fontWeight: 'bold', textAlign: 'center' }}>
+                <Text
+                  style={{
+                    color: Colors[colorScheme ?? "light"].text,
+                    fontSize: 20,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                >
                   {club.name}
                 </Text>
-                <Text style={{
-                  color: Colors[colorScheme ?? 'light'].text,
-                  fontSize: 14,
-                  opacity: 0.7,
-                  textAlign: 'center',
-                  marginTop: 6
-                }}>
-                  Marketplace • Buy & Sell
+                <Text
+                  style={{
+                    color: Colors[colorScheme ?? "light"].text,
+                    fontSize: 14,
+                    opacity: 0.7,
+                    textAlign: "center",
+                    marginTop: 6,
+                  }}
+                >
+                  {club.description}
                 </Text>
               </View>
             </Link>
           ))
         )}
       </ScrollView>
-    </ThemeProvider>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 50,
+    paddingBottom: 10,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+  createButton: {
+    backgroundColor: Colors.light.tint,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  createButtonText: {
+    color: "white",
+    fontWeight: "bold",
+  },
   container: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   tile: {
     height: 200,
-    width: '90%',
-    justifyContent: 'center',
+    width: "90%",
+    justifyContent: "center",
     marginTop: 20,
     borderRadius: 5,
   },
   tileContent: {
-    alignItems: 'center',
+    alignItems: "center",
     padding: 10,
   },
   shadow: {
-    shadowColor: '#00000088',
+    shadowColor: "#00000088",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.8,
     shadowRadius: 2,
