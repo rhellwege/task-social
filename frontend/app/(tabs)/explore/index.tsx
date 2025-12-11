@@ -3,8 +3,8 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Button,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
@@ -90,11 +90,27 @@ export default function Tab() {
               >
                 {club.description}
               </Text>
-              <Button
-                title="Join"
+              <TouchableOpacity
+                style={[
+                  styles.joinButton,
+                  { backgroundColor: Colors[colorScheme ?? "light"].tint },
+                ]}
                 onPress={() => handleJoin(club.id!)}
-                color={Colors[colorScheme ?? "light"].tint}
-              />
+              >
+                <Text
+                  style={[
+                    styles.joinButtonText,
+                    {
+                      color:
+                        colorScheme === "dark"
+                          ? Colors.dark.background
+                          : "white",
+                    },
+                  ]}
+                >
+                  Join
+                </Text>
+              </TouchableOpacity>
             </View>
           ))
         )}
@@ -113,7 +129,7 @@ const styles = StyleSheet.create({
     height: 250,
     flexDirection: "column",
     width: "90%",
-    justifyContent: "center",
+    justifyContent: "space-around",
     marginTop: 20,
     borderRadius: 5,
     padding: 10,
@@ -136,5 +152,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
+  },
+  joinButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    alignSelf: "center",
+  },
+  joinButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
