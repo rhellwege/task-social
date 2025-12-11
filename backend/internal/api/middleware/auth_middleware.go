@@ -9,12 +9,19 @@ import (
 	"github.com/rhellwege/task-social/internal/api/services"
 )
 
-// Takes JWT token from Authorization header and inserts the userID into the context
+// Takes JWT token from Authorization header or query parameter and inserts the userID into the context
 func ProtectedRoute(authService services.AuthServicer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.Context()
-		tokenString := c.Get("Authorization")
-		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+		// Get token from query parameter first
+		tokenString := c.Query("token")
+
+		// If not in query, check Authorization header
+		if tokenString == "" {
+			authHeader := c.Get("Authorization")
+			tokenString = strings.TrimPrefix(authHeader, "Bearer ")
+		}
+
 		if tokenString == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(handlers.ErrorResponse{
 				Error: "Unauthorized: missing token",

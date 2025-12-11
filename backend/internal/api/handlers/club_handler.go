@@ -288,7 +288,7 @@ func GetClubLeaderboard(clubService services.ClubServicer) fiber.Handler {
 //	@Success		200	{object}	repository.Club
 //	@Failure		401	{object}	ErrorResponse
 //	@Failure		500	{object}	ErrorResponse
-//	@Router			/api/{club_id} [get]
+//	@Router			/api/club/{club_id} [get]
 func GetClub(clubService services.ClubServicer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.Context()
@@ -404,7 +404,7 @@ func GetClubMetrics(clubService services.ClubServicer) fiber.Handler {
 //	@Produce		json
 //	@Param			club_id	path	string	true	"Club ID"
 //	@Security		ApiKeyAuth
-//	@Success		200	{array}		repository.ClubPost
+//	@Success		200	{array}		repository.GetClubPostsRow
 //	@Failure		400	{object}	ErrorResponse
 //	@Failure		401	{object}	ErrorResponse
 //	@Failure		500	{object}	ErrorResponse

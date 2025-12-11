@@ -3,33 +3,31 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { ApiProvider } from "@/hooks/useApi";
+import { ApiProvider, useApi } from "@/hooks/useApi";
 import { useEffect } from "react";
-import { storage } from "@/services/storage";
-
 import Toast from "react-native-toast-message";
+import { WebSocketProvider } from "@/hooks/useWebSocket";
 
 const InitialLayout = () => {
+  const { token } = useApi(); // Changed from useAuth to useApi
+  const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
-    const checkToken = async () => {
-      const token = await storage.getToken();
-      if (!token) {
-        console.log("No token found, redirecting to register");
-        router.replace("/(auth)/register");
-      } else {
-        console.log("Using token found in storage");
-        router.replace("/(tabs)");
-      }
-    };
+    const inAuthGroup = segments[0] === "(auth)";
 
-    checkToken();
-  }, [router]);
+    // If the token is null and the user is not in the auth group, redirect to login.
+    if (!token && !inAuthGroup) {
+      router.replace("/(auth)/login");
+    }
+    // If the token is present and the user is in the auth group, redirect to the main app.
+    else if (token && inAuthGroup) {
+      router.replace("/explore");
+    }
+  }, [token, segments, router]);
 
   return (
     <Stack>
@@ -43,12 +41,18 @@ export default function Layout() {
   const colorScheme = useColorScheme();
 
   return (
+    // The ApiProvider now manages auth state
     <ApiProvider>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <InitialLayout />
-        <StatusBar style="auto" />
-        <Toast />
-      </ThemeProvider>
+      {/* WebSocketProvider is inside ApiProvider to access the auth token */}
+      <WebSocketProvider>
+        <ThemeProvider
+          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+        >
+          <InitialLayout />
+          <StatusBar style="auto" />
+          <Toast />
+        </ThemeProvider>
+      </WebSocketProvider>
     </ApiProvider>
   );
 }

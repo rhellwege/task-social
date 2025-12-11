@@ -36,6 +36,34 @@ func GetUser(userService services.UserServicer) fiber.Handler {
 	}
 }
 
+// GetUserByID godoc
+//
+//	@ID				GetUserByID
+//	@Summary		Get user information by ID
+//	@Description	Get public user information by ID
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Security		ApiKeyAuth
+//	@Param			id	path		string	true	"User ID"
+//	@Success		200	{object}	repository.GetUserDisplayRow
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Router			/api/user/{id} [get]
+func GetUserByID(userService services.UserServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		id := c.Params("id")
+		user, err := userService.GetUserDisplay(ctx, id)
+		if err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+		return c.JSON(user)
+	}
+}
+
 type RegisterUserRequest struct {
 	Email    string `json:"email"`
 	Username string `json:"username"`

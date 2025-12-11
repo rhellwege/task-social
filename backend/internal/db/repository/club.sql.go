@@ -288,13 +288,27 @@ func (q *Queries) GetClubMetrics(ctx context.Context, clubID string) ([]Metric, 
 }
 
 const getClubPost = `-- name: GetClubPost :one
-SELECT id, user_id, club_id, content, created_at, updated_at FROM club_post
-WHERE id = ?1
+SELECT cp.id, cp.user_id, cp.club_id, cp.content, cp.created_at, cp.updated_at, u.username as author_username, c.name as club_name
+FROM club_post cp
+JOIN "user" u on u.id = cp.user_id
+JOIN club c on c.id = cp.club_id
+WHERE cp.id = ?1
 `
 
-func (q *Queries) GetClubPost(ctx context.Context, id string) (ClubPost, error) {
+type GetClubPostRow struct {
+	ID             string    `json:"id"`
+	UserID         string    `json:"user_id"`
+	ClubID         string    `json:"club_id"`
+	Content        string    `json:"content"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+	AuthorUsername string    `json:"author_username"`
+	ClubName       string    `json:"club_name"`
+}
+
+func (q *Queries) GetClubPost(ctx context.Context, id string) (GetClubPostRow, error) {
 	row := q.db.QueryRowContext(ctx, getClubPost, id)
-	var i ClubPost
+	var i GetClubPostRow
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -302,24 +316,41 @@ func (q *Queries) GetClubPost(ctx context.Context, id string) (ClubPost, error) 
 		&i.Content,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AuthorUsername,
+		&i.ClubName,
 	)
 	return i, err
 }
 
 const getClubPosts = `-- name: GetClubPosts :many
-SELECT id, user_id, club_id, content, created_at, updated_at FROM club_post
-WHERE club_id = ?1
+SELECT cp.id, cp.user_id, cp.club_id, cp.content, cp.created_at, cp.updated_at, u.username as author_username, c.name as club_name
+FROM club_post cp
+JOIN "user" u on u.id = cp.user_id
+JOIN club c on c.id = cp.club_id
+WHERE cp.club_id = ?1
+ORDER BY cp.created_at DESC
 `
 
-func (q *Queries) GetClubPosts(ctx context.Context, clubID string) ([]ClubPost, error) {
+type GetClubPostsRow struct {
+	ID             string    `json:"id"`
+	UserID         string    `json:"user_id"`
+	ClubID         string    `json:"club_id"`
+	Content        string    `json:"content"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+	AuthorUsername string    `json:"author_username"`
+	ClubName       string    `json:"club_name"`
+}
+
+func (q *Queries) GetClubPosts(ctx context.Context, clubID string) ([]GetClubPostsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getClubPosts, clubID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ClubPost
+	var items []GetClubPostsRow
 	for rows.Next() {
-		var i ClubPost
+		var i GetClubPostsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -327,6 +358,8 @@ func (q *Queries) GetClubPosts(ctx context.Context, clubID string) ([]ClubPost, 
 			&i.Content,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AuthorUsername,
+			&i.ClubName,
 		); err != nil {
 			return nil, err
 		}

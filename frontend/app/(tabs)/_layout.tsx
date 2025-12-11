@@ -5,6 +5,7 @@ import { Tabs } from "expo-router";
 import { Platform } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { HapticTab } from "@/components/HapticTab";
+import { StackActions } from "@react-navigation/native";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 
@@ -26,27 +27,30 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="(clubs)"
-        options={{
-          title: "Clubs",
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons name="people" size={24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="(index)"
+        name="explore"
         options={{
           title: "Explore",
+          unmountOnBlur: true,
           tabBarIcon: ({ color }) => (
             <SimpleLineIcons name="globe-alt" size={24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="(profile)"
+        name="myclubs"
+        options={{
+          title: "My Clubs",
+          unmountOnBlur: true,
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="people" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
         options={{
           title: "Me",
+          unmountOnBlur: true,
           tabBarIcon: ({ color }) => (
             <Ionicons name="person-circle-outline" size={24} color={color} />
           ),

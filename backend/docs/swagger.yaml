@@ -173,6 +173,25 @@ definitions:
       username:
         type: string
     type: object
+  repository.GetClubPostsRow:
+    properties:
+      author_username:
+        type: string
+      club_id:
+        type: string
+      club_name:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
   repository.GetUserClubsRow:
     properties:
       banner_image:
@@ -276,36 +295,6 @@ info:
   title: Task Social API
   version: "0.1"
 paths:
-  /api/{club_id}:
-    get:
-      description: Get club info
-      operationId: GetClub
-      parameters:
-      - description: Club ID
-        in: path
-        name: club_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/repository.Club'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Get club info
-      tags:
-      - Club
   /api/club:
     post:
       consumes:
@@ -371,6 +360,35 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Delete a club
+      tags:
+      - Club
+    get:
+      description: Get club info
+      operationId: GetClub
+      parameters:
+      - description: Club ID
+        in: path
+        name: club_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repository.Club'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get club info
       tags:
       - Club
     put:
@@ -719,7 +737,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/repository.ClubPost'
+              $ref: '#/definitions/repository.GetClubPostsRow'
             type: array
         "400":
           description: Bad Request
@@ -1129,6 +1147,38 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update an existing user
+      tags:
+      - User
+  /api/user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get public user information by ID
+      operationId: GetUserByID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repository.GetUserDisplayRow'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user information by ID
       tags:
       - User
   /api/user/clubs:

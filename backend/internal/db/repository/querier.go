@@ -36,8 +36,8 @@ type Querier interface {
 	GetClub(ctx context.Context, id string) (Club, error)
 	GetClubLeaderboard(ctx context.Context, clubID string) ([]GetClubLeaderboardRow, error)
 	GetClubMetrics(ctx context.Context, clubID string) ([]Metric, error)
-	GetClubPost(ctx context.Context, id string) (ClubPost, error)
-	GetClubPosts(ctx context.Context, clubID string) ([]ClubPost, error)
+	GetClubPost(ctx context.Context, id string) (GetClubPostRow, error)
+	GetClubPosts(ctx context.Context, clubID string) ([]GetClubPostsRow, error)
 	GetClubUserIds(ctx context.Context, clubID string) ([]string, error)
 	// assumes user_id < friend_id
 	// TODO: add user friendship created at

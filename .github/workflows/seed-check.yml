@@ -1,0 +1,29 @@
+name: Seed Check (Automated)
+
+on:
+  push:
+    branches: [ backend_test_data, main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+        working-directory: frontend
+
+      - name: Run seed script
+        run: yarn seed:data --url=${{ secrets.STAGING_BACKEND_URL || 'http://localhost:5050' }} --count=3
+        working-directory: frontend
