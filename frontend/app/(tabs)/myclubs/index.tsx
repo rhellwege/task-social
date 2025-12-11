@@ -70,7 +70,7 @@ export default function Tab() {
           clubs.map((club) => (
             <Link
               key={club.club_id}
-              href={{ pathname: "/club", params: { id: club.club_id } }}
+              href={`/(tabs)/myclubs/${club.club_id}`}
               style={[
                 styles.tile,
                 styles.shadow,

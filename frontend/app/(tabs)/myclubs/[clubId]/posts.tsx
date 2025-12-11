@@ -14,12 +14,10 @@ import { ClubPost } from "@/services/api/Api";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { toastError } from "@/services/toast";
-
-// --- For Isolated Development ---
-// This would normally be passed in as a prop or from route params.
-const HARDCODED_CLUB_ID = "c5e378c8-0d3a-4b35-a744-938e3e4d7293"; // Replace with a valid club ID from your DB
+import { Stack, useLocalSearchParams } from "expo-router";
 
 export default function ClubPostsPage() {
+  const { clubId } = useLocalSearchParams<{ clubId: string }>();
   const { api } = useApi();
   const { on, off, status } = useWebSocket();
   const [posts, setPosts] = useState<ClubPost[]>([]);
@@ -28,10 +26,12 @@ export default function ClubPostsPage() {
 
   // Effect for initial fetch of posts
   useEffect(() => {
+    if (typeof clubId !== "string" || clubId.length === 0) return;
     const fetchPosts = async () => {
       try {
         setIsLoading(true);
-        const response = await api.api.getClubPosts(HARDCODED_CLUB_ID);
+        console.log(clubId);
+        const response = await api.api.getClubPosts(clubId);
         setPosts(response.data || []);
       } catch (error) {
         toastError("Failed to fetch club posts.");
@@ -42,14 +42,13 @@ export default function ClubPostsPage() {
     };
 
     fetchPosts();
-  }, [api]);
+  }, [api, clubId]);
 
   // Effect for subscribing to new posts via WebSocket
   useEffect(() => {
+    if (typeof clubId !== "string" || clubId.length === 0) return;
     const handleNewPost = (post: ClubPost) => {
-      // Add the new post to the top of the list
-      // We also check if the post belongs to the current club
-      if (post.club_id === HARDCODED_CLUB_ID) {
+      if (post.club_id === clubId) {
         setPosts((currentPosts) => [post, ...currentPosts]);
       }
     };
@@ -59,18 +58,21 @@ export default function ClubPostsPage() {
     return () => {
       off("new_post", handleNewPost);
     };
-  }, [on, off]);
+  }, [on, off, clubId]);
 
   const handleCreatePost = async () => {
-    if (newPostContent.trim() === "") return;
+    if (
+      newPostContent.trim() === "" ||
+      typeof clubId !== "string" ||
+      clubId.length === 0
+    )
+      return;
 
     try {
-      await api.api.createClubPost(HARDCODED_CLUB_ID, {
+      await api.api.createClubPost(clubId, {
         text_content: newPostContent,
       });
       setNewPostContent("");
-      // No need to manually add the post to the state.
-      // The WebSocket broadcast will handle it.
     } catch (error) {
       toastError("Failed to create post.");
       console.error(error);
@@ -88,31 +90,35 @@ export default function ClubPostsPage() {
   );
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">Club Posts</ThemedText>
-      <ThemedText>WebSocket Status: {status}</ThemedText>
+    <>
+      <Stack.Screen options={{ title: "Club Posts" }} />
+      <ThemedView style={styles.container}>
+        <ThemedText>WebSocket Status: {status}</ThemedText>
 
-      <View style={styles.createPostContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="What's on your mind?"
-          value={newPostContent}
-          onChangeText={setNewPostContent}
-        />
-        <Button title="Post" onPress={handleCreatePost} />
-      </View>
+        <View style={styles.createPostContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="What's on your mind?"
+            value={newPostContent}
+            onChangeText={setNewPostContent}
+            placeholderTextColor="#888"
+          />
+          <Button title="Post" onPress={handleCreatePost} />
+        </View>
 
-      {isLoading ? (
-        <ActivityIndicator size="large" />
-      ) : (
-        <FlatList
-          data={posts}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          style={styles.list}
-        />
-      )}
-    </ThemedView>
+        {isLoading ? (
+          <ActivityIndicator size="large" />
+        ) : (
+          <FlatList
+            data={posts}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            style={styles.list}
+            inverted
+          />
+        )}
+      </ThemedView>
+    </>
   );
 }
 
