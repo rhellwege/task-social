@@ -93,11 +93,66 @@ func (s *ClubService) GetPublicClubs(ctx context.Context) ([]repository.Club, er
 }
 
 func (s *ClubService) JoinClub(ctx context.Context, userID string, clubID string, isModerator bool) error {
-	return s.q.CreateClubMembership(ctx, repository.CreateClubMembershipParams{
+	err := s.q.CreateClubMembership(ctx, repository.CreateClubMembershipParams{
 		UserID:      userID,
 		ClubID:      clubID,
 		IsModerator: isModerator,
 	})
+	if err != nil {
+		return err
+	}
+
+	// Fetch details for WebSocket message
+	user, err := s.q.GetUserDisplay(ctx, userID)
+	if err != nil {
+		// Log error but don't fail the whole operation
+		return nil
+	}
+	club, err := s.q.GetClub(ctx, clubID)
+	if err != nil {
+		// Log error but don't fail the whole operation
+		return nil
+	}
+
+	// Construct payload
+	payload := map[string]string{
+		"user_id":   userID,
+		"username":  user.Username,
+		"club_id":   clubID,
+		"club_name": club.Name,
+	}
+
+	wsMessage := WebSocketMessage{
+		Event:   "user_joined_club",
+		Payload: payload,
+	}
+
+	jsonBytes, err := json.Marshal(wsMessage)
+	if err != nil {
+		// Log error but don't fail the whole operation
+		return nil
+	}
+
+	// Get all members to broadcast to
+	allRecipients, err := s.q.GetClubUserIds(ctx, clubID)
+	if err != nil {
+		// Log error but don't fail the whole operation
+		return nil
+	}
+
+	// Filter out the user who just joined from the broadcast list
+	var broadcastList []string
+	for _, recipientID := range allRecipients {
+		if recipientID != userID {
+			broadcastList = append(broadcastList, recipientID)
+		}
+	}
+
+	if len(broadcastList) > 0 {
+		s.w.BroadcastMessage(ctx, broadcastList, string(jsonBytes))
+	}
+
+	return nil
 }
 
 func (s *ClubService) LeaveClub(ctx context.Context, params repository.DeleteClubMembershipParams) error {

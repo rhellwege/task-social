@@ -119,11 +119,17 @@ export default function ClubPostsPage() {
 
         <View style={styles.createPostContainer}>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                color: Colors[colorScheme ?? "light"].text,
+                borderColor: Colors[colorScheme ?? "light"].icon,
+              },
+            ]}
             placeholder="What's on your mind?"
             value={newPostContent}
             onChangeText={setNewPostContent}
-            placeholderTextColor="#888"
+            placeholderTextColor={Colors[colorScheme ?? "light"].icon}
           />
           <Button title="Post" onPress={handleCreatePost} />
         </View>

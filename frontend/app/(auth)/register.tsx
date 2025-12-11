@@ -6,12 +6,15 @@ import { toastFetchError, toastSuccess } from "@/services/toast";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { Button, TextInput, StyleSheet, View } from "react-native";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { Colors } from "@/constants/Colors";
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const { api, login } = useApi();
+  const colorScheme = useColorScheme();
 
   const handleRegister = async () => {
     const params: HandlersRegisterUserRequest = {
@@ -32,33 +35,41 @@ export default function RegisterScreen() {
     }
   };
 
+  const inputStyle = {
+    color: Colors[colorScheme ?? "light"].text,
+    borderColor: Colors[colorScheme ?? "light"].icon,
+  };
+
   return (
     <ThemedView style={styles.container} testID="register-page">
       <ThemedText type="title">Register</ThemedText>
       <TextInput
-        style={styles.input}
+        style={[styles.input, inputStyle]}
         placeholder="Username"
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
         testID="username-input"
+        placeholderTextColor={Colors[colorScheme ?? "light"].icon}
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, inputStyle]}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
         testID="email-input"
+        placeholderTextColor={Colors[colorScheme ?? "light"].icon}
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, inputStyle]}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
         testID="password-input"
+        placeholderTextColor={Colors[colorScheme ?? "light"].icon}
       />
       <Button
         title="Register"
@@ -83,11 +94,9 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 40,
-    borderColor: "gray",
     borderWidth: 1,
     marginBottom: 12,
     paddingHorizontal: 8,
-    color: "white",
   },
   linkContainer: {
     marginTop: 16,

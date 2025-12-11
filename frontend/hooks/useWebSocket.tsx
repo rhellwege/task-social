@@ -73,13 +73,19 @@ export const WebSocketProvider = ({
 
           // Path is /myclubs/[clubId]/posts, segments are ['(tabs)', 'myclubs', 'CLUB_ID_HERE', 'posts']
           const isOnPostsPageForThisClub =
-            currentSegments[1] === 'myclubs' &&
-            currentSegments[3] === 'posts' &&
+            currentSegments[1] === "myclubs" &&
+            currentSegments[3] === "posts" &&
             currentSegments[2] === post.club_id;
 
           if (!isOnPostsPageForThisClub) {
             toastSuccess(`${post.author_username} posted in ${post.club_name}`);
           }
+        }
+
+        // Global notification logic for user joining a club
+        if (message.event === "user_joined_club") {
+          const payload = message.payload;
+          toastSuccess(`${payload.username} has joined ${payload.club_name}!`);
         }
 
         // Pass event to subscribed components
@@ -92,7 +98,7 @@ export const WebSocketProvider = ({
         console.error("Failed to parse WebSocket message:", error);
       }
     };
-//... (rest of file is the same)
+    //... (rest of file is the same)
     ws.onerror = (error) => {
       console.error("WebSocket error:", error);
       toastError("Cannot connect to server notifications.");

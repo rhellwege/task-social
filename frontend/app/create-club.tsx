@@ -13,6 +13,8 @@ import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { toastError, toastSuccess } from "@/services/toast";
 import { ServicesCreateClubRequest } from "@/services/api/Api";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { Colors } from "@/constants/Colors";
 
 export default function CreateClubScreen() {
   const { api } = useApi();
@@ -21,6 +23,7 @@ export default function CreateClubScreen() {
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const colorScheme = useColorScheme();
 
   const handleCreateClub = async () => {
     if (name.trim() === "") {
@@ -53,6 +56,11 @@ export default function CreateClubScreen() {
     }
   };
 
+  const inputStyle = {
+    color: Colors[colorScheme ?? "light"].text,
+    borderColor: Colors[colorScheme ?? "light"].icon,
+  };
+
   return (
     <>
       <Stack.Screen options={{ title: "Create Club" }} />
@@ -60,20 +68,20 @@ export default function CreateClubScreen() {
         <ThemedText type="title">Create a New Club</ThemedText>
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, inputStyle]}
           placeholder="Club Name"
           value={name}
           onChangeText={setName}
-          placeholderTextColor="#888"
+          placeholderTextColor={Colors[colorScheme ?? "light"].icon}
         />
 
         <TextInput
-          style={[styles.input, styles.textArea]}
+          style={[styles.input, styles.textArea, inputStyle]}
           placeholder="Club Description"
           value={description}
           onChangeText={setDescription}
           multiline
-          placeholderTextColor="#888"
+          placeholderTextColor={Colors[colorScheme ?? "light"].icon}
         />
 
         <View style={styles.switchContainer}>
@@ -105,13 +113,11 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 50,
-    borderColor: "gray",
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 20,
     paddingHorizontal: 15,
     fontSize: 16,
-    color: "white", // Assuming dark theme
   },
   textArea: {
     height: 100,
