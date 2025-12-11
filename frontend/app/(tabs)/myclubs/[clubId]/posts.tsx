@@ -7,6 +7,7 @@ import {
   FlatList,
   StyleSheet,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import { useApi } from "@/hooks/useApi";
 import { useWebSocket } from "@/hooks/useWebSocket";
@@ -14,11 +15,16 @@ import { RepositoryClubPost } from "@/services/api/Api";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { toastError } from "@/services/toast";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { Colors } from "@/constants/Colors";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export default function ClubPostsPage() {
   const { clubId } = useLocalSearchParams<{ clubId: string }>();
   const { api } = useApi();
+  const router = useRouter();
+  const colorScheme = useColorScheme();
   const { on, off, status } = useWebSocket();
   const [posts, setPosts] = useState<RepositoryClubPost[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
@@ -90,7 +96,23 @@ export default function ClubPostsPage() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Club Posts" }} />
+      <Stack.Screen
+        options={{
+          title: "Club Posts",
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.push(`/myclubs/${clubId}`)}
+              style={{ marginLeft: 10 }}
+            >
+              <Ionicons
+                name="chevron-back"
+                size={24}
+                color={Colors[colorScheme ?? "light"].text}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
       <ThemedView style={styles.container}>
         <ThemedText>WebSocket Status: {status}</ThemedText>
 

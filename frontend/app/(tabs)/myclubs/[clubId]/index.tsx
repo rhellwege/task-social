@@ -1,15 +1,23 @@
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
-import { Link, Stack, useLocalSearchParams } from "expo-router";
+import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { useApi } from "@/hooks/useApi";
 import { RepositoryClub } from "@/services/api/Api";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export default function ClubDetail() {
   const { clubId } = useLocalSearchParams<{ clubId: string }>();
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const { api } = useApi();
   const [club, setClub] = useState<RepositoryClub | null>(null);
@@ -51,7 +59,23 @@ export default function ClubDetail() {
 
   return (
     <>
-      <Stack.Screen options={{ title: club.name }} />
+      <Stack.Screen
+        options={{
+          title: club.name,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.push("/myclubs")}
+              style={{ marginLeft: 10 }}
+            >
+              <Ionicons
+                name="chevron-back"
+                size={24}
+                color={Colors[colorScheme ?? "light"].text}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
       <ThemedView style={styles.container}>
         <View style={styles.header}>
           <ThemedText type="title">{club.name}</ThemedText>
