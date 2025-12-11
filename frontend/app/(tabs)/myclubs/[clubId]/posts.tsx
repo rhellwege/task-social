@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useApi } from "@/hooks/useApi";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import { ClubPost } from "@/services/api/Api";
+import { RepositoryClubPost } from "@/services/api/Api";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { toastError } from "@/services/toast";
@@ -20,7 +20,7 @@ export default function ClubPostsPage() {
   const { clubId } = useLocalSearchParams<{ clubId: string }>();
   const { api } = useApi();
   const { on, off, status } = useWebSocket();
-  const [posts, setPosts] = useState<ClubPost[]>([]);
+  const [posts, setPosts] = useState<RepositoryClubPost[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -30,7 +30,6 @@ export default function ClubPostsPage() {
     const fetchPosts = async () => {
       try {
         setIsLoading(true);
-        console.log(clubId);
         const response = await api.api.getClubPosts(clubId);
         setPosts(response.data || []);
       } catch (error) {
@@ -47,7 +46,7 @@ export default function ClubPostsPage() {
   // Effect for subscribing to new posts via WebSocket
   useEffect(() => {
     if (typeof clubId !== "string" || clubId.length === 0) return;
-    const handleNewPost = (post: ClubPost) => {
+    const handleNewPost = (post: RepositoryClubPost) => {
       if (post.club_id === clubId) {
         setPosts((currentPosts) => [post, ...currentPosts]);
       }
@@ -79,7 +78,7 @@ export default function ClubPostsPage() {
     }
   };
 
-  const renderItem = ({ item }: { item: ClubPost }) => (
+  const renderItem = ({ item }: { item: RepositoryClubPost }) => (
     <View style={styles.postContainer}>
       <Text style={styles.postUser}>{item.user_id}</Text>
       <Text style={styles.postContent}>{item.content}</Text>

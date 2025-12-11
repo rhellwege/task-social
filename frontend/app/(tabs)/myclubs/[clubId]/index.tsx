@@ -57,7 +57,7 @@ export default function ClubDetail() {
           <ThemedText type="title">{club.name}</ThemedText>
           <ThemedText style={styles.description}>{club.description}</ThemedText>
         </View>
-        <Link href="./posts" style={styles.postsButton}>
+        <Link href={`/myclubs/${clubId}/posts`} style={styles.postsButton}>
           <Text style={styles.postsButtonText}>View Posts</Text>
         </Link>
       </ThemedView>
