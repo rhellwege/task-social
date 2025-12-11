@@ -288,7 +288,7 @@ func GetClubLeaderboard(clubService services.ClubServicer) fiber.Handler {
 //	@Success		200	{object}	repository.Club
 //	@Failure		401	{object}	ErrorResponse
 //	@Failure		500	{object}	ErrorResponse
-//	@Router			/api/{club_id} [get]
+//	@Router			/api/club/{club_id} [get]
 func GetClub(clubService services.ClubServicer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.Context()

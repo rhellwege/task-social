@@ -466,6 +466,24 @@ export class Api<
       }),
 
     /**
+     * @description Get club info
+     *
+     * @tags Club
+     * @name GetClub
+     * @summary Get club info
+     * @request GET:/api/club/{club_id}
+     * @secure
+     */
+    getClub: (clubId: string, params: RequestParams = {}) =>
+      this.request<RepositoryClub, HandlersErrorResponse>({
+        path: `/api/club/${clubId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Update a club with the given ID.
      *
      * @tags Club
@@ -1028,24 +1046,6 @@ export class Api<
       this.request<HandlersVersionResponse, HandlersErrorResponse>({
         path: `/api/version`,
         method: "GET",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get club info
-     *
-     * @tags Club
-     * @name GetClub
-     * @summary Get club info
-     * @request GET:/api/{club_id}
-     * @secure
-     */
-    getClub: (clubId: string, params: RequestParams = {}) =>
-      this.request<RepositoryClub, HandlersErrorResponse>({
-        path: `/api/${clubId}`,
-        method: "GET",
-        secure: true,
         format: "json",
         ...params,
       }),

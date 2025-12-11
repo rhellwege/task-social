@@ -276,36 +276,6 @@ info:
   title: Task Social API
   version: "0.1"
 paths:
-  /api/{club_id}:
-    get:
-      description: Get club info
-      operationId: GetClub
-      parameters:
-      - description: Club ID
-        in: path
-        name: club_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/repository.Club'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handlers.ErrorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Get club info
-      tags:
-      - Club
   /api/club:
     post:
       consumes:
@@ -371,6 +341,35 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Delete a club
+      tags:
+      - Club
+    get:
+      description: Get club info
+      operationId: GetClub
+      parameters:
+      - description: Club ID
+        in: path
+        name: club_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repository.Club'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get club info
       tags:
       - Club
     put:
