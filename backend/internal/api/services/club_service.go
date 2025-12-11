@@ -22,9 +22,9 @@ type ClubServicer interface {
 	UpdateClub(ctx context.Context, userID string, params repository.UpdateClubParams) error
 	UploadClubBanner(ctx context.Context, userID string, clubID string, fileBytes []byte) (string, error)
 	GetClubMetrics(ctx context.Context, userID string, clubID string) ([]repository.Metric, error)
-	GetClubPosts(ctx context.Context, userID string, clubID string) ([]repository.ClubPost, error)
+	GetClubPosts(ctx context.Context, userID string, clubID string) ([]repository.GetClubPostsRow, error)
 	CreateClubPost(ctx context.Context, userID string, clubID string, text string) (string, error)
-	GetClubPost(ctx context.Context, userID string, clubID string, postID string) (repository.ClubPost, error)
+	GetClubPost(ctx context.Context, userID string, clubID string, postID string) (repository.GetClubPostRow, error)
 	DeleteClubPost(ctx context.Context, userID string, clubID string, postID string) error
 }
 
@@ -216,7 +216,7 @@ func (s *ClubService) GetClubMetrics(ctx context.Context, userID string, clubID 
 	return s.q.GetClubMetrics(ctx, clubID)
 }
 
-func (s *ClubService) GetClubPosts(ctx context.Context, userID string, clubID string) ([]repository.ClubPost, error) {
+func (s *ClubService) GetClubPosts(ctx context.Context, userID string, clubID string) ([]repository.GetClubPostsRow, error) {
 	isMember, err := s.IsUserMemberOfClub(ctx, userID, clubID)
 	if err != nil {
 		return nil, err
@@ -271,13 +271,13 @@ func (s *ClubService) CreateClubPost(ctx context.Context, userID string, clubID 
 }
 
 // Club posts are only visible to members, even if the club is public.
-func (s *ClubService) GetClubPost(ctx context.Context, userID string, clubID string, postID string) (repository.ClubPost, error) {
+func (s *ClubService) GetClubPost(ctx context.Context, userID string, clubID string, postID string) (repository.GetClubPostRow, error) {
 	isMember, err := s.IsUserMemberOfClub(ctx, userID, clubID)
 	if err != nil {
-		return repository.ClubPost{}, err
+		return repository.GetClubPostRow{}, err
 	}
 	if !isMember {
-		return repository.ClubPost{}, errors.New("Permission denied: user is not a member of the club")
+		return repository.GetClubPostRow{}, errors.New("Permission denied: user is not a member of the club")
 	}
 	return s.q.GetClubPost(ctx, postID)
 }

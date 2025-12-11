@@ -121,6 +121,17 @@ export interface RepositoryGetClubLeaderboardRow {
   username?: string;
 }
 
+export interface RepositoryGetClubPostsRow {
+  author_username?: string;
+  club_id?: string;
+  club_name?: string;
+  content?: string;
+  created_at?: string;
+  id?: string;
+  updated_at?: string;
+  user_id?: string;
+}
+
 export interface RepositoryGetUserClubsRow {
   banner_image?: string;
   club_id?: string;
@@ -699,7 +710,7 @@ export class Api<
      * @secure
      */
     getClubPosts: (clubId: string, params: RequestParams = {}) =>
-      this.request<RepositoryClubPost[], HandlersErrorResponse>({
+      this.request<RepositoryGetClubPostsRow[], HandlersErrorResponse>({
         path: `/api/club/${clubId}/posts`,
         method: "GET",
         secure: true,
@@ -1033,6 +1044,25 @@ export class Api<
           ...params,
         },
       ),
+
+    /**
+     * @description Get public user information by ID
+     *
+     * @tags User
+     * @name GetUserById
+     * @summary Get user information by ID
+     * @request GET:/api/user/{id}
+     * @secure
+     */
+    getUserById: (id: string, params: RequestParams = {}) =>
+      this.request<RepositoryGetUserDisplayRow, HandlersErrorResponse>({
+        path: `/api/user/${id}`,
+        method: "GET",
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
 
     /**
      * @description Current version of the API

@@ -10,7 +10,7 @@ import { useApi } from "./useApi";
 import { toastError, toastSuccess } from "@/services/toast";
 import { API_WEBSOCKET_URL } from "@/constants/Api";
 import { useSegments } from "expo-router";
-import { ClubPost } from "@/services/api/Api";
+import { RepositoryGetClubPostRow } from "@/services/api/Api";
 
 type WebSocketStatus = "connecting" | "connected" | "disconnected";
 
@@ -67,18 +67,18 @@ export const WebSocketProvider = ({
 
         // Global notification logic
         if (message.event === "new_post") {
-          const post: ClubPost = message.payload;
+          const post: RepositoryGetClubPostRow = message.payload;
           // Use the ref to get the current segments without causing re-connects
           const currentSegments = segmentsRef.current;
-          const currentClubId = currentSegments[2];
 
-          const isOnClubPostsPage =
-            currentSegments[0] === "(tabs)" &&
-            currentSegments[1] === "(index, profile, clubs)" &&
-            currentClubId === post.club_id;
+          // Path is /myclubs/[clubId]/posts, segments are ['(tabs)', 'myclubs', 'CLUB_ID_HERE', 'posts']
+          const isOnPostsPageForThisClub =
+            currentSegments[1] === 'myclubs' &&
+            currentSegments[3] === 'posts' &&
+            currentSegments[2] === post.club_id;
 
-          if (!isOnClubPostsPage) {
-            toastSuccess(`New post in club ${post.club_id}`);
+          if (!isOnPostsPageForThisClub) {
+            toastSuccess(`${post.author_username} posted in ${post.club_name}`);
           }
         }
 
@@ -92,7 +92,7 @@ export const WebSocketProvider = ({
         console.error("Failed to parse WebSocket message:", error);
       }
     };
-
+//... (rest of file is the same)
     ws.onerror = (error) => {
       console.error("WebSocket error:", error);
       toastError("Cannot connect to server notifications.");

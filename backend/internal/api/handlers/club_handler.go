@@ -404,7 +404,7 @@ func GetClubMetrics(clubService services.ClubServicer) fiber.Handler {
 //	@Produce		json
 //	@Param			club_id	path	string	true	"Club ID"
 //	@Security		ApiKeyAuth
-//	@Success		200	{array}		repository.ClubPost
+//	@Success		200	{array}		repository.GetClubPostsRow
 //	@Failure		400	{object}	ErrorResponse
 //	@Failure		401	{object}	ErrorResponse
 //	@Failure		500	{object}	ErrorResponse

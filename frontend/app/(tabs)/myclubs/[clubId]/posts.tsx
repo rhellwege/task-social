@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useApi } from "@/hooks/useApi";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import { RepositoryClubPost } from "@/services/api/Api";
+import { RepositoryGetClubPostsRow } from "@/services/api/Api";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { toastError } from "@/services/toast";
@@ -26,7 +26,7 @@ export default function ClubPostsPage() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const { on, off, status } = useWebSocket();
-  const [posts, setPosts] = useState<RepositoryClubPost[]>([]);
+  const [posts, setPosts] = useState<RepositoryGetClubPostsRow[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -52,9 +52,10 @@ export default function ClubPostsPage() {
   // Effect for subscribing to new posts via WebSocket
   useEffect(() => {
     if (typeof clubId !== "string" || clubId.length === 0) return;
-    const handleNewPost = (post: RepositoryClubPost) => {
+    const handleNewPost = (post: RepositoryGetClubPostsRow) => {
       if (post.club_id === clubId) {
-        setPosts((currentPosts) => [post, ...currentPosts]);
+        // Append new posts to the end for chronological order
+        setPosts((currentPosts) => [...currentPosts, post]);
       }
     };
 
@@ -84,9 +85,9 @@ export default function ClubPostsPage() {
     }
   };
 
-  const renderItem = ({ item }: { item: RepositoryClubPost }) => (
+  const renderItem = ({ item }: { item: RepositoryGetClubPostsRow }) => (
     <View style={styles.postContainer}>
-      <Text style={styles.postUser}>{item.user_id}</Text>
+      <Text style={styles.postUser}>{item.author_username}</Text>
       <Text style={styles.postContent}>{item.content}</Text>
       <Text style={styles.postDate}>
         {new Date(item.created_at).toLocaleString()}
@@ -101,7 +102,7 @@ export default function ClubPostsPage() {
           title: "Club Posts",
           headerLeft: () => (
             <TouchableOpacity
-              onPress={() => router.push(`/myclubs/${clubId}`)}
+              onPress={() => router.back()}
               style={{ marginLeft: 10 }}
             >
               <Ionicons
@@ -135,7 +136,6 @@ export default function ClubPostsPage() {
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
             style={styles.list}
-            inverted
           />
         )}
       </ThemedView>
