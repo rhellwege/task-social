@@ -1,0 +1,24 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      args:
+        TAG: dev
+        COMMIT_HASH: local
+        BUILD_DATE: ${BUILD_DATE}
+    container_name: tasksocial-backend
+    ports:
+      - "5050:5050"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: tasksocial-frontend
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
