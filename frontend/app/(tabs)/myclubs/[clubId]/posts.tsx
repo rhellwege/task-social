@@ -105,7 +105,7 @@ export default function ClubPostsPage() {
           title: "Club Posts",
           headerLeft: () => (
             <TouchableOpacity
-              onPress={() => router.back()}
+              onPress={() => router.push(`/myclubs/${clubId}`)}
               style={{ marginLeft: 10 }}
             >
               <Ionicons
