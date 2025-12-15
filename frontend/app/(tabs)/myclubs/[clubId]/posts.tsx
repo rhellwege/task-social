@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -29,6 +29,8 @@ export default function ClubPostsPage() {
   const [posts, setPosts] = useState<RepositoryGetClubPostsRow[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const flatListRef = useRef<FlatList<RepositoryGetClubPostsRow>>(null);
+  const [shouldScroll, setShouldScroll] = useState(false);
 
   // Effect for initial fetch of posts
   useEffect(() => {
@@ -56,6 +58,7 @@ export default function ClubPostsPage() {
       if (post.club_id === clubId) {
         // Append new posts to the end for chronological order
         setPosts((currentPosts) => [...currentPosts, post]);
+        setShouldScroll(true);
       }
     };
 
@@ -136,10 +139,17 @@ export default function ClubPostsPage() {
           <ActivityIndicator size="large" />
         ) : (
           <FlatList
+            ref={flatListRef}
             data={posts}
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
             style={styles.list}
+            onContentSizeChange={() => {
+              if (shouldScroll) {
+                flatListRef.current?.scrollToEnd({ animated: true });
+                setShouldScroll(false);
+              }
+            }}
           />
         )}
       </ThemedView>
