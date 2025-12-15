@@ -40,6 +40,7 @@ export default function ClubPostsPage() {
         setIsLoading(true);
         const response = await api.api.getClubPosts(clubId);
         setPosts(response.data || []);
+        setShouldScroll(true);
       } catch (error) {
         toastError("Failed to fetch club posts.");
         console.error(error);
@@ -146,7 +147,10 @@ export default function ClubPostsPage() {
             style={styles.list}
             onContentSizeChange={() => {
               if (shouldScroll) {
-                flatListRef.current?.scrollToEnd({ animated: true });
+                setTimeout(
+                  () => flatListRef.current?.scrollToEnd({ animated: true }),
+                  100,
+                );
                 setShouldScroll(false);
               }
             }}
