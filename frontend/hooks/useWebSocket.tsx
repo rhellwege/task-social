@@ -9,8 +9,8 @@ import React, {
 import { useApi } from "./useApi";
 import { toastError, toastSuccess } from "@/services/toast";
 import { API_WEBSOCKET_URL } from "@/constants/Api";
-import { useSegments } from "expo-router";
-import { RepositoryGetClubPostRow } from "@/services/api/Api";
+import { useSegments, useLocalSearchParams } from "expo-router";
+import { RepositoryGetClubPostsRow } from "@/services/api/Api";
 
 type WebSocketStatus = "connecting" | "connected" | "disconnected";
 
@@ -31,6 +31,26 @@ export const useWebSocket = () => {
   return context;
 };
 
+const parseJwt = (token: string) => {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map(function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join(""),
+    );
+
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    console.error("Failed to parse JWT", e);
+    return null;
+  }
+};
+
 export const WebSocketProvider = ({
   children,
 }: {
@@ -45,6 +65,10 @@ export const WebSocketProvider = ({
   const segments = useSegments();
   const segmentsRef = useRef(segments);
   segmentsRef.current = segments;
+
+  const params = useLocalSearchParams();
+  const paramsRef = useRef(params);
+  paramsRef.current = params;
 
   const connect = useCallback(() => {
     if (!token || socketRef.current) {
@@ -67,17 +91,21 @@ export const WebSocketProvider = ({
 
         // Global notification logic
         if (message.event === "new_post") {
-          const post: RepositoryGetClubPostRow = message.payload;
+          const post: RepositoryGetClubPostsRow = message.payload;
+          const currentUser = parseJwt(token);
+          const isAuthor = currentUser && currentUser.sub === post.user_id;
+
           // Use the ref to get the current segments without causing re-connects
           const currentSegments = segmentsRef.current;
+          const currentParams = paramsRef.current;
 
           // Path is /myclubs/[clubId]/posts, segments are ['(tabs)', 'myclubs', 'CLUB_ID_HERE', 'posts']
           const isOnPostsPageForThisClub =
             currentSegments[1] === "myclubs" &&
             currentSegments[3] === "posts" &&
-            currentSegments[2] === post.club_id;
+            (currentParams.clubId as string) === post.club_id;
 
-          if (!isOnPostsPageForThisClub) {
+          if (!isOnPostsPageForThisClub && !isAuthor) {
             toastSuccess(`${post.author_username} posted in ${post.club_name}`);
           }
         }

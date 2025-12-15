@@ -30,7 +30,6 @@ export default function Tab() {
           setClubs(response.data || []);
         } catch (error) {
           console.error("Failed to fetch public clubs:", error);
-          toastError("Could not load clubs to explore.");
         } finally {
           setIsLoading(false);
         }

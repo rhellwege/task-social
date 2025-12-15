@@ -115,8 +115,6 @@ export default function ClubPostsPage() {
         }}
       />
       <ThemedView style={styles.container}>
-        <ThemedText>WebSocket Status: {status}</ThemedText>
-
         <View style={styles.createPostContainer}>
           <TextInput
             style={[

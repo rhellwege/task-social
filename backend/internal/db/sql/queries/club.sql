@@ -78,7 +78,7 @@ FROM club_post cp
 JOIN "user" u on u.id = cp.user_id
 JOIN club c on c.id = cp.club_id
 WHERE cp.club_id = @club_id
-ORDER BY cp.created_at DESC;
+ORDER BY cp.created_at ASC;
 
 -- name: GetClubPost :one
 SELECT cp.*, u.username as author_username, c.name as club_name
