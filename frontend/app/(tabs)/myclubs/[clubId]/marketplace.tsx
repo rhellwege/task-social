@@ -4,6 +4,8 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Modal,
+  TextInput,
 } from "react-native";
 import {
   DarkTheme,
@@ -13,7 +15,9 @@ import {
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import { useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { API_BASE_URL } from "@/constants/Api";
+import { useApi } from "@/hooks/useApi";
 
 interface Listing {
   id: string;
@@ -23,25 +27,117 @@ interface Listing {
 }
 
 export default function ClubDetail() {
-  const { id } = useLocalSearchParams();
+  // Supports both param names to stay compatible with your current project
+  const params = useLocalSearchParams();
+  const clubId = (params.clubId ?? params.id) as string | undefined;
+
   const colorScheme = useColorScheme();
-  const [listings] = useState<Listing[]>([
-    { id: "1", title: "Chess Set - Like New", price: "$40", seller: "alex123" },
-    {
-      id: "2",
-      title: "Mechanical Keyboard",
-      price: "$85",
-      seller: "coder_in_cave",
-    },
-    {
-      id: "3",
-      title: "Used Nintendo Switch",
-      price: "$220",
-      seller: "gamer4life",
-    },
-    { id: "4", title: "Python Books Bundle", price: "$25", seller: "py_dev" },
-    { id: "5", title: 'Monitor 24" 144Hz', price: "$150", seller: "techdude" },
-  ]);
+  const { token } = useApi();
+
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
+
+  const [showPost, setShowPost] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+
+  const authHeaders = useMemo(() => {
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }, [token]);
+
+  async function loadListings() {
+    if (!clubId) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const headers: Record<string, string> = {
+        Accept: "application/json",
+      };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      const res = await fetch(`${API_BASE_URL}/api/club/${clubId}/items`, {
+        headers,
+      });
+
+      const raw = await res.text();
+      const data = raw ? JSON.parse(raw) : [];
+
+      if (!res.ok) {
+        throw new Error(data?.error || raw || "Failed to load items");
+      }
+
+      const mapped: Listing[] = (Array.isArray(data) ? data : []).map(
+        (it: any) => ({
+          id: String(it.id),
+          title: it.name ?? "Untitled",
+          price: "—", // current backend items schema has no price field
+          seller: it.owner_username || "unknown",
+        })
+      );
+
+      setListings(mapped);
+    } catch (e: any) {
+      setError(e?.message || "Failed to load items");
+      setListings([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function postItem() {
+    if (!clubId) return;
+
+    if (!name.trim()) {
+      setError("Item name is required.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      const res = await fetch(`${API_BASE_URL}/api/club/${clubId}/items`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          name: name.trim(),
+          description: description.trim() ? description.trim() : undefined,
+        }),
+      });
+
+      const raw = await res.text();
+      const data = raw ? JSON.parse(raw) : null;
+
+      if (!res.ok) {
+        throw new Error(data?.error || raw || "Failed to post item");
+      }
+
+      setShowPost(false);
+      setName("");
+      setDescription("");
+      await loadListings();
+    } catch (e: any) {
+      setError(e?.message || "Failed to post item");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadListings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clubId, token]);
 
   const renderListing = ({ item }: { item: Listing }) => (
     <View style={styles.listingItem}>
@@ -65,6 +161,10 @@ export default function ClubDetail() {
           Club Marketplace
         </Text>
 
+        {error ? (
+          <Text style={{ color: "#cc4444", marginBottom: 10 }}>{error}</Text>
+        ) : null}
+
         <FlatList
           data={listings}
           renderItem={renderListing}
@@ -72,21 +172,75 @@ export default function ClubDetail() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 40 }}
           ListEmptyComponent={
-            <Text style={{ color: "#888", fontSize: 16 }}>
-              No items for sale yet!
-            </Text>
+            !loading ? (
+              <Text style={{ color: "#888", fontSize: 16 }}>
+                No items for sale yet!
+              </Text>
+            ) : null
           }
         />
-        {/* Optional: Add "Post Item" button later, current is dummy */}
-        <TouchableOpacity style={styles.postButton}>
+
+        <TouchableOpacity
+          style={styles.postButton}
+          onPress={() => setShowPost(true)}
+          disabled={loading}
+        >
           <Text style={{ color: "white", fontWeight: "bold" }}>
-            + Post Item for Sale
+            {loading ? "Working..." : "+ Post Item for Sale"}
           </Text>
         </TouchableOpacity>
+
+        <Modal
+          visible={showPost}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowPost(false)}
+        >
+          <View style={styles.modalBackdrop}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Post Item for Sale</Text>
+
+              <TextInput
+                style={styles.input}
+                placeholder="Item name"
+                value={name}
+                onChangeText={setName}
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Description (optional)"
+                value={description}
+                onChangeText={setDescription}
+              />
+
+              <View style={styles.modalRow}>
+                <TouchableOpacity
+                  style={[styles.modalBtn, styles.modalBtnOutline]}
+                  onPress={() => setShowPost(false)}
+                  disabled={loading}
+                >
+                  <Text style={styles.modalBtnOutlineText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.modalBtn}
+                  onPress={postItem}
+                  disabled={loading}
+                >
+                  <Text style={styles.modalBtnText}>
+                    {loading ? "Posting..." : "Post"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
     </ThemeProvider>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -114,7 +268,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 30,
   },
-
   listingTitle: {
     color: "#000000",
     fontSize: 18,
@@ -127,4 +280,51 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginVertical: 4,
   },
+
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    padding: 18,
+  },
+  modalCard: {
+    backgroundColor: "white",
+    borderRadius: 14,
+    padding: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 10,
+    textAlign: "center",
+    color: "#000",
+  },
+  input: {
+    backgroundColor: "#f2f2f2",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 10,
+    color: "#000",
+  },
+  modalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
+    marginTop: 14,
+  },
+  modalBtn: {
+    flex: 1,
+    backgroundColor: "#2f6f4e",
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  modalBtnText: { color: "white", fontWeight: "700" },
+  modalBtnOutline: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#2f6f4e",
+  },
+  modalBtnOutlineText: { color: "#2f6f4e", fontWeight: "700" },
 });
