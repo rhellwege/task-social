@@ -113,75 +113,95 @@ func (s *MarketplaceService) DeleteItem(
 	return s.q.DeleteItem(ctx, itemID)
 }
 
-func (s *MarketplaceService) GetClubItems(ctx context.Context, userID string, clubID string) ([]ClubMarketplaceItem, error) {
+func (s *MarketplaceService) GetClubItems(
+	ctx context.Context,
+	userID string,
+	clubID string,
+) ([]ClubMarketplaceItem, error) {
+
 	// Membership check: only club members can view
-	memberIDs, err := s.q.GetClubUserIds(ctx, clubID)
+	isMember, err := s.q.IsUserMemberOfClub(ctx, repository.IsUserMemberOfClubParams{
+		UserID: userID,
+		ClubID: clubID,
+	})
 	if err != nil {
 		return nil, err
 	}
-	isMember := false
-	for _, id := range memberIDs {
-		if id == userID {
-			isMember = true
-			break
-		}
-	}
-	if !isMember {
+	if isMember == 0 {
 		return nil, errors.New("permission denied: not a club member")
 	}
 
-	out := []ClubMarketplaceItem{}
+	// Fetch items scoped strictly to this club
+	items, err := s.q.GetItemsByClub(ctx, &clubID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]ClubMarketplaceItem, 0, len(items))
 	usernameByID := map[string]string{}
 
-	for _, memberID := range memberIDs {
-		// get username (best-effort)
-		if _, ok := usernameByID[memberID]; !ok {
-			if disp, e := s.q.GetUserDisplay(ctx, memberID); e == nil {
-				usernameByID[memberID] = disp.Username
+	for _, it := range items {
+		// Resolve username (best-effort, cached)
+		if _, ok := usernameByID[it.OwnerID]; !ok {
+			if disp, e := s.q.GetUserDisplay(ctx, it.OwnerID); e == nil {
+				usernameByID[it.OwnerID] = disp.Username
 			} else {
-				usernameByID[memberID] = "unknown"
+				usernameByID[it.OwnerID] = "unknown"
 			}
 		}
 
-		items, err := s.q.GetItemsByOwner(ctx, memberID)
-		if err != nil {
-			continue
-		}
-		for _, it := range items {
-			if !it.IsAvailable {
-				continue
-			}
-			out = append(out, ClubMarketplaceItem{
-				ID:            it.ID,
-				Name:          it.Name,
-				Description:   it.Description,
-				IsAvailable:   it.IsAvailable,
-				OwnerID:       it.OwnerID,
-				OwnerUsername: usernameByID[memberID],
-			})
-		}
+		out = append(out, ClubMarketplaceItem{
+			ID:            it.ID,
+			Name:          it.Name,
+			Description:   it.Description,
+			IsAvailable:   it.IsAvailable,
+			OwnerID:       it.OwnerID,
+			OwnerUsername: usernameByID[it.OwnerID],
+		})
 	}
 
 	return out, nil
 }
 
-func (s *MarketplaceService) CreateClubItem(ctx context.Context, userID string, clubID string, req CreateItemRequest) (string, error) {
-	// Membership check: only club members can post
-	memberIDs, err := s.q.GetClubUserIds(ctx, clubID)
+
+func (s *MarketplaceService) CreateClubItem(
+	ctx context.Context,
+	userID string,
+	clubID string,
+	req CreateItemRequest,
+) (string, error) {
+
+	if req.Name == "" {
+		return "", errors.New("item name is required")
+	}
+
+	// Membership check
+	isMember, err := s.q.IsUserMemberOfClub(ctx, repository.IsUserMemberOfClubParams{
+		UserID: userID,
+		ClubID: clubID,
+	})
 	if err != nil {
 		return "", err
 	}
-	isMember := false
-	for _, id := range memberIDs {
-		if id == userID {
-			isMember = true
-			break
-		}
-	}
-	if !isMember {
+	if isMember == 0 {
 		return "", errors.New("permission denied: not a club member")
 	}
 
-	// Owner is always the logged-in user
-	return s.CreateItem(ctx, userID, req)
+	itemID := util.GenerateUUID()
+
+	// Create item explicitly tied to this club
+	err = s.q.CreateItemForClub(ctx, repository.CreateItemForClubParams{
+		ID:          itemID,
+		Name:        req.Name,
+		Description: req.Description,
+		IsAvailable: true,
+		OwnerID:     userID,
+		ClubID:      &clubID,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return itemID, nil
 }
+

@@ -49,6 +49,32 @@ func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) error {
 	return err
 }
 
+const createItemForClub = `-- name: CreateItemForClub :exec
+INSERT INTO items (id, name, description, is_available, owner_id, club_id)
+VALUES (?, ?, ?, ?, ?, ?)
+`
+
+type CreateItemForClubParams struct {
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	IsAvailable bool    `json:"is_available"`
+	OwnerID     string  `json:"owner_id"`
+	ClubID      *string `json:"club_id"`
+}
+
+func (q *Queries) CreateItemForClub(ctx context.Context, arg CreateItemForClubParams) error {
+	_, err := q.db.ExecContext(ctx, createItemForClub,
+		arg.ID,
+		arg.Name,
+		arg.Description,
+		arg.IsAvailable,
+		arg.OwnerID,
+		arg.ClubID,
+	)
+	return err
+}
+
 const createUser = `-- name: CreateUser :exec
 INSERT INTO user (id, email, username, password)
 VALUES (?, ?, ?, ?)
@@ -145,7 +171,7 @@ func (q *Queries) GetFriends(ctx context.Context, id string) ([]GetFriendsRow, e
 }
 
 const getItem = `-- name: GetItem :one
-SELECT id, name, description, is_available, owner_id, created_at, updated_at
+SELECT id, name, description, is_available, owner_id, club_id, created_at, updated_at
 FROM items
 WHERE id = ?
 `
@@ -159,14 +185,67 @@ func (q *Queries) GetItem(ctx context.Context, id string) (Item, error) {
 		&i.Description,
 		&i.IsAvailable,
 		&i.OwnerID,
+		&i.ClubID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
 }
 
+const getItemClubId = `-- name: GetItemClubId :one
+SELECT club_id
+FROM items
+WHERE id = ?
+`
+
+func (q *Queries) GetItemClubId(ctx context.Context, id string) (*string, error) {
+	row := q.db.QueryRowContext(ctx, getItemClubId, id)
+	var club_id *string
+	err := row.Scan(&club_id)
+	return club_id, err
+}
+
+const getItemsByClub = `-- name: GetItemsByClub :many
+SELECT id, name, description, is_available, owner_id, club_id, created_at, updated_at
+FROM items
+WHERE club_id = ? AND is_available = TRUE
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetItemsByClub(ctx context.Context, clubID *string) ([]Item, error) {
+	rows, err := q.db.QueryContext(ctx, getItemsByClub, clubID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Item
+	for rows.Next() {
+		var i Item
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.IsAvailable,
+			&i.OwnerID,
+			&i.ClubID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getItemsByOwner = `-- name: GetItemsByOwner :many
-SELECT id, name, description, is_available, owner_id, created_at, updated_at
+SELECT id, name, description, is_available, owner_id, club_id, created_at, updated_at
 FROM items
 WHERE owner_id = ?
 `
@@ -186,6 +265,7 @@ func (q *Queries) GetItemsByOwner(ctx context.Context, ownerID string) ([]Item, 
 			&i.Description,
 			&i.IsAvailable,
 			&i.OwnerID,
+			&i.ClubID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {

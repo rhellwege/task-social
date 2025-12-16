@@ -32,11 +32,13 @@ CREATE TABLE IF NOT EXISTS items (
     description TEXT,
     is_available BOOLEAN NOT NULL DEFAULT TRUE,
     owner_id TEXT NOT NULL,
+    club_id TEXT, 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (owner_id) REFERENCES user(id) ON DELETE CASCADE,
     FOREIGN KEY (club_id) REFERENCES club(id) ON DELETE CASCADE
 );
+
 
 CREATE TABLE IF NOT EXISTS user_friendship (
     user_id TEXT NOT NULL,

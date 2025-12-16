@@ -15,6 +15,7 @@ type Querier interface {
 	CreateClubPostAttachment(ctx context.Context, arg CreateClubPostAttachmentParams) error
 	CreateFriend(ctx context.Context, arg CreateFriendParams) error
 	CreateItem(ctx context.Context, arg CreateItemParams) error
+	CreateItemForClub(ctx context.Context, arg CreateItemForClubParams) error
 	CreateMetric(ctx context.Context, arg CreateMetricParams) error
 	CreateMetricEntry(ctx context.Context, arg CreateMetricEntryParams) error
 	CreateMetricEntryAttachment(ctx context.Context, arg CreateMetricEntryAttachmentParams) error
@@ -47,6 +48,8 @@ type Querier interface {
 	// get all entries for all instances of a given metric
 	GetHistoricalMetricEntries(ctx context.Context, metricID string) ([]MetricEntry, error)
 	GetItem(ctx context.Context, id string) (Item, error)
+	GetItemClubId(ctx context.Context, id string) (*string, error)
+	GetItemsByClub(ctx context.Context, clubID *string) ([]Item, error)
 	GetItemsByOwner(ctx context.Context, ownerID string) ([]Item, error)
 	GetLatestMetricInstance(ctx context.Context, metricID string) (MetricInstance, error)
 	GetMetric(ctx context.Context, id string) (Metric, error)
