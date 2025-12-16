@@ -328,7 +328,7 @@ FROM club_post cp
 JOIN "user" u on u.id = cp.user_id
 JOIN club c on c.id = cp.club_id
 WHERE cp.club_id = ?1
-ORDER BY cp.created_at DESC
+ORDER BY cp.created_at ASC
 `
 
 type GetClubPostsRow struct {

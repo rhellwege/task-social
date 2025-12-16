@@ -29,8 +29,7 @@ export default function Tab() {
           const response = await api.api.getPublicClubs();
           setClubs(response.data || []);
         } catch (error) {
-          console.error("Failed to fetch public clubs:", error);
-          toastError("Could not load clubs to explore.");
+          console.log("Failed to fetch public clubs:", error);
         } finally {
           setIsLoading(false);
         }

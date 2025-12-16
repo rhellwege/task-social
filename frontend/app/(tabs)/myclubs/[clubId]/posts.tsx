@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -29,6 +29,8 @@ export default function ClubPostsPage() {
   const [posts, setPosts] = useState<RepositoryGetClubPostsRow[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const flatListRef = useRef<FlatList<RepositoryGetClubPostsRow>>(null);
+  const [shouldScroll, setShouldScroll] = useState(false);
 
   // Effect for initial fetch of posts
   useEffect(() => {
@@ -38,6 +40,7 @@ export default function ClubPostsPage() {
         setIsLoading(true);
         const response = await api.api.getClubPosts(clubId);
         setPosts(response.data || []);
+        setShouldScroll(true);
       } catch (error) {
         toastError("Failed to fetch club posts.");
         console.error(error);
@@ -56,6 +59,7 @@ export default function ClubPostsPage() {
       if (post.club_id === clubId) {
         // Append new posts to the end for chronological order
         setPosts((currentPosts) => [...currentPosts, post]);
+        setShouldScroll(true);
       }
     };
 
@@ -102,7 +106,7 @@ export default function ClubPostsPage() {
           title: "Club Posts",
           headerLeft: () => (
             <TouchableOpacity
-              onPress={() => router.back()}
+              onPress={() => router.push(`/myclubs/${clubId}`)}
               style={{ marginLeft: 10 }}
             >
               <Ionicons
@@ -115,8 +119,6 @@ export default function ClubPostsPage() {
         }}
       />
       <ThemedView style={styles.container}>
-        <ThemedText>WebSocket Status: {status}</ThemedText>
-
         <View style={styles.createPostContainer}>
           <TextInput
             style={[
@@ -138,10 +140,20 @@ export default function ClubPostsPage() {
           <ActivityIndicator size="large" />
         ) : (
           <FlatList
+            ref={flatListRef}
             data={posts}
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
             style={styles.list}
+            onContentSizeChange={() => {
+              if (shouldScroll) {
+                setTimeout(
+                  () => flatListRef.current?.scrollToEnd({ animated: true }),
+                  100,
+                );
+                setShouldScroll(false);
+              }
+            }}
           />
         )}
       </ThemedView>
