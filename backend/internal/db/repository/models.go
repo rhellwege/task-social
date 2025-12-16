@@ -52,14 +52,13 @@ type ClubTag struct {
 }
 
 type Item struct {
-	ID            string    `json:"id"`
-	Name          string    `json:"name"`
-	Description   *string   `json:"description"`
-	PriceEstimate *float64  `json:"price_estimate"`
-	IsAvailable   bool      `json:"is_available"`
-	OwnerID       string    `json:"owner_id"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description"`
+	IsAvailable bool      `json:"is_available"`
+	OwnerID     string    `json:"owner_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type Metric struct {
@@ -130,8 +129,6 @@ type User struct {
 	ProfilePicture *string   `json:"profile_picture"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
-	Balance        float64   `json:"balance"`
-	Items          *string   `json:"items"`
 }
 
 type UserFriendship struct {

@@ -46,11 +46,14 @@ type Querier interface {
 	GetFriends(ctx context.Context, id string) ([]GetFriendsRow, error)
 	// get all entries for all instances of a given metric
 	GetHistoricalMetricEntries(ctx context.Context, metricID string) ([]MetricEntry, error)
+	GetItem(ctx context.Context, id string) (Item, error)
+	GetItemsByOwner(ctx context.Context, ownerID string) ([]Item, error)
 	GetLatestMetricInstance(ctx context.Context, metricID string) (MetricInstance, error)
 	GetMetric(ctx context.Context, id string) (Metric, error)
 	GetMetricEntries(ctx context.Context, metricInstanceID string) ([]MetricEntry, error)
 	// TODO: Implement pagination with LIMIT and OFFSET
 	GetPublicClubs(ctx context.Context) ([]Club, error)
+	GetTradeByID(ctx context.Context, id string) (Trade, error)
 	GetUserClubs(ctx context.Context, userID string) ([]GetUserClubsRow, error)
 	GetUserDisplay(ctx context.Context, id string) (GetUserDisplayRow, error)
 	GetUserLoginByEmail(ctx context.Context, email string) (GetUserLoginByEmailRow, error)
@@ -65,6 +68,7 @@ type Querier interface {
 	// returns boolean
 	IsUserOwnerOfClub(ctx context.Context, arg IsUserOwnerOfClubParams) (int64, error)
 	TradeCreate(ctx context.Context, arg TradeCreateParams) error
+	TransferItemOwnership(ctx context.Context, arg TransferItemOwnershipParams) error
 	UpdateClub(ctx context.Context, arg UpdateClubParams) error
 	UpdateClubMembership(ctx context.Context, arg UpdateClubMembershipParams) error
 	UpdateClubPost(ctx context.Context, arg UpdateClubPostParams) error
@@ -74,6 +78,7 @@ type Querier interface {
 	UpdateMetricEntry(ctx context.Context, arg UpdateMetricEntryParams) error
 	UpdateMetricEntryAttachment(ctx context.Context, arg UpdateMetricEntryAttachmentParams) error
 	UpdateMetricEntryVerification(ctx context.Context, arg UpdateMetricEntryVerificationParams) error
+	UpdateTradeStatus(ctx context.Context, arg UpdateTradeStatusParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 	UpdateUserPrivateMessage(ctx context.Context, arg UpdateUserPrivateMessageParams) error
 }

@@ -26,17 +26,16 @@ func (q *Queries) CreateFriend(ctx context.Context, arg CreateFriendParams) erro
 }
 
 const createItem = `-- name: CreateItem :exec
-INSERT INTO items (id, name, description, price_estimate, is_available, owner_id)
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO items (id, name, description, is_available, owner_id)
+VALUES (?, ?, ?, ?, ?)
 `
 
 type CreateItemParams struct {
-	ID            string   `json:"id"`
-	Name          string   `json:"name"`
-	Description   *string  `json:"description"`
-	PriceEstimate *float64 `json:"price_estimate"`
-	IsAvailable   bool     `json:"is_available"`
-	OwnerID       string   `json:"owner_id"`
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	IsAvailable bool    `json:"is_available"`
+	OwnerID     string  `json:"owner_id"`
 }
 
 func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) error {
@@ -44,7 +43,6 @@ func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) error {
 		arg.ID,
 		arg.Name,
 		arg.Description,
-		arg.PriceEstimate,
 		arg.IsAvailable,
 		arg.OwnerID,
 	)
@@ -144,6 +142,86 @@ func (q *Queries) GetFriends(ctx context.Context, id string) ([]GetFriendsRow, e
 		return nil, err
 	}
 	return items, nil
+}
+
+const getItem = `-- name: GetItem :one
+SELECT id, name, description, is_available, owner_id, created_at, updated_at
+FROM items
+WHERE id = ?
+`
+
+func (q *Queries) GetItem(ctx context.Context, id string) (Item, error) {
+	row := q.db.QueryRowContext(ctx, getItem, id)
+	var i Item
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.IsAvailable,
+		&i.OwnerID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getItemsByOwner = `-- name: GetItemsByOwner :many
+SELECT id, name, description, is_available, owner_id, created_at, updated_at
+FROM items
+WHERE owner_id = ?
+`
+
+func (q *Queries) GetItemsByOwner(ctx context.Context, ownerID string) ([]Item, error) {
+	rows, err := q.db.QueryContext(ctx, getItemsByOwner, ownerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Item
+	for rows.Next() {
+		var i Item
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.IsAvailable,
+			&i.OwnerID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTradeByID = `-- name: GetTradeByID :one
+SELECT id, proposer_id, proposer_item_id, responder_id, responder_item_id, status, created_at, updated_at
+FROM trades
+WHERE id = ?
+`
+
+func (q *Queries) GetTradeByID(ctx context.Context, id string) (Trade, error) {
+	row := q.db.QueryRowContext(ctx, getTradeByID, id)
+	var i Trade
+	err := row.Scan(
+		&i.ID,
+		&i.ProposerID,
+		&i.ProposerItemID,
+		&i.ResponderID,
+		&i.ResponderItemID,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const getUserClubs = `-- name: GetUserClubs :many
@@ -377,36 +455,65 @@ func (q *Queries) TradeCreate(ctx context.Context, arg TradeCreateParams) error 
 	return err
 }
 
+const transferItemOwnership = `-- name: TransferItemOwnership :exec
+UPDATE items
+SET owner_id = ?, updated_at = CURRENT_TIMESTAMP
+WHERE id = ?
+`
+
+type TransferItemOwnershipParams struct {
+	OwnerID string `json:"owner_id"`
+	ID      string `json:"id"`
+}
+
+func (q *Queries) TransferItemOwnership(ctx context.Context, arg TransferItemOwnershipParams) error {
+	_, err := q.db.ExecContext(ctx, transferItemOwnership, arg.OwnerID, arg.ID)
+	return err
+}
+
 const updateItem = `-- name: UpdateItem :exec
 UPDATE items
 SET
     name = COALESCE(?1, name),
     description = COALESCE(?2, description),
-    price_estimate = COALESCE(?3, price_estimate),
-    is_available = COALESCE(?4, is_available),
-    owner_id = COALESCE(?5, owner_id)
+    is_available = COALESCE(?3, is_available),
+    owner_id = COALESCE(?4, owner_id)
 WHERE
-    id = ?6
+    id = ?5
 `
 
 type UpdateItemParams struct {
-	Name          *string  `json:"name"`
-	Description   *string  `json:"description"`
-	PriceEstimate *float64 `json:"price_estimate"`
-	IsAvailable   *bool    `json:"is_available"`
-	OwnerID       *string  `json:"owner_id"`
-	ID            string   `json:"id"`
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+	IsAvailable *bool   `json:"is_available"`
+	OwnerID     *string `json:"owner_id"`
+	ID          string  `json:"id"`
 }
 
 func (q *Queries) UpdateItem(ctx context.Context, arg UpdateItemParams) error {
 	_, err := q.db.ExecContext(ctx, updateItem,
 		arg.Name,
 		arg.Description,
-		arg.PriceEstimate,
 		arg.IsAvailable,
 		arg.OwnerID,
 		arg.ID,
 	)
+	return err
+}
+
+const updateTradeStatus = `-- name: UpdateTradeStatus :exec
+UPDATE trades
+SET status = ?, updated_at = CURRENT_TIMESTAMP
+WHERE id = ?
+`
+
+type UpdateTradeStatusParams struct {
+	Status string `json:"status"`
+	ID     string `json:"id"`
+}
+
+func (q *Queries) UpdateTradeStatus(ctx context.Context, arg UpdateTradeStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateTradeStatus, arg.Status, arg.ID)
 	return err
 }
 
@@ -416,21 +523,17 @@ SET
     email = COALESCE(?1, email),
     username = COALESCE(?2, username),
     password = COALESCE(?3, password),
-    profile_picture = COALESCE(?4, profile_picture),
-    balance = COALESCE(?5, balance),
-    items = COALESCE(?6, items)
+    profile_picture = COALESCE(?4, profile_picture)
 WHERE
-    id = ?7
+    id = ?5
 `
 
 type UpdateUserParams struct {
-	Email          *string  `json:"email"`
-	Username       *string  `json:"username"`
-	Password       *string  `json:"password"`
-	ProfilePicture *string  `json:"profile_picture"`
-	Balance        *float64 `json:"balance"`
-	Items          *string  `json:"items"`
-	ID             string   `json:"id"`
+	Email          *string `json:"email"`
+	Username       *string `json:"username"`
+	Password       *string `json:"password"`
+	ProfilePicture *string `json:"profile_picture"`
+	ID             string  `json:"id"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
@@ -439,8 +542,6 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 		arg.Username,
 		arg.Password,
 		arg.ProfilePicture,
-		arg.Balance,
-		arg.Items,
 		arg.ID,
 	)
 	return err

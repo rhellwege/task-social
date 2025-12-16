@@ -7,9 +7,7 @@ CREATE TABLE IF NOT EXISTS user (
     password TEXT NOT NULL,
     profile_picture TEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    balance REAL NOT NULL DEFAULT 0.0,
-    items TEXT
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE trades (
@@ -32,7 +30,6 @@ CREATE TABLE IF NOT EXISTS items (
     id TEXT NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT,
-    price_estimate REAL,
     is_available BOOLEAN NOT NULL DEFAULT TRUE,
     owner_id TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
