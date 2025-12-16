@@ -220,6 +220,23 @@ definitions:
       username:
         type: string
     type: object
+  repository.Item:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_available:
+        type: boolean
+      name:
+        type: string
+      owner_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
   repository.Metric:
     properties:
       club_id:
@@ -1324,7 +1341,7 @@ paths:
       - User
   /api/user/items:
     get:
-      description: Get all marketplace items created by a user.
+      description: Get all items owned by a user.
       operationId: GetItemsByOwner
       produces:
       - application/json
@@ -1333,7 +1350,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/repository.MarketplaceItem'
+              $ref: '#/definitions/repository.Item'
             type: array
         "401":
           description: Unauthorized
@@ -1345,7 +1362,7 @@ paths:
             $ref: '#/definitions/handlers.ErrorResponse'
       security:
       - ApiKeyAuth: []
-      summary: Get user marketplace items
+      summary: Get items by owner
       tags:
       - User
   /api/user/metric-entries:

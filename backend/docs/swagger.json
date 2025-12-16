@@ -1529,14 +1529,14 @@
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get all marketplace items created by a user.",
+                "description": "Get all items owned by a user.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "User"
                 ],
-                "summary": "Get user marketplace items",
+                "summary": "Get items by owner",
                 "operationId": "GetItemsByOwner",
                 "responses": {
                     "200": {
@@ -2116,6 +2116,32 @@
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "repository.Item": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_available": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }

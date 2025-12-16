@@ -12,17 +12,17 @@ import (
 
 // CreateItem godoc
 //
-//	@ID				CreateItem
-//	@Summary		Create marketplace item
-//	@Tags			Marketplace
-//	@Accept			json
-//	@Produce		json
-//	@Security		ApiKeyAuth
-//	@Param			item	body	services.CreateItemRequest	true	"Item data"
-//	@Success		201		{object}	CreatedResponse
-//	@Failure		400		{object}	ErrorResponse
-//	@Failure		500		{object}	ErrorResponse
-//	@Router			/api/marketplace/item [post]
+//	@ID			CreateItem
+//	@Summary	Create marketplace item
+//	@Tags		Marketplace
+//	@Accept		json
+//	@Produce	json
+//	@Security	ApiKeyAuth
+//	@Param		item	body		services.CreateItemRequest	true	"Item data"
+//	@Success	201		{object}	CreatedResponse
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	500		{object}	ErrorResponse
+//	@Router		/api/marketplace/item [post]
 func CreateItem(marketplace services.MarketplaceServicer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.Context()
@@ -47,18 +47,18 @@ func CreateItem(marketplace services.MarketplaceServicer) fiber.Handler {
 
 // UpdateItem godoc
 //
-//	@ID				UpdateItem
-//	@Summary		Update marketplace item
-//	@Tags			Marketplace
-//	@Accept			json
-//	@Produce		json
-//	@Security		ApiKeyAuth
-//	@Param			item_id	path	string	true	"Item ID"
-//	@Param			item	body	repository.UpdateItemParams	true	"Item update"
-//	@Success		200		{object}	SuccessResponse
-//	@Failure		400		{object}	ErrorResponse
-//	@Failure		500		{object}	ErrorResponse
-//	@Router			/api/marketplace/item/{item_id} [put]
+//	@ID			UpdateItem
+//	@Summary	Update marketplace item
+//	@Tags		Marketplace
+//	@Accept		json
+//	@Produce	json
+//	@Security	ApiKeyAuth
+//	@Param		item_id	path		string						true	"Item ID"
+//	@Param		item	body		repository.UpdateItemParams	true	"Item update"
+//	@Success	200		{object}	SuccessResponse
+//	@Failure	400		{object}	ErrorResponse
+//	@Failure	500		{object}	ErrorResponse
+//	@Router		/api/marketplace/item/{item_id} [put]
 func UpdateItem(marketplace services.MarketplaceServicer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.Context()
@@ -84,15 +84,15 @@ func UpdateItem(marketplace services.MarketplaceServicer) fiber.Handler {
 
 // DeleteItem godoc
 //
-//	@ID				DeleteItem
-//	@Summary		Delete marketplace item
-//	@Tags			Marketplace
-//	@Produce		json
-//	@Security		ApiKeyAuth
-//	@Param			item_id	path	string	true	"Item ID"
-//	@Success		200		{object}	SuccessResponse
-//	@Failure		500		{object}	ErrorResponse
-//	@Router			/api/marketplace/item/{item_id} [delete]
+//	@ID			DeleteItem
+//	@Summary	Delete marketplace item
+//	@Tags		Marketplace
+//	@Produce	json
+//	@Security	ApiKeyAuth
+//	@Param		item_id	path		string	true	"Item ID"
+//	@Success	200		{object}	SuccessResponse
+//	@Failure	500		{object}	ErrorResponse
+//	@Router		/api/marketplace/item/{item_id} [delete]
 func DeleteItem(marketplace services.MarketplaceServicer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.Context()

@@ -149,6 +149,16 @@ export interface RepositoryGetUserDisplayRow {
   username?: string;
 }
 
+export interface RepositoryItem {
+  created_at?: string;
+  description?: string;
+  id?: string;
+  is_available?: boolean;
+  name?: string;
+  owner_id?: string;
+  updated_at?: string;
+}
+
 export interface RepositoryMetric {
   club_id?: string;
   created_at?: string;
@@ -1055,16 +1065,16 @@ export class Api<
       }),
 
     /**
-     * @description Get all marketplace items created by a user.
+     * @description Get all items owned by a user.
      *
      * @tags User
      * @name GetItemsByOwner
-     * @summary Get user marketplace items
+     * @summary Get items by owner
      * @request GET:/api/user/items
      * @secure
      */
     getItemsByOwner: (params: RequestParams = {}) =>
-      this.request<any[], HandlersErrorResponse>({
+      this.request<RepositoryItem[], HandlersErrorResponse>({
         path: `/api/user/items`,
         method: "GET",
         secure: true,
