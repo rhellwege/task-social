@@ -21,6 +21,7 @@ type UserServicer interface {
 	UploadProfilePicture(ctx context.Context, userID string, fileBytes []byte) (string, error)
 	GetUserMetrics(ctx context.Context, userID string) ([]repository.Metric, error)
 	GetUserMetricEntries(ctx context.Context, userID string) ([]repository.MetricEntry, error)
+	GetItemsByOwner(ctx context.Context, ownerID string) ([]repository.Item, error)
 }
 
 type UserService struct {
@@ -183,4 +184,8 @@ func (s *UserService) GetUserMetrics(ctx context.Context, userID string) ([]repo
 
 func (s *UserService) GetUserMetricEntries(ctx context.Context, userID string) ([]repository.MetricEntry, error) {
 	return s.q.GetUserMetricEntries(ctx, userID)
+}
+
+func (s *UserService) GetItemsByOwner(ctx context.Context, ownerID string) ([]repository.Item, error) {
+	return s.q.GetItemsByOwner(ctx, ownerID)
 }

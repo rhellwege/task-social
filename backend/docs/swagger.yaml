@@ -220,6 +220,23 @@ definitions:
       username:
         type: string
     type: object
+  repository.Item:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_available:
+        type: boolean
+      name:
+        type: string
+      owner_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
   repository.Metric:
     properties:
       club_id:
@@ -258,6 +275,19 @@ definitions:
       value:
         type: number
     type: object
+  repository.UpdateItemParams:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      is_available:
+        type: boolean
+      name:
+        type: string
+      owner_id:
+        type: string
+    type: object
   repository.UpdateMetricParams:
     properties:
       description:
@@ -287,6 +317,15 @@ definitions:
         type: boolean
       name:
         type: string
+    type: object
+  services.CreateItemRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      price_estimate:
+        type: number
     type: object
 host: localhost:5050
 info:
@@ -813,6 +852,99 @@ paths:
       summary: Login a user
       tags:
       - User
+  /api/marketplace/item:
+    post:
+      consumes:
+      - application/json
+      operationId: CreateItem
+      parameters:
+      - description: Item data
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/services.CreateItemRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.CreatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create marketplace item
+      tags:
+      - Marketplace
+  /api/marketplace/item/{item_id}:
+    delete:
+      operationId: DeleteItem
+      parameters:
+      - description: Item ID
+        in: path
+        name: item_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete marketplace item
+      tags:
+      - Marketplace
+    put:
+      consumes:
+      - application/json
+      operationId: UpdateItem
+      parameters:
+      - description: Item ID
+        in: path
+        name: item_id
+        required: true
+        type: string
+      - description: Item update
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/repository.UpdateItemParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update marketplace item
+      tags:
+      - Marketplace
   /api/metric:
     post:
       consumes:
@@ -1205,6 +1337,32 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get a list of a user's joined clubs
+      tags:
+      - User
+  /api/user/items:
+    get:
+      description: Get all items owned by a user.
+      operationId: GetItemsByOwner
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repository.Item'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get items by owner
       tags:
       - User
   /api/user/metric-entries:

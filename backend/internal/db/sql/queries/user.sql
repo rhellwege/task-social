@@ -20,6 +20,52 @@ WHERE id = ?;
 -- name: DeleteUser :exec
 DELETE FROM user WHERE id = ?;
 
+-- name: CreateItem :exec
+INSERT INTO items (id, name, description, is_available, owner_id)
+VALUES (?, ?, ?, ?, ?);
+
+-- name: GetItem :one
+SELECT *
+FROM items
+WHERE id = ?;
+
+-- name: GetItemsByOwner :many
+SELECT *
+FROM items
+WHERE owner_id = ?;
+
+-- name: UpdateItem :exec
+UPDATE items
+SET
+    name = COALESCE(sqlc.narg(name), name),
+    description = COALESCE(sqlc.narg(description), description),
+    is_available = COALESCE(sqlc.narg(is_available), is_available),
+    owner_id = COALESCE(sqlc.narg(owner_id), owner_id)
+WHERE
+    id = @id;
+
+-- name: DeleteItem :exec
+DELETE FROM items WHERE id = ?;
+
+-- name: TradeCreate :exec
+INSERT INTO trades (id, proposer_id, proposer_item_id, responder_id, responder_item_id, status, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+-- name: GetTradeByID :one
+SELECT *
+FROM trades
+WHERE id = ?;
+
+-- name: UpdateTradeStatus :exec
+UPDATE trades
+SET status = ?, updated_at = CURRENT_TIMESTAMP
+WHERE id = ?;
+
+-- name: TransferItemOwnership :exec
+UPDATE items
+SET owner_id = ?, updated_at = CURRENT_TIMESTAMP
+WHERE id = ?;
+
 -- name: CreateFriend :exec
 INSERT INTO user_friendship (user_id, friend_id)
 VALUES (?, ?);

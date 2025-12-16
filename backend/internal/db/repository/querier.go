@@ -14,6 +14,7 @@ type Querier interface {
 	CreateClubPost(ctx context.Context, arg CreateClubPostParams) error
 	CreateClubPostAttachment(ctx context.Context, arg CreateClubPostAttachmentParams) error
 	CreateFriend(ctx context.Context, arg CreateFriendParams) error
+	CreateItem(ctx context.Context, arg CreateItemParams) error
 	CreateMetric(ctx context.Context, arg CreateMetricParams) error
 	CreateMetricEntry(ctx context.Context, arg CreateMetricEntryParams) error
 	CreateMetricEntryAttachment(ctx context.Context, arg CreateMetricEntryAttachmentParams) error
@@ -26,6 +27,7 @@ type Querier interface {
 	DeleteClubPostAttachment(ctx context.Context, id string) error
 	// assumes user_id < friend_id
 	DeleteFriend(ctx context.Context, arg DeleteFriendParams) error
+	DeleteItem(ctx context.Context, id string) error
 	DeleteMetric(ctx context.Context, id string) error
 	DeleteMetricEntry(ctx context.Context, arg DeleteMetricEntryParams) error
 	DeleteMetricEntryAttachment(ctx context.Context, id string) error
@@ -44,11 +46,14 @@ type Querier interface {
 	GetFriends(ctx context.Context, id string) ([]GetFriendsRow, error)
 	// get all entries for all instances of a given metric
 	GetHistoricalMetricEntries(ctx context.Context, metricID string) ([]MetricEntry, error)
+	GetItem(ctx context.Context, id string) (Item, error)
+	GetItemsByOwner(ctx context.Context, ownerID string) ([]Item, error)
 	GetLatestMetricInstance(ctx context.Context, metricID string) (MetricInstance, error)
 	GetMetric(ctx context.Context, id string) (Metric, error)
 	GetMetricEntries(ctx context.Context, metricInstanceID string) ([]MetricEntry, error)
 	// TODO: Implement pagination with LIMIT and OFFSET
 	GetPublicClubs(ctx context.Context) ([]Club, error)
+	GetTradeByID(ctx context.Context, id string) (Trade, error)
 	GetUserClubs(ctx context.Context, userID string) ([]GetUserClubsRow, error)
 	GetUserDisplay(ctx context.Context, id string) (GetUserDisplayRow, error)
 	GetUserLoginByEmail(ctx context.Context, email string) (GetUserLoginByEmailRow, error)
@@ -62,14 +67,18 @@ type Querier interface {
 	IsUserModeratorOfClub(ctx context.Context, arg IsUserModeratorOfClubParams) (int64, error)
 	// returns boolean
 	IsUserOwnerOfClub(ctx context.Context, arg IsUserOwnerOfClubParams) (int64, error)
+	TradeCreate(ctx context.Context, arg TradeCreateParams) error
+	TransferItemOwnership(ctx context.Context, arg TransferItemOwnershipParams) error
 	UpdateClub(ctx context.Context, arg UpdateClubParams) error
 	UpdateClubMembership(ctx context.Context, arg UpdateClubMembershipParams) error
 	UpdateClubPost(ctx context.Context, arg UpdateClubPostParams) error
 	UpdateClubPostAttachment(ctx context.Context, arg UpdateClubPostAttachmentParams) error
+	UpdateItem(ctx context.Context, arg UpdateItemParams) error
 	UpdateMetric(ctx context.Context, arg UpdateMetricParams) error
 	UpdateMetricEntry(ctx context.Context, arg UpdateMetricEntryParams) error
 	UpdateMetricEntryAttachment(ctx context.Context, arg UpdateMetricEntryAttachmentParams) error
 	UpdateMetricEntryVerification(ctx context.Context, arg UpdateMetricEntryVerificationParams) error
+	UpdateTradeStatus(ctx context.Context, arg UpdateTradeStatusParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 	UpdateUserPrivateMessage(ctx context.Context, arg UpdateUserPrivateMessageParams) error
 }

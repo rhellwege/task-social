@@ -10,6 +10,33 @@ CREATE TABLE IF NOT EXISTS user (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS trades (
+    id TEXT NOT NULL PRIMARY KEY,
+    proposer_id TEXT NOT NULL,
+    proposer_item_id TEXT NOT NULL,
+    responder_id TEXT NOT NULL,
+    responder_item_id TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (proposer_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (responder_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (proposer_item_id) REFERENCES items(id) ON DELETE CASCADE,
+    FOREIGN KEY (responder_item_id) REFERENCES items(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS items (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    is_available BOOLEAN NOT NULL DEFAULT TRUE,
+    owner_id TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (owner_id) REFERENCES user(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS user_friendship (
     user_id TEXT NOT NULL,
     friend_id TEXT NOT NULL,

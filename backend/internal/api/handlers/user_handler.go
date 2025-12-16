@@ -345,3 +345,31 @@ func GetUserMetricEntries(userService services.UserServicer) fiber.Handler {
 		return c.JSON(metrics)
 	}
 }
+
+// GetItemsByOwner
+//
+//	@ID				GetItemsByOwner
+//	@Summary		Get items by owner
+//	@Description	Get all items owned by a user.
+//	@Tags			User
+//	@Security		ApiKeyAuth
+//	@Produce		json
+//	@Success		200	{array}		repository.Item
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Router			/api/user/items [get]
+func GetItemsByOwner(userService services.UserServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		userID := c.Locals("userID").(string)
+
+		items, err := userService.GetItemsByOwner(ctx, userID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.JSON(items)
+	}
+}

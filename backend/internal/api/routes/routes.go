@@ -45,16 +45,17 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	// User routes
 	api.Get("/user", handlers.GetUser(userService))
 	api.Get("/user/clubs", handlers.GetUserClubs(userService))
-	api.Get("/user/:id", handlers.GetUserByID(userService))
 	api.Put("/user", handlers.UpdateUser(userService))
 	api.Post("/user/profile-picture",
 		middleware.ImageUploadMiddleware("./assets"),
 		handlers.UploadProfilePicture(userService),
 	)
+	api.Get("/user/items", handlers.GetItemsByOwner(userService))
 	// returns all metrics from all joined clubs
 	api.Get("/user/metrics", handlers.GetUserMetrics(userService))
 	// returns all of the user's metric entries
 	api.Get("user/metric-entries", handlers.GetUserMetricEntries(userService))
+	api.Get("/user/:id", handlers.GetUserByID(userService))
 
 	// Club routes
 	api.Post("/club", handlers.CreateClub(clubService))

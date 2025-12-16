@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./app
+    container_name: swapstop-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    environment:
+      - DATABASE_URL=sqlite:///./swapstop.db
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: swapstop-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

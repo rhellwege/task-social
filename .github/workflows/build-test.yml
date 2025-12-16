@@ -61,6 +61,9 @@ jobs:
           reporter: github-pr-review
           eslint_flags: ". --ext .js,.jsx,.ts,.tsx"
           working-directory: frontend
+      - name: API Codegen Check
+        run: ./scripts/check_codegen.sh
+        working-directory: frontend
       - name: 🏃‍♂️ Run ESLint PR
         if: github.event_name != 'pull_request'
         run: npm run lint
@@ -86,7 +89,4 @@ jobs:
         working-directory: frontend
       - name: Jest
         run: npm run test
-        working-directory: frontend
-      - name: API Codegen Check
-        run: ./scripts/check_codegen.sh
         working-directory: frontend

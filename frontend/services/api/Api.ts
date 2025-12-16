@@ -149,6 +149,16 @@ export interface RepositoryGetUserDisplayRow {
   username?: string;
 }
 
+export interface RepositoryItem {
+  created_at?: string;
+  description?: string;
+  id?: string;
+  is_available?: boolean;
+  name?: string;
+  owner_id?: string;
+  updated_at?: string;
+}
+
 export interface RepositoryMetric {
   club_id?: string;
   created_at?: string;
@@ -171,6 +181,14 @@ export interface RepositoryMetricEntry {
   value?: number;
 }
 
+export interface RepositoryUpdateItemParams {
+  description?: string;
+  id?: string;
+  is_available?: boolean;
+  name?: string;
+  owner_id?: string;
+}
+
 export interface RepositoryUpdateMetricParams {
   description?: string;
   id?: string;
@@ -187,6 +205,12 @@ export interface ServicesCreateClubRequest {
   description?: string;
   is_public?: boolean;
   name?: string;
+}
+
+export interface ServicesCreateItemRequest {
+  description?: string;
+  name?: string;
+  price_estimate?: number;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -755,6 +779,68 @@ export class Api<
       }),
 
     /**
+     * No description
+     *
+     * @tags Marketplace
+     * @name CreateItem
+     * @summary Create marketplace item
+     * @request POST:/api/marketplace/item
+     * @secure
+     */
+    createItem: (item: ServicesCreateItemRequest, params: RequestParams = {}) =>
+      this.request<HandlersCreatedResponse, HandlersErrorResponse>({
+        path: `/api/marketplace/item`,
+        method: "POST",
+        body: item,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Marketplace
+     * @name UpdateItem
+     * @summary Update marketplace item
+     * @request PUT:/api/marketplace/item/{item_id}
+     * @secure
+     */
+    updateItem: (
+      itemId: string,
+      item: RepositoryUpdateItemParams,
+      params: RequestParams = {},
+    ) =>
+      this.request<HandlersSuccessResponse, HandlersErrorResponse>({
+        path: `/api/marketplace/item/${itemId}`,
+        method: "PUT",
+        body: item,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Marketplace
+     * @name DeleteItem
+     * @summary Delete marketplace item
+     * @request DELETE:/api/marketplace/item/{item_id}
+     * @secure
+     */
+    deleteItem: (itemId: string, params: RequestParams = {}) =>
+      this.request<HandlersSuccessResponse, HandlersErrorResponse>({
+        path: `/api/marketplace/item/${itemId}`,
+        method: "DELETE",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Create a new metric with the provided details.
      *
      * @tags Metric
@@ -972,6 +1058,24 @@ export class Api<
     getUserClubs: (params: RequestParams = {}) =>
       this.request<RepositoryGetUserClubsRow[], HandlersErrorResponse>({
         path: `/api/user/clubs`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get all items owned by a user.
+     *
+     * @tags User
+     * @name GetItemsByOwner
+     * @summary Get items by owner
+     * @request GET:/api/user/items
+     * @secure
+     */
+    getItemsByOwner: (params: RequestParams = {}) =>
+      this.request<RepositoryItem[], HandlersErrorResponse>({
+        path: `/api/user/items`,
         method: "GET",
         secure: true,
         format: "json",
