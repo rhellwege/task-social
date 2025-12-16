@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native';
 import { render, screen } from '@testing-library/react-native';
-import Tab from '../(index, profile, clubs)/index'; //adjust path if needed
+import Tab from '../explore/index'; // Updated path: explore tab is explore/index.tsx
 import { ThemeProvider } from '@react-navigation/native';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -16,7 +16,7 @@ jest.mock('expo-router', () => ({
 describe('Explore Tab', () => {
   beforeEach(() => {
     //mock the component's state by rendering mock clubs directly
-    jest.spyOn(require('../(index, profile, clubs)/index'), 'default').mockImplementation(() => {
+    jest.spyOn(require('../explore/index'), 'default').mockImplementation(() => {
       const mockClubs = [
         { id: "1", name: "Chess Club", description: "A club for chess enthusiasts." },
         { id: "2", name: "Coding Club", description: "For coding challenges." },
@@ -44,17 +44,15 @@ describe('Explore Tab', () => {
         <Tab />
       </ThemeProvider>
     );
-
     //check for club names
     expect(await screen.findByText('Chess Club')).toBeTruthy();
     expect(await screen.findByText('Coding Club')).toBeTruthy();
-
     //check for descriptions
     expect(await screen.findByText('A club for chess enthusiasts.')).toBeTruthy();
     expect(await screen.findByText('For coding challenges.')).toBeTruthy();
-
     //verify number of tiles (assuming each club has a view with name)
     const tiles = screen.getAllByText(/Chess Club|Coding Club/);
     expect(tiles.length).toBe(2);
   });
 });
+
