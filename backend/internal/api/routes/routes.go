@@ -51,6 +51,7 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 		middleware.ImageUploadMiddleware("./assets"),
 		handlers.UploadProfilePicture(userService),
 	)
+	api.Get("/user/items", handlers.GetItemsByOwner(userService))
 	// returns all metrics from all joined clubs
 	api.Get("/user/metrics", handlers.GetUserMetrics(userService))
 	// returns all of the user's metric entries

@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Stack } from "expo-router";
+import { ScrollView } from "react-native";
 
 export default function Tab() {
   const { api } = useApi();
   const [username, setUsername] = useState("");
   const [createdDate, setCreatedDate] = useState("");
   const [profilePic, setProfilePic] = useState("");
-
+  const [items, setItems] = useState([]);
   const formattedDate = new Date(createdDate).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -20,9 +21,16 @@ export default function Tab() {
   useEffect(() => {
     const request = async () => {
       const resp = await api.api.getUser();
+      // if generated client may not include the method, guard it
+      const client: any = api.api;
       setUsername(resp.data.username!);
       setCreatedDate(resp.data.created_at!);
       setProfilePic(resp.data.profile_picture!);
+      const itemsResp =
+      typeof client.getItemsByOwner === "function"
+        ? await client.getItemsByOwner()
+      : { data: { items: [] } };
+      setItems(itemsResp?.data?.items ?? []);
     };
 
     request();
@@ -30,6 +38,7 @@ export default function Tab() {
 
   return (
     <>
+      <ScrollView style={{height: '100%'}}>
       <Stack.Screen options={{ title: "Profile" }} />
       <ThemedView style={styles.container} testID="profile-screen">
         <ThemedView style={styles.profileView}>
@@ -42,6 +51,18 @@ export default function Tab() {
             <ThemedText>Joined on {formattedDate}</ThemedText>
           </View>
         </ThemedView>
+        <View style={styles.itemView}>
+        <ThemedText type="default" style={{ fontWeight: "700" }}>Your Items</ThemedText>
+        {items.length === 0 ? (
+          <ThemedText style={{ paddingLeft: 20 }}>No items yet</ThemedText>
+          ) : (
+            items.map((it) => (
+              <ThemedText key={it.id ?? it.name ?? JSON.stringify(it)}>
+                {it.name ?? String(it)}
+              </ThemedText>
+            ))
+          )}
+        </View>
         <View
           style={{
             flex: 1,
@@ -61,6 +82,7 @@ export default function Tab() {
           <ThemedText type="default">Contact Us</ThemedText>
         </View>
       </ThemedView>
+      </ScrollView>
     </>
   );
 }
@@ -69,7 +91,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    gap: 20,
+    gap: 50,
+    paddingVertical: 20,
   },
   profileView: {
     height: 80,
@@ -79,6 +102,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 20,
     borderRadius: 5,
+    gap: 10,
+  },
+  itemView: {
+    width: "80%",
+    flexDirection: "column",
     gap: 10,
   },
   circle: {

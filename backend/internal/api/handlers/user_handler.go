@@ -345,3 +345,21 @@ func GetUserMetricEntries(userService services.UserServicer) fiber.Handler {
 		return c.JSON(metrics)
 	}
 }
+
+func GetItemsByOwner(userService services.UserServicer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := c.Context()
+		userID := c.Locals("userID").(string)
+
+		items, err := userService.GetItemsByOwner(ctx, userID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error: err.Error(),
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"items": items,
+		})
+	}
+}
