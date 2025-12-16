@@ -14,10 +14,10 @@ import {
 } from "@react-navigation/native";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
-import { useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { API_BASE_URL } from "@/constants/Api";
 import { useApi } from "@/hooks/useApi";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 interface Listing {
   id: string;
@@ -32,7 +32,8 @@ export default function ClubDetail() {
   const clubId = (params.clubId ?? params.id) as string | undefined;
 
   const colorScheme = useColorScheme();
-  const { token } = useApi();
+  const { api } = useApi();
+  const router = useRouter();
 
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(false);
@@ -42,10 +43,6 @@ export default function ClubDetail() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  const authHeaders = useMemo(() => {
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, [token]);
-
   async function loadListings() {
     if (!clubId) return;
 
@@ -53,21 +50,11 @@ export default function ClubDetail() {
     setError("");
 
     try {
-      const headers: Record<string, string> = {
-        Accept: "application/json",
-      };
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-      const res = await fetch(`${API_BASE_URL}/api/club/${clubId}/items`, {
-        headers,
-      });
-
-      const raw = await res.text();
-      const data = raw ? JSON.parse(raw) : [];
+      const res = await api.api.getClubItems(clubId);
+      const data = res.data;
 
       if (!res.ok) {
-        throw new Error(data?.error || raw || "Failed to load items");
+        throw new Error("Failed to load items");
       }
 
       const mapped: Listing[] = (Array.isArray(data) ? data : []).map(
@@ -76,7 +63,7 @@ export default function ClubDetail() {
           title: it.name ?? "Untitled",
           price: "—", // current backend items schema has no price field
           seller: it.owner_username || "unknown",
-        })
+        }),
       );
 
       setListings(mapped);
@@ -100,27 +87,13 @@ export default function ClubDetail() {
     setError("");
 
     try {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      };
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-      const res = await fetch(`${API_BASE_URL}/api/club/${clubId}/items`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          name: name.trim(),
-          description: description.trim() ? description.trim() : undefined,
-        }),
+      const res = await api.api.createClubItem(clubId, {
+        name: name.trim(),
+        description: description.trim() ? description.trim() : undefined,
       });
 
-      const raw = await res.text();
-      const data = raw ? JSON.parse(raw) : null;
-
       if (!res.ok) {
-        throw new Error(data?.error || raw || "Failed to post item");
+        throw new Error("Failed to post item");
       }
 
       setShowPost(false);
@@ -137,7 +110,7 @@ export default function ClubDetail() {
   useEffect(() => {
     loadListings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clubId, token]);
+  }, [clubId, api]);
 
   const renderListing = ({ item }: { item: Listing }) => (
     <View style={styles.listingItem}>
@@ -148,96 +121,115 @@ export default function ClubDetail() {
   );
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <View style={styles.container}>
-        <Text
-          style={{
-            color: Colors[colorScheme ?? "light"].text,
-            fontSize: 26,
-            fontWeight: "bold",
-            marginBottom: 20,
-          }}
-        >
-          Club Marketplace
-        </Text>
-
-        {error ? (
-          <Text style={{ color: "#cc4444", marginBottom: 10 }}>{error}</Text>
-        ) : null}
-
-        <FlatList
-          data={listings}
-          renderItem={renderListing}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
-          ListEmptyComponent={
-            !loading ? (
-              <Text style={{ color: "#888", fontSize: 16 }}>
-                No items for sale yet!
-              </Text>
-            ) : null
-          }
-        />
-
-        <TouchableOpacity
-          style={styles.postButton}
-          onPress={() => setShowPost(true)}
-          disabled={loading}
-        >
-          <Text style={{ color: "white", fontWeight: "bold" }}>
-            {loading ? "Working..." : "+ Post Item for Sale"}
+    <>
+      <Stack.Screen
+        options={{
+          title: "Club Marketplace",
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.push(`/myclubs/${clubId}`)}
+              style={{ marginLeft: 10 }}
+            >
+              <Ionicons
+                name="chevron-back"
+                size={24}
+                color={Colors[colorScheme ?? "light"].text}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <View style={styles.container}>
+          <Text
+            style={{
+              color: Colors[colorScheme ?? "light"].text,
+              fontSize: 26,
+              fontWeight: "bold",
+              marginBottom: 20,
+            }}
+          >
+            Club Marketplace
           </Text>
-        </TouchableOpacity>
 
-        <Modal
-          visible={showPost}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowPost(false)}
-        >
-          <View style={styles.modalBackdrop}>
-            <View style={styles.modalCard}>
-              <Text style={styles.modalTitle}>Post Item for Sale</Text>
+          {error ? (
+            <Text style={{ color: "#cc4444", marginBottom: 10 }}>{error}</Text>
+          ) : null}
 
-              <TextInput
-                style={styles.input}
-                placeholder="Item name"
-                value={name}
-                onChangeText={setName}
-              />
+          <FlatList
+            data={listings}
+            renderItem={renderListing}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 40 }}
+            ListEmptyComponent={
+              !loading ? (
+                <Text style={{ color: "#888", fontSize: 16 }}>
+                  No items for sale yet!
+                </Text>
+              ) : null
+            }
+          />
 
-              <TextInput
-                style={styles.input}
-                placeholder="Description (optional)"
-                value={description}
-                onChangeText={setDescription}
-              />
+          <TouchableOpacity
+            style={styles.postButton}
+            onPress={() => setShowPost(true)}
+            disabled={loading}
+          >
+            <Text style={{ color: "white", fontWeight: "bold" }}>
+              {loading ? "Working..." : "+ Post Item for Sale"}
+            </Text>
+          </TouchableOpacity>
 
-              <View style={styles.modalRow}>
-                <TouchableOpacity
-                  style={[styles.modalBtn, styles.modalBtnOutline]}
-                  onPress={() => setShowPost(false)}
-                  disabled={loading}
-                >
-                  <Text style={styles.modalBtnOutlineText}>Cancel</Text>
-                </TouchableOpacity>
+          <Modal
+            visible={showPost}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowPost(false)}
+          >
+            <View style={styles.modalBackdrop}>
+              <View style={styles.modalCard}>
+                <Text style={styles.modalTitle}>Post Item for Sale</Text>
 
-                <TouchableOpacity
-                  style={styles.modalBtn}
-                  onPress={postItem}
-                  disabled={loading}
-                >
-                  <Text style={styles.modalBtnText}>
-                    {loading ? "Posting..." : "Post"}
-                  </Text>
-                </TouchableOpacity>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Item name"
+                  value={name}
+                  onChangeText={setName}
+                />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Description (optional)"
+                  value={description}
+                  onChangeText={setDescription}
+                />
+
+                <View style={styles.modalRow}>
+                  <TouchableOpacity
+                    style={[styles.modalBtn, styles.modalBtnOutline]}
+                    onPress={() => setShowPost(false)}
+                    disabled={loading}
+                  >
+                    <Text style={styles.modalBtnOutlineText}>Cancel</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.modalBtn}
+                    onPress={postItem}
+                    disabled={loading}
+                  >
+                    <Text style={styles.modalBtnText}>
+                      {loading ? "Posting..." : "Post"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
-        </Modal>
-      </View>
-    </ThemeProvider>
+          </Modal>
+        </View>
+      </ThemeProvider>
+    </>
   );
 }
 

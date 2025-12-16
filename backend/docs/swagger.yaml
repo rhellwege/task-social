@@ -222,6 +222,8 @@ definitions:
     type: object
   repository.Item:
     properties:
+      club_id:
+        type: string
       created_at:
         type: string
       description:
@@ -306,6 +308,21 @@ definitions:
         type: string
       unit_is_integer:
         type: boolean
+    type: object
+  services.ClubMarketplaceItem:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      is_available:
+        type: boolean
+      name:
+        type: string
+      owner_id:
+        type: string
+      owner_username:
+        type: string
     type: object
   services.CreateClubRequest:
     properties:
@@ -512,6 +529,65 @@ paths:
       summary: Upload a club banner
       tags:
       - Club
+  /api/club/{club_id}/items:
+    get:
+      operationId: GetClubItems
+      parameters:
+      - description: Club ID
+        in: path
+        name: club_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/services.ClubMarketplaceItem'
+            type: array
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get available marketplace items for a club
+      tags:
+      - Marketplace
+    post:
+      consumes:
+      - application/json
+      operationId: CreateClubItem
+      parameters:
+      - description: Club ID
+        in: path
+        name: club_id
+        required: true
+        type: string
+      - description: Item data
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/services.CreateItemRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.CreatedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Post a marketplace item for sale in a club
+      tags:
+      - Marketplace
   /api/club/{club_id}/join:
     post:
       description: Join a club with the given ID.

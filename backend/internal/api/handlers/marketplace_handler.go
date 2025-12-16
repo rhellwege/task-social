@@ -110,15 +110,16 @@ func DeleteItem(marketplace services.MarketplaceServicer) fiber.Handler {
 }
 
 // GetClubItems
-// @ID      GetClubItems
-// @Summary Get available marketplace items for a club
-// @Tags    Marketplace
-// @Produce json
-// @Security ApiKeyAuth
-// @Param   club_id path string true "Club ID"
-// @Success 200 {array} services.ClubMarketplaceItem
-// @Failure 403 {object} ErrorResponse
-// @Router  /api/club/{club_id}/items [get]
+//
+//	@ID			GetClubItems
+//	@Summary	Get available marketplace items for a club
+//	@Tags		Marketplace
+//	@Produce	json
+//	@Security	ApiKeyAuth
+//	@Param		club_id	path		string	true	"Club ID"
+//	@Success	200		{array}		services.ClubMarketplaceItem
+//	@Failure	403		{object}	ErrorResponse
+//	@Router		/api/club/{club_id}/items [get]
 func GetClubItems(marketplace services.MarketplaceServicer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.Context()
@@ -134,17 +135,18 @@ func GetClubItems(marketplace services.MarketplaceServicer) fiber.Handler {
 }
 
 // CreateClubItem
-// @ID      CreateClubItem
-// @Summary Post a marketplace item for sale in a club
-// @Tags    Marketplace
-// @Accept  json
-// @Produce json
-// @Security ApiKeyAuth
-// @Param   club_id path string true "Club ID"
-// @Param   item body services.CreateItemRequest true "Item data"
-// @Success 201 {object} CreatedResponse
-// @Failure 403 {object} ErrorResponse
-// @Router  /api/club/{club_id}/items [post]
+//
+//	@ID			CreateClubItem
+//	@Summary	Post a marketplace item for sale in a club
+//	@Tags		Marketplace
+//	@Accept		json
+//	@Produce	json
+//	@Security	ApiKeyAuth
+//	@Param		club_id	path		string						true	"Club ID"
+//	@Param		item	body		services.CreateItemRequest	true	"Item data"
+//	@Success	201		{object}	CreatedResponse
+//	@Failure	403		{object}	ErrorResponse
+//	@Router		/api/club/{club_id}/items [post]
 func CreateClubItem(marketplace services.MarketplaceServicer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := c.Context()

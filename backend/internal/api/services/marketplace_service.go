@@ -163,7 +163,6 @@ func (s *MarketplaceService) GetClubItems(
 	return out, nil
 }
 
-
 func (s *MarketplaceService) CreateClubItem(
 	ctx context.Context,
 	userID string,
@@ -204,4 +203,3 @@ func (s *MarketplaceService) CreateClubItem(
 
 	return itemID, nil
 }
-
