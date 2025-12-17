@@ -1,0 +1,64 @@
+name: End-to-End Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_server:
+        description: 'API server to use (or "http://localhost:5050" to run it in the workflow)'
+        required: true
+        default: "http://localhost:5050"
+      version_tag:
+        description: "The git tag or commit hash to test (e.g., v1.2.3-4)"
+        required: true
+        type: string
+
+jobs:
+  e2e-test:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version_tag }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install backend dependencies
+        run: go mod tidy
+        working-directory: ./backend
+
+      - name: Run backend server
+        if: github.event.inputs.api_server == 'http://localhost:5050'
+        run: go run ./cmd/main.go &
+        working-directory: ./backend
+
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: ./frontend
+
+      - name: Change base url for remote backend
+        if: github.event.inputs.api_server != 'http://localhost:5050'
+        run: echo "export const API_BASE_URL = '${{ github.event.inputs.api_server }}'" > ./frontend/constants/Api.ts
+
+      - name: Install e2e dependencies
+        run: ./scripts/install-e2e-deps.sh
+        working-directory: ./frontend
+
+      - name: List applesimutils devices
+        run: applesimutils --list
+
+      - name: Build Detox app for iOS Simulator
+        run: ./scripts/build-e2e.sh
+        working-directory: ./frontend
+
+      - name: Run Detox tests on iOS Simulator
+        run: ./scripts/test-e2e.sh
+        working-directory: ./frontend

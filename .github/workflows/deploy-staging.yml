@@ -1,0 +1,57 @@
+name: Deploy Backend to Staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: "The git tag (or commit hash) to build and deploy (e.g., v1.2.3-4)"
+        required: true
+        type: string
+
+env:
+  IMAGE_NAME: task-social-backend-staging
+  CONTAINER_NAME: task-social-backend-staging
+
+jobs:
+  build_and_deploy:
+    name: Build and Deploy on Self-Hosted Runner
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code for specified tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version_tag }}
+
+      - name: Get old container's image ID
+        id: get_old_image
+        run: |
+          echo "image_id=$(docker inspect --format='{{.Image}}' ${{ env.CONTAINER_NAME }} 2>/dev/null || echo '')" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg "TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo '')" \
+            --build-arg "COMMIT_HASH=$(git rev-parse HEAD)" \
+            --build-arg "BUILD_DATE=$(date '+%Y-%m-%dT%H:%M:%S')" \
+            -t ${{ env.IMAGE_NAME }}:${{ github.event.inputs.version_tag }} \
+            ./backend
+
+      - name: Stop and remove existing container
+        run: |
+          docker stop ${{ env.CONTAINER_NAME }} || true
+          docker rm ${{ env.CONTAINER_NAME }} || true
+
+      - name: Run new container
+        run: |
+          docker run -d \
+            --name ${{ env.CONTAINER_NAME }} \
+            --restart always \
+            -p 7777:5050 \
+            -e PORT=5050 \
+            -e JWT_KEY='${{ secrets.JWT_KEY_STAGING }}' \
+            ${{ env.IMAGE_NAME }}:${{ github.event.inputs.version_tag }}
+
+      - name: Clean up old image
+        if: always() && steps.get_old_image.outputs.image_id != ''
+        run: docker rmi ${{ steps.get_old_image.outputs.image_id }}

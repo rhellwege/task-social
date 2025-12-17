@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+set -x
+go vet ./...
+nilaway ./...
+cd internal/db && sqlc vet
