@@ -94,6 +94,10 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	// gets all historical entries of a metric
 	api.Get("/metric/:metric_id/historical-entries", handlers.GetHistoricalMetricEntries(metricService))
 
+	api.Put("/marketplace/item/:item_id", handlers.UpdateItem(marketplaceService))
+
+	api.Delete("/marketplace/item/:item_id", handlers.DeleteItem(marketplaceService))
+
 	// Serve uploaded assets
 	app.Static("/assets", "./assets")
 
