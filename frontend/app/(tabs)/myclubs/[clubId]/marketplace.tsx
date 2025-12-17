@@ -22,8 +22,10 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 interface Listing {
   id: string;
   title: string;
+  description?: string;
   price: string;
   seller: string;
+  ownerId?: string;
 }
 
 export default function ClubDetail() {
@@ -61,9 +63,11 @@ export default function ClubDetail() {
       const mapped: Listing[] = (Array.isArray(data) ? data : []).map(
         (it: any) => ({
           id: String(it.id),
-          title: it.name ?? "Untitled",
-          price: "—", // current backend items schema has no price field
-          seller: it.owner_username || "unknown",
+                      title: it.name ?? "Untitled",
+                      description: it.description ?? "",
+                      price: "—",
+                      seller: it.owner_username || "unknown",
+                      ownerId: it.owner_id,
         }),
       );
 
@@ -90,7 +94,7 @@ export default function ClubDetail() {
     try {
       const res = await api.api.createClubItem(clubId, {
         name: name.trim(),
-        description: description.trim() ? description.trim() : undefined,
+                                               description: description.trim() ? description.trim() : undefined,
       });
 
       if (!res.ok) {
@@ -123,7 +127,7 @@ export default function ClubDetail() {
     try {
       const res = await api.api.updateItem(itemId, {
         name: name.trim(),
-        description: description.trim() || undefined,
+                                           description: description.trim() || undefined,
       });
 
       if (!res.ok) {
@@ -170,157 +174,162 @@ export default function ClubDetail() {
 
   const renderListing = ({ item }: { item: Listing }) => (
     <View style={styles.listingItem}>
-      <Text style={styles.listingTitle}>{item.title}</Text>
-      <Text style={styles.listingPrice}>{item.price}</Text>
-      <Text style={{ color: "#888", fontSize: 14 }}>by {item.seller}</Text>
+    <Text style={styles.listingTitle}>{item.title}</Text>
+    {item.description ? (
+      <Text style={{ color: "#555", marginTop: 6, textAlign: "center" }}>
+      {item.description}
+      </Text>
+    ) : null}
+    <Text style={styles.listingPrice}>{item.price}</Text>
+    <Text style={{ color: "#888", fontSize: 14 }}>by {item.seller}</Text>
 
-      <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
-        {/* EDIT */}
-        <TouchableOpacity
-          style={{
-            paddingHorizontal: 16,
-            paddingVertical: 6,
-            borderRadius: 20,
-            backgroundColor: "#444",
-          }}
-          onPress={() => {
-            setEditingItemId(item.id);
-            setName(item.title);
-            setDescription("");
-            setShowPost(true);
-          }}
-          disabled={loading}
-        >
-          <Text style={{ color: "white", fontWeight: "600" }}>Edit</Text>
-        </TouchableOpacity>
+    <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
+    {/* EDIT */}
+    <TouchableOpacity
+    style={{
+      paddingHorizontal: 16,
+      paddingVertical: 6,
+      borderRadius: 20,
+      backgroundColor: "#444",
+    }}
+    onPress={() => {
+      setEditingItemId(item.id);
+      setName(item.title);
+      setDescription(item.description || "");
+      setShowPost(true);
+    }}
+    disabled={loading}
+    >
+    <Text style={{ color: "white", fontWeight: "600" }}>Edit</Text>
+    </TouchableOpacity>
 
-        {/* DELETE */}
-        <TouchableOpacity
-          style={{
-            paddingHorizontal: 16,
-            paddingVertical: 6,
-            borderRadius: 20,
-            backgroundColor: "#cc3333",
-          }}
-          onPress={() => deleteItem(item.id)}
-          disabled={loading}
-        >
-          <Text style={{ color: "white", fontWeight: "600" }}>Delete</Text>
-        </TouchableOpacity>
-      </View>
+    {/* DELETE */}
+    <TouchableOpacity
+    style={{
+      paddingHorizontal: 16,
+      paddingVertical: 6,
+      borderRadius: 20,
+      backgroundColor: "#cc3333",
+    }}
+    onPress={() => deleteItem(item.id)}
+    disabled={loading}
+    >
+    <Text style={{ color: "white", fontWeight: "600" }}>Delete</Text>
+    </TouchableOpacity>
+    </View>
     </View>
   );
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: "Club Marketplace",
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => router.push(`/myclubs/${clubId}`)}
-              style={{ marginLeft: 10 }}
-            >
-              <Ionicons
-                name="chevron-back"
-                size={24}
-                color={Colors[colorScheme ?? "light"].text}
-              />
-            </TouchableOpacity>
-          ),
-        }}
-      />
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <View style={styles.container}>
-          <Text
-            style={{
-              color: Colors[colorScheme ?? "light"].text,
-              fontSize: 26,
-              fontWeight: "bold",
-              marginBottom: 20,
-            }}
-          >
-            Club Marketplace
-          </Text>
+    <Stack.Screen
+    options={{
+      title: "Club Marketplace",
+      headerLeft: () => (
+        <TouchableOpacity
+        onPress={() => router.push(`/myclubs/${clubId}`)}
+        style={{ marginLeft: 10 }}
+        >
+        <Ionicons
+        name="chevron-back"
+        size={24}
+        color={Colors[colorScheme ?? "light"].text}
+        />
+        </TouchableOpacity>
+      ),
+    }}
+    />
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <View style={styles.container}>
+    <Text
+    style={{
+      color: Colors[colorScheme ?? "light"].text,
+      fontSize: 26,
+      fontWeight: "bold",
+      marginBottom: 20,
+    }}
+    >
+    Club Marketplace
+    </Text>
 
-          {error ? (
-            <Text style={{ color: "#cc4444", marginBottom: 10 }}>{error}</Text>
-          ) : null}
+    {error ? (
+      <Text style={{ color: "#cc4444", marginBottom: 10 }}>{error}</Text>
+    ) : null}
 
-          <FlatList
-            data={listings}
-            renderItem={renderListing}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 40 }}
-            ListEmptyComponent={
-              !loading ? (
-                <Text style={{ color: "#888", fontSize: 16 }}>
-                  No items for sale yet!
-                </Text>
-              ) : null
-            }
-          />
-          <TouchableOpacity
-            style={styles.postButton}
-            onPress={() => {
-              setEditingItemId(null);
-              setName("");
-              setDescription("");
-              setShowPost(true);
-            }}
-            disabled={loading}
-          >
-            <Text style={{ color: "white", fontWeight: "bold" }}>
-              {loading ? "Working..." : "+ Post Item for Sale"}
-            </Text>
-          </TouchableOpacity>
-          <Modal
-            visible={showPost}
-            transparent
-            animationType="fade"
-            onRequestClose={() => setShowPost(false)}
-          >
-            <View style={styles.modalBackdrop}>
-              <View style={styles.modalCard}>
-                <Text style={styles.modalTitle}>Post Item for Sale</Text>
+    <FlatList
+    data={listings}
+    renderItem={renderListing}
+    keyExtractor={(item) => item.id}
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{ paddingBottom: 40 }}
+    ListEmptyComponent={
+      !loading ? (
+        <Text style={{ color: "#888", fontSize: 16 }}>
+        No items for sale yet!
+        </Text>
+      ) : null
+    }
+    />
+    <TouchableOpacity
+    style={styles.postButton}
+    onPress={() => {
+      setEditingItemId(null);
+      setName("");
+      setDescription("");
+      setShowPost(true);
+    }}
+    disabled={loading}
+    >
+    <Text style={{ color: "white", fontWeight: "bold" }}>
+    {loading ? "Working..." : "+ Post Item for Sale"}
+    </Text>
+    </TouchableOpacity>
+    <Modal
+    visible={showPost}
+    transparent
+    animationType="fade"
+    onRequestClose={() => setShowPost(false)}
+    >
+    <View style={styles.modalBackdrop}>
+    <View style={styles.modalCard}>
+    <Text style={styles.modalTitle}>Post Item for Sale</Text>
 
-                <TextInput
-                  style={styles.input}
-                  placeholder="Item name"
-                  value={name}
-                  onChangeText={setName}
-                />
+    <TextInput
+    style={styles.input}
+    placeholder="Item name"
+    value={name}
+    onChangeText={setName}
+    />
 
-                <TextInput
-                  style={styles.input}
-                  placeholder="Description (optional)"
-                  value={description}
-                  onChangeText={setDescription}
-                />
+    <TextInput
+    style={styles.input}
+    placeholder="Description (optional)"
+    value={description}
+    onChangeText={setDescription}
+    />
 
-                <View style={styles.modalRow}>
-                  <TouchableOpacity
-                    style={styles.modalBtn}
-                    onPress={() =>
-                      editingItemId ? updateItem(editingItemId) : postItem()
-                    }
-                    disabled={loading}
-                  >
-                    <Text style={styles.modalBtnText}>
-                      {loading
-                        ? "Working..."
-                        : editingItemId
-                          ? "Save Changes"
-                          : "Post"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </Modal>
-        </View>
+    <View style={styles.modalRow}>
+    <TouchableOpacity
+    style={styles.modalBtn}
+    onPress={() =>
+      editingItemId ? updateItem(editingItemId) : postItem()
+    }
+    disabled={loading}
+    >
+    <Text style={styles.modalBtnText}>
+    {loading
+      ? "Working..."
+      : editingItemId
+      ? "Save Changes"
+      : "Post"}
+      </Text>
+      </TouchableOpacity>
+      </View>
+      </View>
+      </View>
+      </Modal>
+      </View>
       </ThemeProvider>
-    </>
+      </>
   );
 }
 
@@ -367,8 +376,8 @@ const styles = StyleSheet.create({
   modalBackdrop: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.45)",
-    justifyContent: "center",
-    padding: 18,
+                                 justifyContent: "center",
+                                 padding: 18,
   },
   modalCard: {
     backgroundColor: "white",
