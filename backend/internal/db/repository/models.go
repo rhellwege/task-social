@@ -57,6 +57,7 @@ type Item struct {
 	Description *string   `json:"description"`
 	IsAvailable bool      `json:"is_available"`
 	OwnerID     string    `json:"owner_id"`
+	ClubID      *string   `json:"club_id"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

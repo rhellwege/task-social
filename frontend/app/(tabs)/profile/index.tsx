@@ -1,4 +1,4 @@
-import { View, StyleSheet, Image } from "react-native";
+import { View, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useApi } from "@/hooks/useApi";
 import { useEffect, useState } from "react";
 import { ThemedText } from "@/components/ThemedText";
@@ -8,7 +8,7 @@ import { ScrollView } from "react-native";
 import { RepositoryItem } from "@/services/api/Api";
 
 export default function Tab() {
-  const { api } = useApi();
+  const { api, logout } = useApi();
   const [username, setUsername] = useState("");
   const [createdDate, setCreatedDate] = useState("");
   const [profilePic, setProfilePic] = useState("");
@@ -80,6 +80,10 @@ export default function Tab() {
             <View style={styles.line} />
             <ThemedText type="default">Contact Us</ThemedText>
           </View>
+          <TouchableOpacity onPress={() => logout()}>
+            <ThemedText type="default">Log Out</ThemedText>
+          </TouchableOpacity>
+          <View style={styles.line} />
         </ThemedView>
       </ScrollView>
     </>

@@ -34,6 +34,23 @@ SELECT *
 FROM items
 WHERE owner_id = ?;
 
+-- name: GetItemClubId :one
+SELECT club_id
+FROM items
+WHERE id = ?;
+
+-- name: CreateItemForClub :exec
+INSERT INTO items (id, name, description, is_available, owner_id, club_id)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- name: GetItemsByClub :many
+SELECT id, name, description, is_available, owner_id, club_id, created_at, updated_at
+FROM items
+WHERE club_id = ? AND is_available = TRUE
+ORDER BY created_at DESC;
+
+
+
 -- name: UpdateItem :exec
 UPDATE items
 SET
@@ -122,3 +139,4 @@ SELECT me.* FROM metric_entry me
 JOIN metric m ON me.metric_id = m.id
 JOIN club_membership cm ON m.club_id = cm.club_id
 WHERE cm.user_id = ?;
+

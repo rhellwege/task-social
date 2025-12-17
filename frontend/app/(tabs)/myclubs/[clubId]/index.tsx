@@ -84,6 +84,9 @@ export default function ClubDetail() {
         <Link href={`/myclubs/${clubId}/posts`} style={styles.postsButton}>
           <Text style={styles.postsButtonText}>View Posts</Text>
         </Link>
+        <Link href={`/myclubs/${clubId}/marketplace`} style={styles.postsButton}>
+          <Text style={styles.postsButtonText}>Marketplace</Text>
+        </Link>
       </ThemedView>
     </>
   );

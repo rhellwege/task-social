@@ -150,6 +150,7 @@ export interface RepositoryGetUserDisplayRow {
 }
 
 export interface RepositoryItem {
+  club_id?: string;
   created_at?: string;
   description?: string;
   id?: string;
@@ -198,6 +199,15 @@ export interface RepositoryUpdateMetricParams {
   title?: string;
   unit?: string;
   unit_is_integer?: boolean;
+}
+
+export interface ServicesClubMarketplaceItem {
+  description?: string;
+  id?: string;
+  is_available?: boolean;
+  name?: string;
+  owner_id?: string;
+  owner_username?: string;
 }
 
 export interface ServicesCreateClubRequest {
@@ -583,6 +593,48 @@ export class Api<
         body: data,
         secure: true,
         type: ContentType.FormData,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Marketplace
+     * @name GetClubItems
+     * @summary Get available marketplace items for a club
+     * @request GET:/api/club/{club_id}/items
+     * @secure
+     */
+    getClubItems: (clubId: string, params: RequestParams = {}) =>
+      this.request<ServicesClubMarketplaceItem[], HandlersErrorResponse>({
+        path: `/api/club/${clubId}/items`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Marketplace
+     * @name CreateClubItem
+     * @summary Post a marketplace item for sale in a club
+     * @request POST:/api/club/{club_id}/items
+     * @secure
+     */
+    createClubItem: (
+      clubId: string,
+      item: ServicesCreateItemRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<HandlersCreatedResponse, HandlersErrorResponse>({
+        path: `/api/club/${clubId}/items`,
+        method: "POST",
+        body: item,
+        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),

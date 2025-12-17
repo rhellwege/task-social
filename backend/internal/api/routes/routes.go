@@ -17,6 +17,7 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	wsService := services.NewWebSocketService()
 	clubService := services.NewClubService(querier, imageService, wsService)
 	metricService := services.NewMetricService(querier, clubService)
+	marketplaceService := services.NewMarketplaceService(querier)
 
 	// CORS Origins should not be * but temporarily this is allowed
 	app.Use(cors.New(cors.Config{
@@ -41,6 +42,10 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 
 	// Protected routes
 	api := app.Group("/api", middleware.ProtectedRoute(authService))
+
+	// Club Marketplace routes (SwapStop inside TaskSocial clubs)
+	api.Get("/club/:club_id/items", handlers.GetClubItems(marketplaceService))
+	api.Post("/club/:club_id/items", handlers.CreateClubItem(marketplaceService))
 
 	// User routes
 	api.Get("/user", handlers.GetUser(userService))
@@ -88,6 +93,10 @@ func SetupServicesAndRoutes(app *fiber.App, querier repository.Querier) {
 	api.Get("/metric/:metric_id/latest-entries", handlers.GetLatestMetricEntries(metricService))
 	// gets all historical entries of a metric
 	api.Get("/metric/:metric_id/historical-entries", handlers.GetHistoricalMetricEntries(metricService))
+
+	api.Put("/marketplace/item/:item_id", handlers.UpdateItem(marketplaceService))
+
+	api.Delete("/marketplace/item/:item_id", handlers.DeleteItem(marketplaceService))
 
 	// Serve uploaded assets
 	app.Static("/assets", "./assets")

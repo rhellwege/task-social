@@ -4,8 +4,11 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+<<<<<<< HEAD
+=======
   Modal,
   TextInput,
+>>>>>>> d17375e (delete and edit functionality)
 } from "react-native";
 import {
   DarkTheme,
@@ -14,10 +17,15 @@ import {
 } from "@react-navigation/native";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
+<<<<<<< HEAD
+import { useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+=======
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useApi } from "@/hooks/useApi";
 import Ionicons from "@expo/vector-icons/Ionicons";
+>>>>>>> d17375e (delete and edit functionality)
 
 interface Listing {
   id: string;
@@ -27,6 +35,27 @@ interface Listing {
 }
 
 export default function ClubDetail() {
+<<<<<<< HEAD
+  const { id } = useLocalSearchParams();
+  const colorScheme = useColorScheme();
+  const [listings] = useState<Listing[]>([
+    { id: "1", title: "Chess Set - Like New", price: "$40", seller: "alex123" },
+    {
+      id: "2",
+      title: "Mechanical Keyboard",
+      price: "$85",
+      seller: "coder_in_cave",
+    },
+    {
+      id: "3",
+      title: "Used Nintendo Switch",
+      price: "$220",
+      seller: "gamer4life",
+    },
+    { id: "4", title: "Python Books Bundle", price: "$25", seller: "py_dev" },
+    { id: "5", title: 'Monitor 24" 144Hz', price: "$150", seller: "techdude" },
+  ]);
+=======
   // Supports both param names to stay compatible with your current project
   const params = useLocalSearchParams();
   const clubId = (params.clubId ?? params.id) as string | undefined;
@@ -142,37 +171,79 @@ export default function ClubDetail() {
     }
   }
 
-  async function deleteItem(itemId: string) {
-    if (!itemId) return;
+async function deleteItem(itemId: string) {
+  if (!itemId) return;
 
-    setLoading(true);
-    setError("");
+  setLoading(true);
+  setError("");
 
-    try {
-      const res = await api.api.deleteItem(itemId);
+  try {
+    const res = await api.api.deleteItem(itemId);
 
-      if (!res.ok) {
-        throw new Error("Failed to delete item");
-      }
-
-      await loadListings();
-    } catch (e: any) {
-      setError(e?.message || "Failed to delete item");
-    } finally {
-      setLoading(false);
+    if (!res.ok) {
+      throw new Error("Failed to delete item");
     }
+
+    await loadListings();
+  } catch (e: any) {
+    setError(e?.message || "Failed to delete item");
+  } finally {
+    setLoading(false);
   }
+}
 
   useEffect(() => {
     loadListings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clubId, api]);
+>>>>>>> d17375e (delete and edit functionality)
 
   const renderListing = ({ item }: { item: Listing }) => (
     <View style={styles.listingItem}>
       <Text style={styles.listingTitle}>{item.title}</Text>
       <Text style={styles.listingPrice}>{item.price}</Text>
       <Text style={{ color: "#888", fontSize: 14 }}>by {item.seller}</Text>
+<<<<<<< HEAD
+    </View>
+  );
+
+  return (
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <View style={styles.container}>
+        <Text
+          style={{
+            color: Colors[colorScheme ?? "light"].text,
+            fontSize: 26,
+            fontWeight: "bold",
+            marginBottom: 20,
+          }}
+        >
+          Club Marketplace
+        </Text>
+
+        <FlatList
+          data={listings}
+          renderItem={renderListing}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+          ListEmptyComponent={
+            <Text style={{ color: "#888", fontSize: 16 }}>
+              No items for sale yet!
+            </Text>
+          }
+        />
+        {/* Optional: Add "Post Item" button later, current is dummy */}
+        <TouchableOpacity style={styles.postButton}>
+          <Text style={{ color: "white", fontWeight: "bold" }}>
+            + Post Item for Sale
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </ThemeProvider>
+  );
+}
+=======
 
       <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
         {/* EDIT */}
@@ -310,8 +381,8 @@ export default function ClubDetail() {
                       {loading
                         ? "Working..."
                         : editingItemId
-                          ? "Save Changes"
-                          : "Post"}
+                        ? "Save Changes"
+                        : "Post"}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -324,6 +395,7 @@ export default function ClubDetail() {
   );
 }
 
+>>>>>>> d17375e (delete and edit functionality)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -351,6 +423,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 30,
   },
+<<<<<<< HEAD
+
+=======
+>>>>>>> d17375e (delete and edit functionality)
   listingTitle: {
     color: "#000000",
     fontSize: 18,
@@ -363,6 +439,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginVertical: 4,
   },
+<<<<<<< HEAD
+=======
 
   modalBackdrop: {
     flex: 1,
@@ -410,4 +488,5 @@ const styles = StyleSheet.create({
     borderColor: "#2f6f4e",
   },
   modalBtnOutlineText: { color: "#2f6f4e", fontWeight: "700" },
+>>>>>>> d17375e (delete and edit functionality)
 });
